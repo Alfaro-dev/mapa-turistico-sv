@@ -1,0 +1,504 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin - Mi Salvador Secreto">
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-white shadow-md">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🇸🇻</span>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">Admin - Mi Salvador Secreto</h1>
+            <p class="text-xs text-gray-500">Gestión de lugares y reseñas</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="/" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">← Volver al Mapa</a>
+          <span id="userEmail" class="text-sm text-gray-600 hidden"></span>
+          <button id="logoutBtn" class="hidden px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">Cerrar Sesión</button>
+          <button id="loginBtn" class="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">🔑 Iniciar Sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Auth -->
+      <div id="authSection" class="bg-white rounded-xl shadow-lg p-8 mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">🔐 Iniciar Sesión</h2>
+        <p class="text-gray-600 mb-4">Iniciá sesión con Google para agregar lugares y reseñas.</p>
+        <button id="googleLogin" class="flex items-center gap-3 px-6 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 transition">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.954,4,4,12.954,4,24c0,11.046,8.954,20,20,20c11.046,0,20-8.954,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.562,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.529,35.491,26.854,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,41.07,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+          <span class="font-medium">Continuar con Google</span>
+        </button>
+      </div>
+
+      <!-- Admin Panel -->
+      <div id="adminSection" class="hidden space-y-8">
+        
+        <!-- Add Place Form -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span>➕</span> Agregar Lugar
+          </h2>
+          
+          <form id="placeForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                <input type="text" id="placeName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
+                <select id="placeCategory" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <option value="">Seleccionar...</option>
+                  <option value="playa">🏖️ Playa</option>
+                  <option value="montaña">🏔️ Montaña</option>
+                  <option value="histórico">🏛️ Histórico</option>
+                  <option value="gastronomía">🍽️ Gastronomía</option>
+                  <option value="cultura">🎭 Cultura</option>
+                  <option value="aventura">🧗 Aventura</option>
+                  <option value="río">🏞️ Río</option>
+                  <option value="lago">🌊 Lago</option>
+                  <option value="other">📌 Otro</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Municipio *</label>
+                <input type="text" id="placeMunicipality" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Departamento *</label>
+                <input type="text" id="placeDepartment" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Latitud *</label>
+                <input type="number" step="0.0001" id="placeLat" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Longitud *</label>
+                <input type="number" step="0.0001" id="placeLng" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Precio *</label>
+                <input type="text" id="placePrice" required placeholder="$3 o Gratis" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Website (opcional)</label>
+                <input type="url" id="placeWebsite" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
+              <textarea id="placeDescription" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+            
+            <!-- Photos -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">📸 Fotos del Lugar (mínimo 1)</label>
+              <div id="placePhotos" class="grid grid-cols-4 gap-4 mb-2"></div>
+              <label class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer text-sm">
+                <span>➕</span> Agregar foto
+                <input type="file" id="placePhotoInput" accept="image/*" class="hidden" />
+              </label>
+            </div>
+            
+            <button type="submit" class="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600">
+              💾 Guardar Lugar
+            </button>
+          </form>
+        </div>
+
+        <!-- Add Review Section -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span>⭐</span> Escribir Reseña
+          </h2>
+          
+          <form id="reviewForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Lugar *</label>
+                <select id="reviewPlace" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <option value="">Seleccionar lugar...</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Visita *</label>
+                <input type="date" id="reviewVisitDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">⭐ Calificación *</label>
+              <div class="flex gap-2">
+                {[1,2,3,4,5].map(n => `
+                  <button type="button" class="star-btn w-12 h-12 text-2xl rounded-lg border-2 border-gray-200 hover:border-amber-400 transition" data-rating="${n}">⭐</button>
+                `).join('')}
+              </div>
+              <input type="hidden" id="reviewRating" value="0" />
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tu Reseña *</label>
+              <textarea id="reviewComment" rows="4" required placeholder="Cuéntanos tu experiencia..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+            </div>
+            
+            <!-- Review Photos - minimum 2 required -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">📸 Fotos de tu Visita * (mínimo 2)</label>
+              <p class="text-xs text-gray-500 mb-2">Sube al menos 2 fotos de tu visita al lugar</p>
+              <div id="reviewPhotos" class="grid grid-cols-4 gap-4 mb-2"></div>
+              <label class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer text-sm">
+                <span>➕</span> Agregar foto
+                <input type="file" id="reviewPhotoInput" accept="image/*" multiple class="hidden" />
+              </label>
+            </div>
+            
+            <button type="submit" class="px-6 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600">
+              ⭐ Publicar Reseña
+            </button>
+          </form>
+        </div>
+
+        <!-- My Reviews -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <span>📝</span> Mis Reseñas
+          </h2>
+          <div id="myReviews" class="space-y-4"></div>
+          <div id="noReviews" class="hidden text-center py-8 text-gray-500">
+            Aún no has escrito reseñas
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<script>
+  import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+  import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+  import { db, auth, storage, googleProvider } from '../../lib/firebase';
+  
+  let currentUser: any = null;
+  let placePhotos: string[] = [];
+  let reviewPhotos: string[] = [];
+  
+  // Auth elements
+  const authSection = document.getElementById('authSection');
+  const adminSection = document.getElementById('adminSection');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userEmail = document.getElementById('userEmail');
+  const googleLogin = document.getElementById('googleLogin');
+  
+  // Place form
+  const placeForm = document.getElementById('placeForm') as HTMLFormElement;
+  const placePhotosDiv = document.getElementById('placePhotos');
+  const placePhotoInput = document.getElementById('placePhotoInput') as HTMLInputElement;
+  
+  // Review form
+  const reviewForm = document.getElementById('reviewForm') as HTMLFormElement;
+  const reviewPhotosDiv = document.getElementById('reviewPhotos');
+  const reviewPhotoInput = document.getElementById('reviewPhotoInput') as HTMLInputElement;
+  const reviewPlaceSelect = document.getElementById('reviewPlace') as HTMLSelectElement;
+  const starBtns = document.querySelectorAll('.star-btn');
+  
+  // Auth state
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user) {
+      authSection.classList.add('hidden');
+      adminSection.classList.remove('hidden');
+      loginBtn.classList.add('hidden');
+      logoutBtn.classList.remove('hidden');
+      userEmail.textContent = user.email;
+      userEmail.classList.remove('hidden');
+      await loadPlacesForReview();
+      await loadMyReviews();
+    } else {
+      authSection.classList.remove('hidden');
+      adminSection.classList.add('hidden');
+      loginBtn.classList.remove('hidden');
+      logoutBtn.classList.add('hidden');
+      userEmail.classList.add('hidden');
+    }
+  });
+  
+  googleLogin?.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Error al iniciar sesión');
+    }
+  });
+
+  loginBtn?.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Error al iniciar sesión');
+    }
+  });
+  
+  logoutBtn?.addEventListener('click', async () => {
+    await signOut(auth);
+  });
+  
+  // Upload place photo
+  placePhotoInput?.addEventListener('change', async (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (!files?.length) return;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const storageRef = ref(storage, `places/${currentUser.uid}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        placePhotos.push(url);
+      } catch (err) {
+        console.error('Upload error:', err);
+      }
+    }
+    
+    renderPlacePhotos();
+  });
+  
+  function renderPlacePhotos() {
+    if (!placePhotosDiv) return;
+    placePhotosDiv.innerHTML = placePhotos.map((url, i) => `
+      <div class="relative">
+        <img src="${url}" class="w-full h-24 object-cover rounded-lg" />
+        <button type="button" onclick="removePlacePhoto(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">✕</button>
+      </div>
+    `).join('');
+  }
+  
+  (window as any).removePlacePhoto = function(index: number) {
+    placePhotos.splice(index, 1);
+    renderPlacePhotos();
+  };
+  
+  // Submit place form
+  placeForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (placePhotos.length === 0) {
+      alert('Agrega al menos una foto del lugar');
+      return;
+    }
+    
+    const placeData = {
+      name: (document.getElementById('placeName') as HTMLInputElement).value,
+      category: (document.getElementById('placeCategory') as HTMLSelectElement).value,
+      municipality: (document.getElementById('placeMunicipality') as HTMLInputElement).value,
+      department: (document.getElementById('placeDepartment') as HTMLInputElement).value,
+      lat: parseFloat((document.getElementById('placeLat') as HTMLInputElement).value),
+      lng: parseFloat((document.getElementById('placeLng') as HTMLInputElement).value),
+      price: (document.getElementById('placePrice') as HTMLInputElement).value,
+      description: (document.getElementById('placeDescription') as HTMLTextAreaElement).value,
+      website: (document.getElementById('placeWebsite') as HTMLInputElement).value || '',
+      photos: placePhotos,
+      visitCount: 0,
+      createdAt: serverTimestamp(),
+      createdBy: currentUser.uid
+    };
+    
+    try {
+      await addDoc(collection(db, 'places'), placeData);
+      alert('¡Lugar agregado!');
+      placeForm.reset();
+      placePhotos = [];
+      renderPlacePhotos();
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Error al guardar');
+    }
+  });
+  
+  // Load places for review dropdown
+  async function loadPlacesForReview() {
+    try {
+      const snapshot = await getDocs(query(collection(db, 'places'), orderBy('name', 'asc')));
+      const places = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      reviewPlaceSelect.innerHTML = '<option value="">Seleccionar lugar...</option>' +
+        places.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    } catch (err) {
+      console.error('Error loading places:', err);
+    }
+  }
+  
+  // Star rating
+  starBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rating = parseInt((btn as HTMLElement).dataset.rating);
+      (document.getElementById('reviewRating') as HTMLInputElement).value = rating.toString();
+      starBtns.forEach((b, i) => {
+        if (i < rating) {
+          b.classList.add('bg-amber-100', 'border-amber-400');
+        } else {
+          b.classList.remove('bg-amber-100', 'border-amber-400');
+        }
+      });
+    });
+  });
+  
+  // Upload review photo
+  reviewPhotoInput?.addEventListener('change', async (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (!files?.length) return;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const storageRef = ref(storage, `reviews/${currentUser.uid}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        reviewPhotos.push(url);
+      } catch (err) {
+        console.error('Upload error:', err);
+      }
+    }
+    
+    renderReviewPhotos();
+  });
+  
+  function renderReviewPhotos() {
+    if (!reviewPhotosDiv) return;
+    reviewPhotosDiv.innerHTML = reviewPhotos.map((url, i) => `
+      <div class="relative">
+        <img src="${url}" class="w-full h-24 object-cover rounded-lg" />
+        <button type="button" onclick="removeReviewPhoto(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">✕</button>
+      </div>
+    `).join('');
+    
+    // Show minimum warning
+    const warning = reviewPhotos.length < 2 ? `<p class="col-span-4 text-xs text-red-500">Necesitas al menos 2 fotos (tienes ${reviewPhotos.length})</p>` : '';
+    reviewPhotosDiv.innerHTML += warning;
+  }
+  
+  (window as any).removeReviewPhoto = function(index: number) {
+    reviewPhotos.splice(index, 1);
+    renderReviewPhotos();
+  };
+  
+  // Submit review form
+  reviewForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const rating = parseInt((document.getElementById('reviewRating') as HTMLInputElement).value);
+    
+    if (rating === 0) {
+      alert('Selecciona una calificación');
+      return;
+    }
+    
+    if (reviewPhotos.length < 2) {
+      alert('Agrega al menos 2 fotos de tu visita');
+      return;
+    }
+    
+    const reviewData = {
+      placeId: (document.getElementById('reviewPlace') as HTMLSelectElement).value,
+      userId: currentUser.uid,
+      userEmail: currentUser.email,
+      rating,
+      comment: (document.getElementById('reviewComment') as HTMLTextAreaElement).value,
+      photos: reviewPhotos,
+      visitDate: (document.getElementById('reviewVisitDate') as HTMLInputElement).value,
+      createdAt: serverTimestamp()
+    };
+    
+    try {
+      await addDoc(collection(db, 'reviews'), reviewData);
+      
+      // Update place visit count
+      const placeId = reviewData.placeId;
+      const placesSnap = await getDocs(collection(db, 'places'));
+      const place = placesSnap.docs.find(d => d.id === placeId);
+      if (place) {
+        const currentCount = place.data().visitCount || 0;
+        await updateDoc(doc(db, 'places', placeId), { visitCount: currentCount + 1 });
+      }
+      
+      alert('¡Reseña publicada!');
+      reviewForm.reset();
+      reviewPhotos = [];
+      renderReviewPhotos();
+      starBtns.forEach(b => b.classList.remove('bg-amber-100', 'border-amber-400'));
+      await loadMyReviews();
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Error al publicar');
+    }
+  });
+  
+  // Load my reviews
+  async function loadMyReviews() {
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, 'reviews'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'))
+      );
+      
+      const reviewsEl = document.getElementById('myReviews');
+      const noReviewsEl = document.getElementById('noReviews');
+      
+      if (snapshot.empty) {
+        reviewsEl.innerHTML = '';
+        noReviewsEl.classList.remove('hidden');
+        return;
+      }
+      
+      noReviewsEl.classList.add('hidden');
+      
+      // Get places for names
+      const placesSnap = await getDocs(collection(db, 'places'));
+      const placesMap: Record<string, string> = {};
+      placesSnap.docs.forEach(d => placesMap[d.id] = d.data().name);
+      
+      reviewsEl.innerHTML = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return `
+          <div class="border border-gray-200 rounded-xl p-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <h3 class="font-bold text-gray-800">${placesMap[data.placeId] || 'Lugar eliminado'}</h3>
+                <p class="text-sm text-gray-500">Visitado: ${data.visitDate}</p>
+              </div>
+              <div class="flex items-center gap-1">
+                ${'⭐'.repeat(data.rating)}${'☆'.repeat(5-data.rating)}
+              </div>
+            </div>
+            <p class="text-gray-600 mt-2">${data.comment}</p>
+            <div class="flex gap-2 mt-3">
+              ${data.photos.map((photo: string) => `<img src="${photo}" class="w-20 h-16 object-cover rounded-lg">`).join('')}
+            </div>
+            <button onclick="deleteReview('${doc.id}')" class="mt-3 text-red-500 text-sm hover:underline">🗑️ Eliminar</button>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Error loading reviews:', err);
+    }
+  }
+  
+  (window as any).deleteReview = async function(reviewId: string) {
+    if (!confirm('¿Eliminar esta reseña?')) return;
+    
+    try {
+      await deleteDoc(doc(db, 'reviews', reviewId));
+      await loadMyReviews();
+      alert('Reseña eliminada');
+    } catch (err) {
+      console.error('Error:', err);
+      alert('Error al eliminar');
+    }
+  };
+</script>

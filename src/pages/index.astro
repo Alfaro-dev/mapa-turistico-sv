@@ -1,0 +1,321 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Mapa Turístico">
+  <div id="map" class="fixed inset-0 w-full h-full"></div>
+  
+  <!-- Header flotante -->
+  <header class="absolute top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-sm shadow-md px-4 py-2">
+      <div class="px-4 py-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🇸🇻</span>
+            <div>
+              <h1 class="text-lg font-bold text-gray-800">Mapa Turístico SV</h1>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Buscar..."
+              class="pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48"
+            />
+            <a href="/admin" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">⚙️</a>
+          </div>
+        </div>
+        <!-- Categories -->
+        <div class="flex gap-2 mt-2 overflow-x-auto pb-2">
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500 text-white" data-category="all">🌍 Todos</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-cyan-500 bg-cyan-50" data-category="playa">🏖️ Playa</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-emerald-600 bg-emerald-50" data-category="montaña">🏔️ Montaña</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-amber-600 bg-amber-50" data-category="histórico">🏛️ Histórico</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-red-500 bg-red-50" data-category="gastronomía">🍽️ Gastro</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-purple-500 bg-purple-50" data-category="cultura">🎭 Cultura</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-orange-500 bg-orange-50" data-category="aventura">🧗 Aventura</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-cyan-600 bg-cyan-50" data-category="río">🏞️ Río</button>
+          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-blue-500 bg-blue-50" data-category="lago">🌊 Lago</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar flotante izquierdo -->
+    <aside class="absolute left-0 top-24 bottom-0 w-72 z-[1000] bg-white/95 backdrop-blur-sm overflow-y-auto">
+      <div class="p-3">
+        <div id="loadingState" class="text-center py-4">
+          <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-emerald-500 border-t-transparent"></div>
+        </div>
+        <div id="emptyState" class="hidden text-center py-4">
+          <p class="text-gray-500 text-sm">Sin lugares</p>
+        </div>
+        <div id="placesList" class="space-y-2"></div>
+      </div>
+    </aside>
+
+</Layout>
+
+<script>
+  import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
+  import { db } from '../lib/firebase';
+  import { doc, updateDoc, increment } from 'firebase/firestore';
+
+  interface Place {
+    id: string;
+    name: string;
+    category: string;
+    lat: number;
+    lng: number;
+    description: string;
+    municipality: string;
+    department: string;
+    schedule: string;
+    price: string;
+    photos: string[];
+    recommendations: string[];
+    visitCount: number;
+  }
+
+  const categoryColors: Record<string, string> = {
+    playa: '#0ea5e9', montaña: '#10b981', histórico: '#f59e0b', gastronomía: '#ef4444',
+    cultura: '#8b5cf6', aventura: '#f97316', río: '#06b6d4', lago: '#3b82f6', other: '#6b7280'
+  };
+
+  const categoryEmojis: Record<string, string> = {
+    playa: '🏖️', montaña: '🏔️', histórico: '🏛️', gastronomía: '🍽️',
+    cultura: '🎭', aventura: '🧗', río: '🏞️', lago: '🌊', other: '📍'
+  };
+
+  let allPlaces: Place[] = [];
+  let filteredPlaces: Place[] = [];
+  let markers: Record<string, any> = {};
+  let map: any;
+
+  async function loadPlaces() {
+    try {
+      const placesRef = collection(db, 'places');
+      const q = query(placesRef, orderBy('visitCount', 'desc'));
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+        return;
+      }
+
+      allPlaces = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Place));
+      filteredPlaces = [...allPlaces];
+
+      document.getElementById('loadingState').classList.add('hidden');
+      
+
+      renderPlacesList();
+      initMap();
+      setTimeout(() => map && map.invalidateSize(), 100);
+    } catch (err) {
+      console.error('Error loading places:', err);
+      document.getElementById('loadingState').innerHTML = '<p class="text-red-500 text-sm">Error cargando</p>';
+    }
+  }
+
+  function renderPlacesList() {
+    const container = document.getElementById('placesList');
+    if (!container) return;
+
+    container.innerHTML = filteredPlaces.map(place => `
+      <div class="place-card bg-white border border-gray-100 rounded-lg p-2 cursor-pointer hover:shadow-md hover:border-emerald-300 transition" data-id="${place.id}" data-lat="${place.lat}" data-lng="${place.lng}">
+        <div class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style="background-color: ${categoryColors[place.category] || '#10b981'}20">
+            ${place.photos?.[0] ? `<img src="${place.photos[0]}" class="w-full h-full object-cover rounded-lg" onerror="this.style.display='none'; this.parentElement.innerHTML='${categoryEmojis[place.category] || '📍'}'">` : categoryEmojis[place.category] || '📍'}
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-medium text-gray-800 text-sm truncate">${place.name}</h3>
+            <p class="text-xs text-gray-500 truncate">${place.municipality}, ${place.department}</p>
+          </div>
+
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.place-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = (card as HTMLElement).dataset.id;
+        const lat = parseFloat((card as HTMLElement).dataset.lat);
+        const lng = parseFloat((card as HTMLElement).dataset.lng);
+
+        if (map && id && lat && lng) {
+          map.flyTo([lat, lng], 14, { duration: 1 });
+          // Increment visit count
+          incrementVisit(id);
+          // Open popup
+          if (markers[id]) {
+            markers[id].openPopup();
+          }
+        }
+      });
+    });
+  }
+
+  async function incrementVisit(placeId: string) {
+    try {
+      const placeRef = doc(db, 'places', placeId);
+      await updateDoc(placeRef, { visitCount: increment(1) });
+    } catch (err) {
+      // Silent fail
+    }
+  }
+
+  function initMap() {
+    if (typeof L === 'undefined') return;
+
+    map = L.map('map', { zoomControl: false }).setView([13.7942, -88.8965], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 18
+    }).addTo(map);
+
+    // Zoom buttons
+    
+    
+
+    filteredPlaces.forEach(place => {
+      if (!place.lat || !place.lng) return;
+
+      const emoji = categoryEmojis[place.category] || '📍';
+      const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:white;border:2px solid ${categoryColors[place.category] || '#10b981'};box-shadow:0 2px 8px rgba(0,0,0,0.2)">${emoji}</div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+
+      const marker = L.marker([place.lat, place.lng], { icon }).addTo(map);
+      markers[place.id] = marker;
+
+      const photosHtml = place.photos?.length 
+        ? `<img src="${place.photos[0]}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" />` 
+        : '';
+
+      marker.bindPopup(`
+        <div style="min-width:240px">
+          ${photosHtml}
+          <span class="text-xs px-2 py-0.5 rounded-full capitalize" style="background-color:${categoryColors[place.category]}20;color:${categoryColors[place.category]}">${place.category}</span>
+          <h3 style="font-weight:bold;color:#1f2937;margin-top:6px;font-size:16px">${place.name}</h3>
+          <p style="font-size:12px;color:#6b7280">📍 ${place.municipality}, ${place.department}</p>
+          <p style="font-size:12px;color:#4b5563;margin-top:6px">${place.description.substring(0, 60)}...</p>
+          <p style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">💰 ${place.price}</p>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}" target="_blank" style="flex:1;background:#3b82f6;color:white;padding:6px 10px;border-radius:6px;font-size:12px;text-align:center;text-decoration:none">📍 Llegar</a>
+            <button onclick="showPlaceDetail('${place.id}')" style="flex:1;background:#10b981;color:white;padding:6px 10px;border-radius:6px;font-size:12px;border:none;cursor:pointer">Ver +</button>
+          </div>
+        </div>
+      `, { maxWidth: 280 });
+    });
+  }
+
+  (window as any).showPlaceDetail = function(placeId: string) {
+    const place = filteredPlaces.find(p => p.id === placeId);
+    if (!place) return;
+
+    // Close the popup first
+    if (markers[placeId]) {
+      markers[placeId].closePopup();
+    }
+
+    const photosHtml = place.photos?.length 
+      ? place.photos.map((p: string) => `<img src="${p}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;cursor:pointer" onclick="window.open('${p}', '_blank')" />`).join('')
+      : '<p class="text-gray-400 text-xs">Sin fotos</p>';
+
+    const recsHtml = place.recommendations?.length 
+      ? place.recommendations.map((r: string) => `<span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">${r}</span>`).join('')
+      : '';
+
+    // Create and show detail modal
+    const modal = document.createElement('div');
+    modal.id = 'detailModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `
+      <div style="background:white;border-radius:16px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto">
+        <div style="height:120px;background:linear-gradient(135deg,#10b981,#059669);position:relative">
+          ${place.photos?.[0] ? `<img src="${place.photos[0]}" style="width:100%;height:100%;object-fit:cover" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px">${categoryEmojis[place.category] || '📍'}</div>`}
+          <button onclick="closePlaceDetail()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;bg:white/90 hover:bg-white rounded-full;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+          <span style="position:absolute;bottom:8px;left:8px;background:white;color:${categoryColors[place.category]};padding:2px 8px;border-radius:12px;font-size:11px;text-transform:capitalize">${place.category}</span>
+        </div>
+        <div style="padding:16px">
+          <h2 style="font-bold;text-lg;color:#1f2937">${place.name}</h2>
+          <p style="font-size:12px;color:#6b7280;margin-top:4px">📍 ${place.municipality}, ${place.department}</p>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <span style="font-size:11px;background:#10b98120;color:#10b981;padding:4px 8px;border-radius:6px">💰 ${place.price}</span>
+
+          </div>
+          <p style="font-size:13px;color:#4b5563;margin-top:12px;line-height:1.5">${place.description}</p>
+          ${recsHtml ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">${recsHtml}</div>` : ''}
+          <div style="margin-top:12px">
+            <p style="font-size:12px;font-semibold;color:#1f2937;margin-bottom:6px">📸 Fotos:</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${photosHtml}</div>
+          </div>
+          ${place.schedule ? `<p style="font-size:12px;color:#6b7280;margin-top:10px">🕐 ${place.schedule}</p>` : ''}
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}" target="_blank" style="flex:1;background:#3b82f6;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">📍 Cómo Llegar</a>
+            <a href="/admin" style="flex:1;background:#f59e0b;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">✏️ Editar</a>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closePlaceDetail();
+    });
+  };
+
+  (window as any).closePlaceDetail = function() {
+    const modal = document.getElementById('detailModal');
+    if (modal) modal.remove();
+  };
+
+  // Search
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    const query = (e.target as HTMLInputElement).value.toLowerCase();
+    filteredPlaces = allPlaces.filter(p => 
+      p.name.toLowerCase().includes(query) || 
+      p.department.toLowerCase().includes(query) ||
+      p.municipality.toLowerCase().includes(query) ||
+      p.category.toLowerCase().includes(query)
+    );
+    
+    renderPlacesList();
+    // Re-init markers
+    Object.values(markers).forEach((m: any) => m.remove());
+    markers = {};
+    initMap();
+      setTimeout(() => map && map.invalidateSize(), 100);
+  });
+
+  // Category filter
+  document.querySelectorAll('.category-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = (btn as HTMLElement).dataset.category;
+      
+      document.querySelectorAll('.category-filter').forEach(b => {
+        b.classList.remove('bg-emerald-500', 'text-white');
+        b.classList.add('bg-gray-100', 'text-gray-700');
+      });
+      btn.classList.add('bg-emerald-500', 'text-white');
+      btn.classList.remove('bg-gray-100', 'text-gray-700');
+
+      filteredPlaces = cat === 'all' 
+        ? [...allPlaces] 
+        : allPlaces.filter(p => p.category === cat);
+      
+      
+      renderPlacesList();
+      Object.values(markers).forEach((m: any) => m.remove());
+      markers = {};
+      initMap();
+      setTimeout(() => map && map.invalidateSize(), 100);
+    });
+  });
+
+  loadPlaces();
+</script>

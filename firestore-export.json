@@ -1,0 +1,32 @@
+{
+  "places": {
+    "place_1": {
+      "name": "Lago de Coatepeque",
+      "category": "lago",
+      "lat": 13.8667,
+      "lng": -89.5333,
+      "municipality": "Coatepeque",
+      "department": "Santa Ana",
+      "description": "Hermoso lago de cráter de origen volcánico con aguas turquesas.",
+      "price": "Gratis",
+      "schedule": "Abierto todos los días",
+      "recommendations": ["Paseo en lancha", "Pesca deportiva", "Fotografía"],
+      "photos": ["https://images.unsplash.com/photo-1585832822289-5cfc75410f7e?w=800"],
+      "visitCount": 25
+    },
+    "place_2": {
+      "name": "Parque Nacional Cerro Verde",
+      "category": "montaña",
+      "lat": 13.8283,
+      "lng": -89.6292,
+      "municipality": "Cerro Verde",
+      "department": "Sonsonate",
+      "description": "Área de protección natural con senderos y miradores.",
+      "price": "$3",
+      "schedule": "Lunes a Domingo, 8:00 AM - 4:00 PM",
+      "recommendations": ["Senderismo", "Ornitología", "Picnic"],
+      "photos": ["https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"],
+      "visitCount": 45
+    }
+  }
+}
