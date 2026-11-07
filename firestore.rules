@@ -1,8 +1,167 @@
 rules_version = '2';
+
+// Reglas de Mapa Turístico SV (web + app Flutter, proyecto mapsv-1776175535).
+// Principio: todos pueden leer el contenido público; solo se escribe lo propio.
+// Un administrador es un usuario con un documento en admins/{uid}
+// (se crea a mano desde la consola de Firebase; nadie puede crearlo desde la app).
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- Funciones ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Solo cambian estas claves (y ninguna otra).
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // El contador sube exactamente 1 (sirve con increment(1) y con valor+1).
+    function bumpedByOne(field) {
+      return request.resource.data[field] == resource.data.get(field, 0) + 1;
+    }
+
+    // ---------- Administradores ----------
+    match /admins/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    // ---------- Lugares turísticos ----------
+    match /places/{placeId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin()
+        // Cualquiera suma una visita al abrir un lugar.
+        || (onlyChanges(['visitCount']) && bumpedByOne('visitCount'))
+        // La app recalcula visitas y promedio al hacer check-in.
+        || (signedIn()
+            && onlyChanges(['visitCount', 'rating'])
+            && request.resource.data.get('visitCount', 0) is int
+            && request.resource.data.get('visitCount', 0) >= 0
+            && request.resource.data.get('rating', 0) is number
+            && request.resource.data.get('rating', 0) >= 0
+            && request.resource.data.get('rating', 0) <= 5);
+    }
+
+    // ---------- Reseñas (web) ----------
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ---------- Fotos y check-ins (app) ----------
+    match /photos/{photoId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if (isOwner(resource.data.userId)
+                        && request.resource.data.userId == resource.data.userId)
+        || (signedIn() && onlyChanges(['useful']) && bumpedByOne('useful'))
+        || (signedIn() && onlyChanges(['fun']) && bumpedByOne('fun'))
+        || (signedIn() && onlyChanges(['like']) && bumpedByOne('like'));
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    match /checkIns/{checkInId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get('rating', 0) is int
+        && request.resource.data.get('rating', 0) >= 0
+        && request.resource.data.get('rating', 0) <= 5;
+      allow update: if (isOwner(resource.data.userId)
+                        && request.resource.data.userId == resource.data.userId)
+        || (signedIn() && onlyChanges(['useful']) && bumpedByOne('useful'))
+        || (signedIn() && onlyChanges(['fun']) && bumpedByOne('fun'))
+        || (signedIn() && onlyChanges(['like']) && bumpedByOne('like'));
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ---------- Perfiles de usuario ----------
+    // Guarda el correo, así que solo lo lee su dueño (o el admin).
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid);
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+
+    // ---------- Negocios ----------
+    // "featured" (destacado) es lo que se cobra: solo el admin lo activa.
+    match /businesses/{businessId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.get('featured', false) == false;
+      allow update: if isAdmin()
+        || (isOwner(resource.data.ownerId)
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.get('featured', false) == resource.data.get('featured', false))
+        || (onlyChanges(['viewCount']) && bumpedByOne('viewCount'))
+        || (onlyChanges(['clickCount']) && bumpedByOne('clickCount'))
+        || (onlyChanges(['visitCount']) && bumpedByOne('visitCount'))
+        || (signedIn() && onlyChanges(['loves']) && bumpedByOne('loves'))
+        || (signedIn() && onlyChanges(['amazing']) && bumpedByOne('amazing'))
+        || (signedIn() && onlyChanges(['recommended']) && bumpedByOne('recommended'));
+      allow delete: if isOwner(resource.data.ownerId) || isAdmin();
+    }
+
+    // ---------- Cupones ----------
+    function ownsBusiness(businessId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
+    }
+
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow create: if ownsBusiness(request.resource.data.businessId);
+      allow update: if (ownsBusiness(resource.data.businessId)
+                        && request.resource.data.businessId == resource.data.businessId)
+        // Al canjear, cualquier usuario con sesión suma 1 uso.
+        || (signedIn() && onlyChanges(['usedCount']) && bumpedByOne('usedCount'));
+      allow delete: if ownsBusiness(resource.data.businessId) || isAdmin();
+    }
+
+    match /couponRedemptions/{redemptionId} {
+      // Lo leen usuarios con sesión: el usuario ve sus canjes y el negocio los de sus cupones.
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Publicidad (web) ----------
+    match /ads/{adId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /adAnalytics/{eventId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['adId', 'action', 'timestamp'])
+        && request.resource.data.action in ['view', 'click'];
+      allow update, delete: if false;
+    }
+
+    // ---------- Todo lo demás: cerrado ----------
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

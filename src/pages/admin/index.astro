@@ -36,8 +36,8 @@ import Layout from '../../layouts/Layout.astro';
       <!-- Admin Panel -->
       <div id="adminSection" class="hidden space-y-8">
         
-        <!-- Add Place Form -->
-        <div class="bg-white rounded-xl shadow-lg p-8">
+        <!-- Add Place Form (solo administradores) -->
+        <div id="placeAdminCard" class="hidden bg-white rounded-xl shadow-lg p-8">
           <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
             <span>➕</span> Agregar Lugar
           </h2>
@@ -179,7 +179,8 @@ import Layout from '../../layouts/Layout.astro';
 
 <script>
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-  import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+  import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, query, orderBy, where, increment, serverTimestamp } from 'firebase/firestore';
+  import { esc, safeUrl, jsArg, num } from '../../lib/escape';
   import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
   import { db, auth, storage, googleProvider } from '../../lib/firebase';
   
@@ -217,6 +218,15 @@ import Layout from '../../layouts/Layout.astro';
       logoutBtn.classList.remove('hidden');
       userEmail.textContent = user.email;
       userEmail.classList.remove('hidden');
+      // El formulario de lugares solo aparece si existe admins/{uid}.
+      // Las reglas de Firestore son las que de verdad lo impiden.
+      let isAdmin = false;
+      try {
+        isAdmin = (await getDoc(doc(db, 'admins', user.uid))).exists();
+      } catch {
+        isAdmin = false;
+      }
+      document.getElementById('placeAdminCard')?.classList.toggle('hidden', !isAdmin);
       await loadPlacesForReview();
       await loadMyReviews();
     } else {
@@ -274,7 +284,7 @@ import Layout from '../../layouts/Layout.astro';
     if (!placePhotosDiv) return;
     placePhotosDiv.innerHTML = placePhotos.map((url, i) => `
       <div class="relative">
-        <img src="${url}" class="w-full h-24 object-cover rounded-lg" />
+        <img src="${safeUrl(url)}" alt="" class="w-full h-24 object-cover rounded-lg" />
         <button type="button" onclick="removePlacePhoto(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">✕</button>
       </div>
     `).join('');
@@ -329,7 +339,7 @@ import Layout from '../../layouts/Layout.astro';
       const places = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       
       reviewPlaceSelect.innerHTML = '<option value="">Seleccionar lugar...</option>' +
-        places.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        places.map((p: any) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
     } catch (err) {
       console.error('Error loading places:', err);
     }
@@ -374,7 +384,7 @@ import Layout from '../../layouts/Layout.astro';
     if (!reviewPhotosDiv) return;
     reviewPhotosDiv.innerHTML = reviewPhotos.map((url, i) => `
       <div class="relative">
-        <img src="${url}" class="w-full h-24 object-cover rounded-lg" />
+        <img src="${safeUrl(url)}" alt="" class="w-full h-24 object-cover rounded-lg" />
         <button type="button" onclick="removeReviewPhoto(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">✕</button>
       </div>
     `).join('');
@@ -408,7 +418,8 @@ import Layout from '../../layouts/Layout.astro';
     const reviewData = {
       placeId: (document.getElementById('reviewPlace') as HTMLSelectElement).value,
       userId: currentUser.uid,
-      userEmail: currentUser.email,
+      // Las reseñas son públicas: guardamos el nombre visible, no el correo.
+      userName: currentUser.displayName || 'Usuario',
       rating,
       comment: (document.getElementById('reviewComment') as HTMLTextAreaElement).value,
       photos: reviewPhotos,
@@ -419,13 +430,11 @@ import Layout from '../../layouts/Layout.astro';
     try {
       await addDoc(collection(db, 'reviews'), reviewData);
       
-      // Update place visit count
-      const placeId = reviewData.placeId;
-      const placesSnap = await getDocs(collection(db, 'places'));
-      const place = placesSnap.docs.find(d => d.id === placeId);
-      if (place) {
-        const currentCount = place.data().visitCount || 0;
-        await updateDoc(doc(db, 'places', placeId), { visitCount: currentCount + 1 });
+      // Suma una visita al lugar (las reglas solo permiten +1)
+      try {
+        await updateDoc(doc(db, 'places', reviewData.placeId), { visitCount: increment(1) });
+      } catch (err) {
+        console.error('No se pudo sumar la visita:', err);
       }
       
       alert('¡Reseña publicada!');
@@ -465,22 +474,23 @@ import Layout from '../../layouts/Layout.astro';
       
       reviewsEl.innerHTML = snapshot.docs.map(doc => {
         const data = doc.data();
+        const rating = Math.max(0, Math.min(5, Math.round(num(data.rating))));
         return `
           <div class="border border-gray-200 rounded-xl p-4">
             <div class="flex items-start justify-between">
               <div>
-                <h3 class="font-bold text-gray-800">${placesMap[data.placeId] || 'Lugar eliminado'}</h3>
-                <p class="text-sm text-gray-500">Visitado: ${data.visitDate}</p>
+                <h3 class="font-bold text-gray-800">${esc(placesMap[data.placeId] || 'Lugar eliminado')}</h3>
+                <p class="text-sm text-gray-500">Visitado: ${esc(data.visitDate)}</p>
               </div>
               <div class="flex items-center gap-1">
-                ${'⭐'.repeat(data.rating)}${'☆'.repeat(5-data.rating)}
+                ${'⭐'.repeat(rating)}${'☆'.repeat(5 - rating)}
               </div>
             </div>
-            <p class="text-gray-600 mt-2">${data.comment}</p>
+            <p class="text-gray-600 mt-2">${esc(data.comment)}</p>
             <div class="flex gap-2 mt-3">
-              ${data.photos.map((photo: string) => `<img src="${photo}" class="w-20 h-16 object-cover rounded-lg">`).join('')}
+              ${(data.photos || []).map((photo: string) => safeUrl(photo)).filter(Boolean).map((photo: string) => `<img src="${photo}" alt="" class="w-20 h-16 object-cover rounded-lg">`).join('')}
             </div>
-            <button onclick="deleteReview('${doc.id}')" class="mt-3 text-red-500 text-sm hover:underline">🗑️ Eliminar</button>
+            <button onclick="deleteReview(${jsArg(doc.id)})" class="mt-3 text-red-500 text-sm hover:underline">🗑️ Eliminar</button>
           </div>
         `;
       }).join('');
