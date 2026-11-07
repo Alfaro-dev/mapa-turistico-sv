@@ -56,3 +56,14 @@ npx firebase-tools deploy --only firestore:rules,storage
 ```
 
 La primera vez, Firebase pregunta si las reglas de Storage pueden consultar Firestore (para saber quién es admin): responde que sí.
+
+## 📸 Fotos (Cloudinary)
+
+Las fotos ya no van a Firebase Storage (exige el plan Blaze). Se suben a **Cloudinary** (plan gratis) con el preset sin firma `mapa_sv_fotos` de la cuenta `n6yslku2`:
+
+- Solo imágenes jpg, png, webp o heic; la web además rechaza archivos de más de 5 MB.
+- Todo queda en la carpeta `mapa-sv`, sin poder sobrescribir fotos existentes.
+- Cloudinary reduce cada foto a máximo 1600 px con calidad automática.
+- Cada foto lleva etiquetas (`places` o `reviews` y `uid_<usuario>`) para moderarlas desde el panel.
+
+Se puede cambiar con las variables `PUBLIC_CLOUDINARY_CLOUD_NAME` y `PUBLIC_CLOUDINARY_UPLOAD_PRESET`. `storage.rules` queda listo por si algún día se activa Blaze.

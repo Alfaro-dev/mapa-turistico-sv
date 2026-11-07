@@ -181,8 +181,8 @@ import Layout from '../../layouts/Layout.astro';
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
   import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, query, orderBy, where, increment, serverTimestamp } from 'firebase/firestore';
   import { esc, safeUrl, jsArg, num } from '../../lib/escape';
-  import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-  import { db, auth, storage, googleProvider } from '../../lib/firebase';
+  import { db, auth, googleProvider } from '../../lib/firebase';
+  import { uploadImage } from '../../lib/cloudinary';
   
   let currentUser: any = null;
   let placePhotos: string[] = [];
@@ -268,12 +268,11 @@ import Layout from '../../layouts/Layout.astro';
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
-        const storageRef = ref(storage, `places/${currentUser.uid}/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(snapshot.ref);
+        const url = await uploadImage(file, 'places', currentUser.uid);
         placePhotos.push(url);
       } catch (err) {
         console.error('Upload error:', err);
+        alert(`${file.name}: ${(err as Error).message}`);
       }
     }
     
@@ -368,12 +367,11 @@ import Layout from '../../layouts/Layout.astro';
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
-        const storageRef = ref(storage, `reviews/${currentUser.uid}/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(snapshot.ref);
+        const url = await uploadImage(file, 'reviews', currentUser.uid);
         reviewPhotos.push(url);
       } catch (err) {
         console.error('Upload error:', err);
+        alert(`${file.name}: ${(err as Error).message}`);
       }
     }
     
