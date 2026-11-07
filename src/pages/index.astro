@@ -59,6 +59,7 @@ import Layout from '../layouts/Layout.astro';
   import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
   import { db } from '../lib/firebase';
   import { doc, updateDoc, increment } from 'firebase/firestore';
+  import { esc, safeUrl, jsArg, num } from '../lib/escape';
 
   interface Place {
     id: string;
@@ -123,14 +124,14 @@ import Layout from '../layouts/Layout.astro';
     if (!container) return;
 
     container.innerHTML = filteredPlaces.map(place => `
-      <div class="place-card bg-white border border-gray-100 rounded-lg p-2 cursor-pointer hover:shadow-md hover:border-emerald-300 transition" data-id="${place.id}" data-lat="${place.lat}" data-lng="${place.lng}">
+      <div class="place-card bg-white border border-gray-100 rounded-lg p-2 cursor-pointer hover:shadow-md hover:border-emerald-300 transition" data-id="${esc(place.id)}" data-lat="${num(place.lat)}" data-lng="${num(place.lng)}">
         <div class="flex items-center gap-2">
           <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style="background-color: ${categoryColors[place.category] || '#10b981'}20">
-            ${place.photos?.[0] ? `<img src="${place.photos[0]}" class="w-full h-full object-cover rounded-lg" onerror="this.style.display='none'; this.parentElement.innerHTML='${categoryEmojis[place.category] || '📍'}'">` : categoryEmojis[place.category] || '📍'}
+            ${safeUrl(place.photos?.[0]) ? `<img src="${safeUrl(place.photos[0])}" alt="" class="w-full h-full object-cover rounded-lg" onerror="this.remove()">` : categoryEmojis[place.category] || '📍'}
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="font-medium text-gray-800 text-sm truncate">${place.name}</h3>
-            <p class="text-xs text-gray-500 truncate">${place.municipality}, ${place.department}</p>
+            <h3 class="font-medium text-gray-800 text-sm truncate">${esc(place.name)}</h3>
+            <p class="text-xs text-gray-500 truncate">${esc(place.municipality)}, ${esc(place.department)}</p>
           </div>
 
         </div>
@@ -193,21 +194,22 @@ import Layout from '../layouts/Layout.astro';
       const marker = L.marker([place.lat, place.lng], { icon }).addTo(map);
       markers[place.id] = marker;
 
-      const photosHtml = place.photos?.length 
-        ? `<img src="${place.photos[0]}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" />` 
+      const firstPhoto = safeUrl(place.photos?.[0]);
+      const photosHtml = firstPhoto
+        ? `<img src="${firstPhoto}" alt="" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" />`
         : '';
 
       marker.bindPopup(`
         <div style="min-width:240px">
           ${photosHtml}
-          <span class="text-xs px-2 py-0.5 rounded-full capitalize" style="background-color:${categoryColors[place.category]}20;color:${categoryColors[place.category]}">${place.category}</span>
-          <h3 style="font-weight:bold;color:#1f2937;margin-top:6px;font-size:16px">${place.name}</h3>
-          <p style="font-size:12px;color:#6b7280">📍 ${place.municipality}, ${place.department}</p>
-          <p style="font-size:12px;color:#4b5563;margin-top:6px">${place.description.substring(0, 60)}...</p>
-          <p style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">💰 ${place.price}</p>
+          <span class="text-xs px-2 py-0.5 rounded-full capitalize" style="background-color:${categoryColors[place.category]}20;color:${categoryColors[place.category]}">${esc(place.category)}</span>
+          <h3 style="font-weight:bold;color:#1f2937;margin-top:6px;font-size:16px">${esc(place.name)}</h3>
+          <p style="font-size:12px;color:#6b7280">📍 ${esc(place.municipality)}, ${esc(place.department)}</p>
+          <p style="font-size:12px;color:#4b5563;margin-top:6px">${esc(String(place.description ?? '').substring(0, 60))}...</p>
+          <p style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">💰 ${esc(place.price)}</p>
           <div style="display:flex;gap:6px;margin-top:10px">
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}" target="_blank" style="flex:1;background:#3b82f6;color:white;padding:6px 10px;border-radius:6px;font-size:12px;text-align:center;text-decoration:none">📍 Llegar</a>
-            <button onclick="showPlaceDetail('${place.id}')" style="flex:1;background:#10b981;color:white;padding:6px 10px;border-radius:6px;font-size:12px;border:none;cursor:pointer">Ver +</button>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${num(place.lat)},${num(place.lng)}" target="_blank" rel="noopener" style="flex:1;background:#3b82f6;color:white;padding:6px 10px;border-radius:6px;font-size:12px;text-align:center;text-decoration:none">📍 Llegar</a>
+            <button onclick="showPlaceDetail(${jsArg(place.id)})" style="flex:1;background:#10b981;color:white;padding:6px 10px;border-radius:6px;font-size:12px;border:none;cursor:pointer">Ver +</button>
           </div>
         </div>
       `, { maxWidth: 280 });
@@ -223,12 +225,13 @@ import Layout from '../layouts/Layout.astro';
       markers[placeId].closePopup();
     }
 
-    const photosHtml = place.photos?.length 
-      ? place.photos.map((p: string) => `<img src="${p}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;cursor:pointer" onclick="window.open('${p}', '_blank')" />`).join('')
+    const photoUrls = (place.photos || []).map((p: string) => safeUrl(p)).filter(Boolean);
+    const photosHtml = photoUrls.length
+      ? photoUrls.map((p: string) => `<a href="${p}" target="_blank" rel="noopener"><img src="${p}" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:6px" /></a>`).join('')
       : '<p class="text-gray-400 text-xs">Sin fotos</p>';
 
     const recsHtml = place.recommendations?.length 
-      ? place.recommendations.map((r: string) => `<span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">${r}</span>`).join('')
+      ? place.recommendations.map((r: string) => `<span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">${esc(r)}</span>`).join('')
       : '';
 
     // Create and show detail modal
@@ -238,26 +241,26 @@ import Layout from '../layouts/Layout.astro';
     modal.innerHTML = `
       <div style="background:white;border-radius:16px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto">
         <div style="height:120px;background:linear-gradient(135deg,#10b981,#059669);position:relative">
-          ${place.photos?.[0] ? `<img src="${place.photos[0]}" style="width:100%;height:100%;object-fit:cover" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px">${categoryEmojis[place.category] || '📍'}</div>`}
+          ${photoUrls[0] ? `<img src="${photoUrls[0]}" alt="" style="width:100%;height:100%;object-fit:cover" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px">${categoryEmojis[place.category] || '📍'}</div>`}
           <button onclick="closePlaceDetail()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;bg:white/90 hover:bg-white rounded-full;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
-          <span style="position:absolute;bottom:8px;left:8px;background:white;color:${categoryColors[place.category]};padding:2px 8px;border-radius:12px;font-size:11px;text-transform:capitalize">${place.category}</span>
+          <span style="position:absolute;bottom:8px;left:8px;background:white;color:${categoryColors[place.category]};padding:2px 8px;border-radius:12px;font-size:11px;text-transform:capitalize">${esc(place.category)}</span>
         </div>
         <div style="padding:16px">
-          <h2 style="font-bold;text-lg;color:#1f2937">${place.name}</h2>
-          <p style="font-size:12px;color:#6b7280;margin-top:4px">📍 ${place.municipality}, ${place.department}</p>
+          <h2 style="font-bold;text-lg;color:#1f2937">${esc(place.name)}</h2>
+          <p style="font-size:12px;color:#6b7280;margin-top:4px">📍 ${esc(place.municipality)}, ${esc(place.department)}</p>
           <div style="display:flex;gap:8px;margin-top:10px">
-            <span style="font-size:11px;background:#10b98120;color:#10b981;padding:4px 8px;border-radius:6px">💰 ${place.price}</span>
+            <span style="font-size:11px;background:#10b98120;color:#10b981;padding:4px 8px;border-radius:6px">💰 ${esc(place.price)}</span>
 
           </div>
-          <p style="font-size:13px;color:#4b5563;margin-top:12px;line-height:1.5">${place.description}</p>
+          <p style="font-size:13px;color:#4b5563;margin-top:12px;line-height:1.5">${esc(place.description)}</p>
           ${recsHtml ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">${recsHtml}</div>` : ''}
           <div style="margin-top:12px">
             <p style="font-size:12px;font-semibold;color:#1f2937;margin-bottom:6px">📸 Fotos:</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${photosHtml}</div>
           </div>
-          ${place.schedule ? `<p style="font-size:12px;color:#6b7280;margin-top:10px">🕐 ${place.schedule}</p>` : ''}
+          ${place.schedule ? `<p style="font-size:12px;color:#6b7280;margin-top:10px">🕐 ${esc(place.schedule)}</p>` : ''}
           <div style="display:flex;gap:8px;margin-top:14px">
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}" target="_blank" style="flex:1;background:#3b82f6;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">📍 Cómo Llegar</a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${num(place.lat)},${num(place.lng)}" target="_blank" rel="noopener" style="flex:1;background:#3b82f6;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">📍 Cómo Llegar</a>
             <a href="/admin" style="flex:1;background:#f59e0b;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">✏️ Editar</a>
           </div>
         </div>
