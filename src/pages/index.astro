@@ -199,10 +199,8 @@ import Layout from '../layouts/Layout.astro';
           map.flyTo([lat, lng], 14, { duration: 1 });
           // Increment visit count
           incrementVisit(id);
-          // Open popup
-          if (markers[id]) {
-            markers[id].openPopup();
-          }
+          // Abre el popup al terminar el vuelo, para que no quede bajo el encabezado.
+          map.once('moveend', () => markers[id]?.openPopup());
         }
       });
     });
