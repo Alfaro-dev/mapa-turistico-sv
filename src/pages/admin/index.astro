@@ -99,6 +99,14 @@ import Layout from '../../layouts/Layout.astro';
             </div>
             
             <div>
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <label class="block text-sm font-medium text-gray-700">📍 Ubicación en el mapa</label>
+                <span class="text-xs text-gray-500">Toca el mapa o arrastra el marcador; la latitud y longitud se llenan solas.</span>
+              </div>
+              <div id="pickerMap" class="w-full h-72 rounded-lg border border-gray-300 z-0"></div>
+            </div>
+
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
               <textarea id="placeDescription" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
             </div>
@@ -256,7 +264,14 @@ import Layout from '../../layouts/Layout.astro';
       }
       document.getElementById('placeAdminCard')?.classList.toggle('hidden', !isAdmin);
       document.getElementById('placesAdminCard')?.classList.toggle('hidden', !isAdmin);
+      if (isAdmin) initPickerMap();
       await loadPlacesForReview();
+      // Viene de "Escribir reseña" en la ficha: deja elegido ese lugar.
+      const wanted = new URLSearchParams(location.search).get('lugar');
+      if (wanted && [...reviewPlaceSelect.options].some((o) => o.value === wanted)) {
+        reviewPlaceSelect.value = wanted;
+        document.getElementById('reviewForm')?.scrollIntoView({ behavior: 'smooth' });
+      }
       await loadMyReviews();
     } else {
       authSection.classList.remove('hidden');
@@ -391,7 +406,71 @@ import Layout from '../../layouts/Layout.astro';
     }
   });
 
+  // ---------- Mapa para marcar la ubicación ----------
+  let pickerMap: any = null;
+  let pickerMarker: any = null;
+  const SV_CENTER: [number, number] = [13.7942, -88.8965];
+
+  function setPickerPoint(lat: number, lng: number, pan = true) {
+    if (!pickerMap) return;
+    if (!pickerMarker) {
+      const icon = L.divIcon({
+        className: '',
+        html: '<div style="font-size:30px;line-height:30px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))">📍</div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+      });
+      pickerMarker = L.marker([lat, lng], { draggable: true, icon }).addTo(pickerMap);
+      pickerMarker.on('dragend', () => {
+        const p = pickerMarker.getLatLng();
+        fillLatLng(p.lat, p.lng);
+      });
+    } else {
+      pickerMarker.setLatLng([lat, lng]);
+    }
+    if (pan) pickerMap.setView([lat, lng], Math.max(pickerMap.getZoom(), 13));
+  }
+
+  function fillLatLng(lat: number, lng: number) {
+    $('placeLat').value = lat.toFixed(5);
+    $('placeLng').value = lng.toFixed(5);
+  }
+
+  function clearPickerPoint() {
+    if (pickerMarker) {
+      pickerMarker.remove();
+      pickerMarker = null;
+    }
+    pickerMap?.setView(SV_CENTER, 8);
+  }
+
+  function initPickerMap() {
+    if (typeof L === 'undefined' || !$('pickerMap')) return;
+    if (!pickerMap) {
+      pickerMap = L.map('pickerMap').setView(SV_CENTER, 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18,
+      }).addTo(pickerMap);
+      pickerMap.on('click', (e: any) => {
+        setPickerPoint(e.latlng.lat, e.latlng.lng, false);
+        fillLatLng(e.latlng.lat, e.latlng.lng);
+      });
+      // Si escriben las coordenadas a mano, el marcador se mueve.
+      ['placeLat', 'placeLng'].forEach((id) =>
+        $(id).addEventListener('change', () => {
+          const lat = parseFloat($('placeLat').value);
+          const lng = parseFloat($('placeLng').value);
+          if (Number.isFinite(lat) && Number.isFinite(lng)) setPickerPoint(lat, lng);
+        })
+      );
+    }
+    // El contenedor estaba oculto al crearse: recalcular tamaño.
+    setTimeout(() => pickerMap.invalidateSize(), 100);
+  }
+
   function resetPlaceForm(clearStatus = true) {
+    clearPickerPoint();
     placeForm.reset();
     placePhotos = [];
     editingId = null;
@@ -425,6 +504,7 @@ import Layout from '../../layouts/Layout.astro';
     $('placeSubmitBtn').textContent = '💾 Guardar cambios';
     $('cancelEditBtn').classList.remove('hidden');
     $('placeStatus').textContent = '';
+    if (Number.isFinite(p.lat) && Number.isFinite(p.lng)) setPickerPoint(p.lat, p.lng);
     $('placeAdminCard').scrollIntoView({ behavior: 'smooth' });
   };
 

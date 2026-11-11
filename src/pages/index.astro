@@ -317,14 +317,65 @@ import Layout from '../layouts/Layout.astro';
           <div style="display:flex;gap:8px;margin-top:14px">
             <a href="https://www.google.com/maps/dir/?api=1&destination=${num(place.lat)},${num(place.lng)}" target="_blank" rel="noopener" style="flex:1;background:#3b82f6;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">📍 Cómo llegar</a>
           </div>
+          <div style="margin-top:18px;border-top:1px solid #f3f4f6;padding-top:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+              <p style="font-size:14px;font-weight:600;color:#1f2937">⭐ Reseñas <span id="reviewsSummary" style="font-weight:400;color:#6b7280;font-size:12px"></span></p>
+              <a href="/admin?lugar=${encodeURIComponent(place.id)}" style="font-size:12px;color:#059669;font-weight:500;text-decoration:none">Escribir reseña</a>
+            </div>
+            <div id="placeReviews"><p style="font-size:12px;color:#9ca3af">Cargando reseñas...</p></div>
+          </div>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    loadPlaceReviews(place.id);
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closePlaceDetail();
     });
   };
+
+  // Reseñas públicas del lugar (sin orderBy para no necesitar un índice compuesto).
+  async function loadPlaceReviews(placeId: string) {
+    const box = document.getElementById('placeReviews');
+    const summary = document.getElementById('reviewsSummary');
+    if (!box) return;
+    try {
+      const snap = await getDocs(query(collection(db, 'reviews'), where('placeId', '==', placeId)));
+      const reviews = snap.docs
+        .map((d) => d.data())
+        .sort((a: any, b: any) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+
+      if (!document.getElementById('placeReviews')) return; // se cerró la ficha
+      if (!reviews.length) {
+        box.innerHTML = '<p style="font-size:12px;color:#6b7280">Aún no hay reseñas. ¡Sé el primero en contar tu visita!</p>';
+        return;
+      }
+
+      const stars = (r: number) => {
+        const n = Math.max(0, Math.min(5, Math.round(num(r))));
+        return '★'.repeat(n) + '☆'.repeat(5 - n);
+      };
+      const avg = reviews.reduce((s: number, r: any) => s + num(r.rating), 0) / reviews.length;
+      if (summary) summary.textContent = `${avg.toFixed(1)} de 5 · ${reviews.length} ${reviews.length === 1 ? 'reseña' : 'reseñas'}`;
+
+      box.innerHTML = reviews.map((r: any) => {
+        const photos = (r.photos || []).map((p: string) => safeUrl(p)).filter(Boolean).slice(0, 4);
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid #f3f4f6">
+            <div style="display:flex;justify-content:space-between;gap:8px">
+              <p style="font-size:13px;font-weight:600;color:#1f2937">${esc(r.userName || 'Visitante')}</p>
+              <span style="color:#f59e0b;font-size:13px;letter-spacing:1px" aria-label="${num(r.rating)} de 5">${stars(r.rating)}</span>
+            </div>
+            ${r.visitDate ? `<p style="font-size:11px;color:#9ca3af">Visitó el ${esc(r.visitDate)}</p>` : ''}
+            <p style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.45">${esc(r.comment)}</p>
+            ${photos.length ? `<div style="display:flex;gap:6px;margin-top:6px">${photos.map((p: string) => `<a href="${p}" target="_blank" rel="noopener"><img src="${p}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px" loading="lazy"></a>`).join('')}</div>` : ''}
+          </div>`;
+      }).join('');
+    } catch (err) {
+      console.error('Error cargando reseñas:', err);
+      box.innerHTML = '<p style="font-size:12px;color:#ef4444">No se pudieron cargar las reseñas.</p>';
+    }
+  }
 
   (window as any).closePlaceDetail = function() {
     const modal = document.getElementById('detailModal');
