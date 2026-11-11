@@ -6,21 +6,22 @@ import Layout from '../layouts/Layout.astro';
   <div id="map" class="fixed inset-0 w-full h-full"></div>
   
   <!-- Header flotante -->
-  <header class="absolute top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-sm shadow-md px-4 py-2">
-      <div class="px-4 py-2">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">🇸🇻</span>
-            <div>
-              <h1 class="text-lg font-bold text-gray-800">Mapa Turístico SV</h1>
+  <header class="absolute top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-sm shadow-md px-2 md:px-4 py-1 md:py-2">
+      <div class="px-2 md:px-4 py-1 md:py-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 md:gap-3 min-w-0">
+            <span class="text-xl md:text-2xl">🇸🇻</span>
+            <div class="min-w-0">
+              <h1 class="text-base md:text-lg font-bold text-gray-800 whitespace-nowrap">Mapa Turístico SV</h1>
             </div>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 md:gap-3 min-w-0">
             <input
-              type="text"
+              type="search"
               id="searchInput"
               placeholder="Buscar..."
-              class="pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48"
+              aria-label="Buscar lugar"
+              class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-28 sm:w-48"
             />
             <a href="/admin" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">⚙️</a>
           </div>
@@ -41,13 +42,17 @@ import Layout from '../layouts/Layout.astro';
     </header>
 
     <!-- Sidebar flotante izquierdo -->
-    <aside class="absolute left-0 top-24 bottom-0 w-72 z-[1000] bg-white/95 backdrop-blur-sm overflow-y-auto">
+    <!-- En celular: panel inferior que se puede ocultar. En computadora: barra izquierda. -->
+    <aside id="placesPanel" class="absolute left-0 right-0 bottom-0 h-[40vh] rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,0.12)] md:rounded-none md:shadow-none md:right-auto md:top-24 md:h-auto md:w-72 z-[1000] bg-white/95 backdrop-blur-sm overflow-y-auto transition-[height]">
+      <button id="panelToggle" type="button" class="md:hidden sticky top-0 z-10 w-full bg-white/95 py-2 text-sm font-medium text-gray-700 border-b border-gray-100" aria-expanded="true">
+        <span id="panelToggleText">Ocultar lista</span> · <span id="panelCount">0</span> lugares
+      </button>
       <div class="p-3">
         <div id="loadingState" class="text-center py-4">
           <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-emerald-500 border-t-transparent"></div>
         </div>
         <div id="emptyState" class="hidden text-center py-4">
-          <p class="text-gray-500 text-sm">Sin lugares</p>
+          <p class="text-gray-500 text-sm">Ningún lugar coincide con la búsqueda.</p>
         </div>
         <div id="placesList" class="space-y-2"></div>
       </div>
@@ -139,9 +144,33 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;
+
+  // Margen para que el popup no quede debajo del encabezado ni de la lista.
+  function popupOptions() {
+    return isDesktop()
+      ? { maxWidth: 280, autoPanPaddingTopLeft: [300, 130], autoPanPaddingBottomRight: [20, 20] }
+      : { maxWidth: 260, autoPanPaddingTopLeft: [10, 110], autoPanPaddingBottomRight: [10, Math.round(window.innerHeight * 0.42)] };
+  }
+
+  const panel = document.getElementById('placesPanel');
+  const panelToggle = document.getElementById('panelToggle');
+  function setPanelOpen(open: boolean) {
+    if (!panel || !panelToggle) return;
+    panel.classList.toggle('h-[40vh]', open);
+    panel.classList.toggle('h-10', !open);
+    panel.classList.toggle('overflow-y-auto', open);
+    panel.classList.toggle('overflow-hidden', !open);
+    panelToggle.setAttribute('aria-expanded', String(open));
+    document.getElementById('panelToggleText').textContent = open ? 'Ocultar lista' : 'Ver lista';
+  }
+  panelToggle?.addEventListener('click', () => setPanelOpen(panelToggle.getAttribute('aria-expanded') !== 'true'));
+
   function renderPlacesList() {
     const container = document.getElementById('placesList');
     if (!container) return;
+    const count = document.getElementById('panelCount');
+    if (count) count.textContent = String(filteredPlaces.length);
 
     container.innerHTML = filteredPlaces.map(place => `
       <div class="place-card bg-white border border-gray-100 rounded-lg p-2 cursor-pointer hover:shadow-md hover:border-emerald-300 transition" data-id="${esc(place.id)}" data-lat="${num(place.lat)}" data-lng="${num(place.lng)}">
@@ -165,6 +194,8 @@ import Layout from '../layouts/Layout.astro';
         const lng = parseFloat((card as HTMLElement).dataset.lng);
 
         if (map && id && lat && lng) {
+          // En celular se oculta la lista para ver el lugar en el mapa.
+          if (!isDesktop()) setPanelOpen(false);
           map.flyTo([lat, lng], 14, { duration: 1 });
           // Increment visit count
           incrementVisit(id);
@@ -238,7 +269,7 @@ import Layout from '../layouts/Layout.astro';
             <button onclick="showPlaceDetail(${jsArg(place.id)})" style="flex:1;background:#10b981;color:white;padding:6px 10px;border-radius:6px;font-size:12px;border:none;cursor:pointer">Ver +</button>
           </div>
         </div>
-      `, { maxWidth: 280, autoPanPaddingTopLeft: [300, 130], autoPanPaddingBottomRight: [20, 20] });
+      `, popupOptions());
     });
   }
 
