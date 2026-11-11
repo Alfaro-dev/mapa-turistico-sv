@@ -219,7 +219,7 @@ const categories = [
 
   // Los lugares son puntos turquesa; el elegido es Goz, el torogoz-pin, que cae sobre el punto.
   const pinIcon = (selected: boolean) => selected
-    ? L.divIcon({ className: 'pin-wrap', html: `<div class="goz-pin">${GOZ_PIN_SVG}</div>`, iconSize: [34, 47], iconAnchor: [17, 31] })
+    ? L.divIcon({ className: 'pin-wrap', html: `<div class="goz-pin">${GOZ_PIN_SVG}</div>`, iconSize: [44, 61], iconAnchor: [22, 40] })
     : L.divIcon({ className: 'pin-wrap', html: '<div class="pin"></div>', iconSize: [16, 16], iconAnchor: [8, 8] });
 
   function renderMarkers() {
@@ -229,7 +229,7 @@ const categories = [
       if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
       const sel = p.id === selectedId;
       const m = L.marker([p.lat, p.lng], { icon: pinIcon(sel), keyboard: true, title: p.name, alt: p.name, zIndexOffset: sel ? 1000 : 0 });
-      m.bindTooltip(esc(p.name), { direction: 'top', offset: [0, sel ? -30 : -9], className: 'pin-label', permanent: sel });
+      m.bindTooltip(esc(p.name), { direction: 'top', offset: [0, sel ? -38 : -9], className: 'pin-label', permanent: sel });
       m.on('click', () => selectPlace(p.id));
       m.addTo(markerLayer);
       markers[p.id] = m;
