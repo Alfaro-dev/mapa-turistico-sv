@@ -1,36 +1,42 @@
 @import "tailwindcss";
 
-/* ---------- Tema Añil (solo modo claro) ---------- */
+/* ---------- Tema Goz (torogoz, solo modo claro) ---------- */
 :root {
   color-scheme: light;
-  --font-sans: 'Instrument Sans', system-ui, sans-serif;
-  --font-serif: 'Young Serif', Georgia, serif;
+  --font-sans: 'Nunito Sans', system-ui, sans-serif;
+  --font-display: 'Baloo 2', 'Nunito Sans', system-ui, sans-serif;
+  --font-serif: var(--font-display);
 
-  --bg: #F6F7FB;          /* fondo de la columna */
+  --plumaje: #F2C14E;     /* amarillo de marca */
+  --turquesa: #0E7C7B;
+  --canela: #C2581F;
+  --neblina: #F4F8F7;
+  --rama: #14302F;
+
+  --bg: #FFFFFF;          /* fondo de la columna */
   --surface: #FFFFFF;     /* buscador, filas, tarjetas */
-  --ink: #1A2040;         /* texto principal */
-  --ink-2: #3A4268;       /* texto de párrafos */
-  --muted: #4B5480;       /* texto secundario */
-  --line: #DDE0EE;        /* separadores */
-  --border: #7F89B8;      /* bordes de controles (3:1) */
-  --primary: #22306B;     /* botón principal */
+  --ink: #14302F;         /* texto principal */
+  --ink-2: #24403D;       /* texto de párrafos */
+  --muted: #3F5C59;       /* texto secundario */
+  --line: #D2E3E1;        /* separadores */
+  --border: #6F8E8A;      /* bordes de controles (3:1) */
+  --primary: #0E7C7B;     /* botón principal */
   --on-primary: #FFFFFF;
-  --link: #2B3D8F;
-  --photo: #7C8BBF;       /* lugar sin foto */
-  --star: #B7791F;
-  --selected-row: #E9ECF7;
+  --link: #0E7C7B;
+  --photo: #D2E3E1;       /* lugar sin foto */
+  --star: #B54F1A;
+  --selected-row: #F4F8F7;
 
-  --pin: #22306B;
+  --pin: #0E7C7B;
   --pin-ring: #FFFFFF;
-  --pin-selected: #A8C66C;
+  --pin-selected: #F2C14E;
   --map-chip-bg: #FFFFFF;
-  --map-chip-ink: #1A2040;
-  --map-chip-border: #7F89B8;
-  --map-chip-active-bg: #22306B;
+  --map-chip-ink: #14302F;
+  --map-chip-border: #6F8E8A;
+  --map-chip-active-bg: #14302F;
   --map-chip-active-ink: #FFFFFF;
-  --shadow: 0 6px 20px rgba(26, 32, 64, 0.14);
+  --shadow: 0 6px 20px rgba(20, 48, 47, 0.16);
 }
-
 
 html, body {
   margin: 0;
@@ -44,7 +50,7 @@ html, body {
 button, input, select, textarea { font-family: inherit; }
 
 :focus-visible {
-  outline: 3px solid var(--link);
+  outline: 3px solid var(--canela);
   outline-offset: 2px;
 }
 

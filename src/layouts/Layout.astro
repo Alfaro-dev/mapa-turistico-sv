@@ -9,7 +9,7 @@ interface Props {
 
 const {
   title,
-  description = 'Volcanes, playas, lagos y pueblos de El Salvador en un solo mapa, con cómo llegar y reseñas de quienes ya fueron.',
+  description = 'Goz: volcanes, playas, lagos y pueblos de El Salvador en un mapa, con cómo llegar y reseñas de quienes ya fueron. El Salvador, un país chiquito, pero no te lo acabás.',
 } = Astro.props;
 ---
 
@@ -20,12 +20,13 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content={description} />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#F6F7FB" />
-    <title>{title} | Mapa Turístico El Salvador</title>
+    <meta name="theme-color" content="#F2C14E" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Young+Serif&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   </head>
