@@ -157,7 +157,8 @@ const categories = [
     .panel { position: fixed; z-index: 1000; left: 0; right: 0; bottom: 0; height: 46vh; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,0.18); transition: height .2s ease; padding-bottom: env(safe-area-inset-bottom); }
     .panel.is-collapsed { height: 64px; }
     .panel.is-collapsed .panel-body { display: none; }
-    .panel.is-detail:not(.is-collapsed) { height: 72vh; }
+    .panel.is-detail:not(.is-collapsed) { height: 60vh; }
+    body.detail-open .chips { display: none; }
     .sheet-handle { flex-direction: column; align-items: center; gap: 6px; width: 100%; padding: 8px 0 6px; min-height: 44px; border: 0; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; }
     .grip { width: 40px; height: 5px; border-radius: 3px; background: var(--border); }
     .panel-body { padding: 0 20px 24px; }
@@ -319,8 +320,11 @@ const categories = [
     const zoom = Math.max(map.getZoom(), 12);
     let target = L.latLng(p.lat, p.lng);
     if (isMobile()) {
-      // Que el lugar quede visible arriba de la hoja inferior.
-      const offset = (window.innerHeight * 0.72) / 2 - 40;
+      // Centra el lugar en la franja visible entre el buscador y la hoja inferior.
+      const h = window.innerHeight;
+      const visibleTop = 130;
+      const visibleBottom = h - h * 0.6;
+      const offset = h / 2 - (visibleTop + Math.max(visibleBottom, visibleTop + 40)) / 2;
       const pt = map.project(target, zoom).add([0, offset]);
       target = map.unproject(pt, zoom);
     }
@@ -341,6 +345,7 @@ const categories = [
     if (opts.count !== false) bumpVisit(id);
     history.replaceState(null, '', `#${encodeURIComponent(id)}`);
     panel.classList.add('is-detail');
+    document.body.classList.add('detail-open');
     if (isMobile()) setSheet(true);
   }
 
@@ -349,6 +354,7 @@ const categories = [
     $('detailView').hidden = true;
     $('listView').hidden = false;
     panel.classList.remove('is-detail');
+    document.body.classList.remove('detail-open');
     history.replaceState(null, '', location.pathname);
     renderMarkers();
     $('panelBody').scrollTop = 0;
@@ -454,6 +460,17 @@ const categories = [
   $('locateBtn')?.addEventListener('click', locate);
   $('locateBtnTop')?.addEventListener('click', locate);
 
+  // Encuadra todo el país dejando libre lo que tapan el buscador, las categorías y la hoja.
+  function fitAll() {
+    const pts = allPlaces.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => [p.lat, p.lng]);
+    if (!pts.length) return;
+    const mobile = isMobile();
+    map.fitBounds(L.latLngBounds(pts), {
+      paddingTopLeft: [24, mobile ? 190 : 90],
+      paddingBottomRight: [mobile ? 24 : 80, mobile ? Math.round(window.innerHeight * 0.46) + 16 : 40],
+    });
+  }
+
   // ---------- Carga ----------
   async function load() {
     try {
@@ -473,7 +490,11 @@ const categories = [
       });
       applyFilters();
       const fromHash = decodeURIComponent(location.hash.slice(1));
-      if (fromHash && allPlaces.some((p) => p.id === fromHash)) selectPlace(fromHash, { count: false });
+      if (fromHash && allPlaces.some((p) => p.id === fromHash)) {
+        selectPlace(fromHash, { count: false });
+      } else {
+        fitAll();
+      }
     } catch (err) {
       console.error('Error cargando lugares:', err);
       $('resultCount').textContent = '';
