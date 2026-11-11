@@ -91,6 +91,26 @@ import Layout from '../layouts/Layout.astro';
   let filteredPlaces: Place[] = [];
   let markers: Record<string, any> = {};
   let map: any;
+  let markerLayer: any;
+  let currentCategory = 'all';
+  let currentQuery = '';
+
+  // Minúsculas y sin tildes, para que "volcan" encuentre "Volcán".
+  const normalize = (s: unknown) =>
+    String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+  function applyFilters() {
+    const q = normalize(currentQuery.trim());
+    filteredPlaces = allPlaces.filter(p => {
+      if (currentCategory !== 'all' && p.category !== currentCategory) return false;
+      if (!q) return true;
+      return [p.name, p.department, p.municipality, p.category].some(v => normalize(v).includes(q));
+    });
+    const empty = document.getElementById('emptyState');
+    if (empty) empty.classList.toggle('hidden', filteredPlaces.length > 0);
+    renderPlacesList();
+    renderMarkers();
+  }
 
   async function loadPlaces() {
     try {
@@ -169,16 +189,22 @@ import Layout from '../layouts/Layout.astro';
   function initMap() {
     if (typeof L === 'undefined') return;
 
-    map = L.map('map', { zoomControl: false }).setView([13.7942, -88.8965], 8);
+    // El mapa se crea una sola vez; los filtros solo redibujan los marcadores.
+    if (!map) {
+      map = L.map('map', { zoomControl: false }).setView([13.7942, -88.8965], 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 18
+      }).addTo(map);
+      markerLayer = L.layerGroup().addTo(map);
+    }
+    renderMarkers();
+  }
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-      maxZoom: 18
-    }).addTo(map);
-
-    // Zoom buttons
-    
-    
+  function renderMarkers() {
+    if (!map || !markerLayer) return;
+    markerLayer.clearLayers();
+    markers = {};
 
     filteredPlaces.forEach(place => {
       if (!place.lat || !place.lng) return;
@@ -191,7 +217,7 @@ import Layout from '../layouts/Layout.astro';
         iconAnchor: [16, 16]
       });
 
-      const marker = L.marker([place.lat, place.lng], { icon }).addTo(map);
+      const marker = L.marker([place.lat, place.lng], { icon }).addTo(markerLayer);
       markers[place.id] = marker;
 
       const firstPhoto = safeUrl(place.photos?.[0]);
@@ -212,7 +238,7 @@ import Layout from '../layouts/Layout.astro';
             <button onclick="showPlaceDetail(${jsArg(place.id)})" style="flex:1;background:#10b981;color:white;padding:6px 10px;border-radius:6px;font-size:12px;border:none;cursor:pointer">Ver +</button>
           </div>
         </div>
-      `, { maxWidth: 280 });
+      `, { maxWidth: 280, autoPanPaddingTopLeft: [300, 130], autoPanPaddingBottomRight: [20, 20] });
     });
   }
 
@@ -242,11 +268,11 @@ import Layout from '../layouts/Layout.astro';
       <div style="background:white;border-radius:16px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto">
         <div style="height:120px;background:linear-gradient(135deg,#10b981,#059669);position:relative">
           ${photoUrls[0] ? `<img src="${photoUrls[0]}" alt="" style="width:100%;height:100%;object-fit:cover" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px">${categoryEmojis[place.category] || '📍'}</div>`}
-          <button onclick="closePlaceDetail()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;bg:white/90 hover:bg-white rounded-full;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
+          <button onclick="closePlaceDetail()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;background:rgba(255,255,255,0.9);border-radius:9999px;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
           <span style="position:absolute;bottom:8px;left:8px;background:white;color:${categoryColors[place.category]};padding:2px 8px;border-radius:12px;font-size:11px;text-transform:capitalize">${esc(place.category)}</span>
         </div>
         <div style="padding:16px">
-          <h2 style="font-bold;text-lg;color:#1f2937">${esc(place.name)}</h2>
+          <h2 style="font-weight:700;font-size:18px;color:#1f2937">${esc(place.name)}</h2>
           <p style="font-size:12px;color:#6b7280;margin-top:4px">📍 ${esc(place.municipality)}, ${esc(place.department)}</p>
           <div style="display:flex;gap:8px;margin-top:10px">
             <span style="font-size:11px;background:#10b98120;color:#10b981;padding:4px 8px;border-radius:6px">💰 ${esc(place.price)}</span>
@@ -255,7 +281,7 @@ import Layout from '../layouts/Layout.astro';
           <p style="font-size:13px;color:#4b5563;margin-top:12px;line-height:1.5">${esc(place.description)}</p>
           ${recsHtml ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">${recsHtml}</div>` : ''}
           <div style="margin-top:12px">
-            <p style="font-size:12px;font-semibold;color:#1f2937;margin-bottom:6px">📸 Fotos:</p>
+            <p style="font-size:12px;font-weight:600;color:#1f2937;margin-bottom:6px">📸 Fotos:</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${photosHtml}</div>
           </div>
           ${place.schedule ? `<p style="font-size:12px;color:#6b7280;margin-top:10px">🕐 ${esc(place.schedule)}</p>` : ''}
@@ -279,20 +305,8 @@ import Layout from '../layouts/Layout.astro';
 
   // Search
   document.getElementById('searchInput').addEventListener('input', (e) => {
-    const query = (e.target as HTMLInputElement).value.toLowerCase();
-    filteredPlaces = allPlaces.filter(p => 
-      p.name.toLowerCase().includes(query) || 
-      p.department.toLowerCase().includes(query) ||
-      p.municipality.toLowerCase().includes(query) ||
-      p.category.toLowerCase().includes(query)
-    );
-    
-    renderPlacesList();
-    // Re-init markers
-    Object.values(markers).forEach((m: any) => m.remove());
-    markers = {};
-    initMap();
-      setTimeout(() => map && map.invalidateSize(), 100);
+    currentQuery = (e.target as HTMLInputElement).value;
+    applyFilters();
   });
 
   // Category filter
@@ -307,16 +321,8 @@ import Layout from '../layouts/Layout.astro';
       btn.classList.add('bg-emerald-500', 'text-white');
       btn.classList.remove('bg-gray-100', 'text-gray-700');
 
-      filteredPlaces = cat === 'all' 
-        ? [...allPlaces] 
-        : allPlaces.filter(p => p.category === cat);
-      
-      
-      renderPlacesList();
-      Object.values(markers).forEach((m: any) => m.remove());
-      markers = {};
-      initMap();
-      setTimeout(() => map && map.invalidateSize(), 100);
+      currentCategory = cat || 'all';
+      applyFilters();
     });
   });
 
