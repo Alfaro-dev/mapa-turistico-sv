@@ -1,74 +1,89 @@
 @import "tailwindcss";
 
-@theme {
-  --font-family-sans: 'Poppins', sans-serif;
+/* ---------- Tema Añil: claro por defecto, oscuro según el teléfono ---------- */
+:root {
+  color-scheme: light;
+  --font-sans: 'Instrument Sans', system-ui, sans-serif;
+  --font-serif: 'Young Serif', Georgia, serif;
+
+  --bg: #F6F7FB;          /* fondo de la columna */
+  --surface: #FFFFFF;     /* buscador, filas, tarjetas */
+  --ink: #1A2040;         /* texto principal */
+  --ink-2: #3A4268;       /* texto de párrafos */
+  --muted: #4B5480;       /* texto secundario */
+  --line: #DDE0EE;        /* separadores */
+  --border: #7F89B8;      /* bordes de controles (3:1) */
+  --primary: #22306B;     /* botón principal */
+  --on-primary: #FFFFFF;
+  --link: #2B3D8F;
+  --photo: #7C8BBF;       /* lugar sin foto */
+  --star: #B7791F;
+  --selected-row: #E9ECF7;
+
+  --pin: #22306B;
+  --pin-ring: #FFFFFF;
+  --pin-selected: #A8C66C;
+  --map-chip-bg: #FFFFFF;
+  --map-chip-ink: #1A2040;
+  --map-chip-border: #7F89B8;
+  --map-chip-active-bg: #22306B;
+  --map-chip-active-ink: #FFFFFF;
+  --shadow: 0 6px 20px rgba(26, 32, 64, 0.14);
 }
 
-* {
-  font-family: var(--font-family-sans);
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #111943;
+    --surface: #18215A;
+    --ink: #EEF0FA;
+    --ink-2: #D3D8EE;
+    --muted: #AEB6DA;
+    --line: #2A3570;
+    --border: #5866B0;
+    --primary: #A8C66C;
+    --on-primary: #111943;
+    --link: #A8C66C;
+    --photo: #3A4C9E;
+    --star: #E9C46A;
+    --selected-row: #22306B;
+
+    --pin: #A8C66C;
+    --pin-ring: #0A0F2C;
+    --pin-selected: #FFFFFF;
+    --map-chip-bg: #18215A;
+    --map-chip-ink: #EEF0FA;
+    --map-chip-border: #5866B0;
+    --map-chip-active-bg: #A8C66C;
+    --map-chip-active-ink: #111943;
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  }
 }
 
-#map {
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-.leaflet-popup-content-wrapper {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+button, input, select, textarea { font-family: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
 }
 
-.custom-marker {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: 3px solid white;
-  border-radius: 50%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
 
-.marker-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: white;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  border: 3px solid white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-.popup-content {
-  min-width: 280px;
-}
-
-.popup-content img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.category-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.ad-banner {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  border: 1px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-  margin: 8px 0;
+/* ---------- Leaflet ---------- */
+.leaflet-container { font-family: var(--font-sans); background: var(--bg); }
+.leaflet-control-attribution { font-size: 11px; }
+@media (prefers-color-scheme: dark) {
+  .leaflet-control-attribution { background: rgba(17, 25, 67, 0.8) !important; color: #AEB6DA; }
+  .leaflet-control-attribution a { color: #C7DE95; }
 }

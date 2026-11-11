@@ -1,409 +1,487 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const categories = [
+  { id: 'all', label: 'Todo' },
+  { id: 'montaña', label: 'Volcanes' },
+  { id: 'playa', label: 'Playas' },
+  { id: 'lago', label: 'Lagos' },
+  { id: 'histórico', label: 'Historia' },
+  { id: 'cultura', label: 'Cultura' },
+  { id: 'río', label: 'Ríos' },
+  { id: 'aventura', label: 'Aventura' },
+  { id: 'gastronomía', label: 'Comida' },
+];
 ---
 
-<Layout title="Mapa Turístico">
-  <div id="map" class="fixed inset-0 w-full h-full"></div>
-  
-  <!-- Header flotante -->
-  <header class="absolute top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-sm shadow-md px-2 md:px-4 py-1 md:py-2">
-      <div class="px-2 md:px-4 py-1 md:py-2">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2 md:gap-3 min-w-0">
-            <span class="text-xl md:text-2xl">🇸🇻</span>
-            <div class="min-w-0">
-              <h1 class="text-base md:text-lg font-bold text-gray-800 whitespace-nowrap">Mapa Turístico SV</h1>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 md:gap-3 min-w-0">
-            <input
-              type="search"
-              id="searchInput"
-              placeholder="Buscar..."
-              aria-label="Buscar lugar"
-              class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-28 sm:w-48"
-            />
-            <a href="/admin" class="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">⚙️</a>
-          </div>
-        </div>
-        <!-- Categories -->
-        <div class="flex gap-2 mt-2 overflow-x-auto pb-2">
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500 text-white" data-category="all">🌍 Todos</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-cyan-500 bg-cyan-50" data-category="playa">🏖️ Playa</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-emerald-600 bg-emerald-50" data-category="montaña">🏔️ Montaña</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-amber-600 bg-amber-50" data-category="histórico">🏛️ Histórico</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-red-500 bg-red-50" data-category="gastronomía">🍽️ Gastro</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-purple-500 bg-purple-50" data-category="cultura">🎭 Cultura</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-orange-500 bg-orange-50" data-category="aventura">🧗 Aventura</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-cyan-600 bg-cyan-50" data-category="río">🏞️ Río</button>
-          <button class="category-filter flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-blue-500 bg-blue-50" data-category="lago">🌊 Lago</button>
-        </div>
+<Layout title="Mapa">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand-row">
+        <a href="/" class="brand">Mapa Turístico SV</a>
+        <button type="button" id="locateBtnTop" class="icon-btn only-mobile" aria-label="Lugares cerca de mí">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+        </button>
+        <a href="/admin" class="btn btn-outline btn-sm only-desktop">Iniciar sesión</a>
       </div>
+      <h1 class="headline only-desktop">Todo El Salvador cabe en un mapa.</h1>
+      <label class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input type="search" id="searchInput" placeholder="Busca un volcán, una playa o un pueblo" aria-label="Buscar lugar" autocomplete="off" />
+      </label>
     </header>
 
-    <!-- Sidebar flotante izquierdo -->
-    <!-- En celular: panel inferior que se puede ocultar. En computadora: barra izquierda. -->
-    <aside id="placesPanel" class="absolute left-0 right-0 bottom-0 h-[40vh] rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,0.12)] md:rounded-none md:shadow-none md:right-auto md:top-24 md:h-auto md:w-72 z-[1000] bg-white/95 backdrop-blur-sm overflow-y-auto transition-[height]">
-      <button id="panelToggle" type="button" class="md:hidden sticky top-0 z-10 w-full bg-white/95 py-2 text-sm font-medium text-gray-700 border-b border-gray-100" aria-expanded="true">
-        <span id="panelToggleText">Ocultar lista</span> · <span id="panelCount">0</span> lugares
+    <main class="map-area">
+      <div id="map" role="region" aria-label="Mapa de lugares turísticos"></div>
+      <nav class="chips" aria-label="Categorías">
+        {categories.map((c) => (
+          <button type="button" class="chip" data-category={c.id} aria-pressed={c.id === 'all' ? 'true' : 'false'}>{c.label}</button>
+        ))}
+      </nav>
+      <div class="map-controls">
+        <button type="button" id="locateBtn" class="map-btn only-desktop" aria-label="Lugares cerca de mí">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+        </button>
+        <button type="button" id="zoomIn" class="map-btn only-desktop" aria-label="Acercar">+</button>
+        <button type="button" id="zoomOut" class="map-btn only-desktop" aria-label="Alejar">−</button>
+      </div>
+    </main>
+
+    <aside id="panel" class="panel" aria-label="Lugares">
+      <button type="button" id="sheetHandle" class="sheet-handle only-mobile" aria-expanded="true" aria-controls="panelBody">
+        <span class="grip" aria-hidden="true"></span>
+        <span id="sheetLabel">Ocultar lista</span>
       </button>
-      <div class="p-3">
-        <div id="loadingState" class="text-center py-4">
-          <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-emerald-500 border-t-transparent"></div>
-        </div>
-        <div id="emptyState" class="hidden text-center py-4">
-          <p class="text-gray-500 text-sm">Ningún lugar coincide con la búsqueda.</p>
-        </div>
-        <div id="placesList" class="space-y-2"></div>
+      <div id="panelBody" class="panel-body">
+        <section id="listView">
+          <p id="resultCount" class="muted small" aria-live="polite">Cargando lugares…</p>
+          <p id="emptyState" class="empty" hidden>Ningún lugar coincide. Prueba con otra palabra o elige “Todo”.</p>
+          <p id="errorState" class="empty" hidden>No se pudieron cargar los lugares. Revisa tu conexión y recarga la página.</p>
+          <ul id="placesList" class="place-list"></ul>
+        </section>
+        <section id="detailView" hidden aria-live="polite"></section>
       </div>
     </aside>
-
+  </div>
 </Layout>
 
+<style is:global>
+  .app { position: fixed; inset: 0; display: grid; grid-template-columns: 480px 1fr; grid-template-rows: auto 1fr; grid-template-areas: "top map" "panel map"; background: var(--bg); }
+  .topbar { grid-area: top; padding: 28px 40px 16px; display: flex; flex-direction: column; gap: 18px; background: var(--bg); }
+  .brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brand { font-family: var(--font-serif); font-size: 21px; color: var(--ink); text-decoration: none; white-space: nowrap; }
+  .headline { margin: 4px 0 0; font-family: var(--font-serif); font-weight: 400; font-size: 36px; line-height: 1.08; letter-spacing: -0.4px; color: var(--ink); }
+  .search { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 18px; border-radius: 26px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+  .search input { flex: 1; min-width: 0; border: 0; background: transparent; font-size: 16px; color: var(--ink); outline: none; }
+  .search input::placeholder { color: var(--muted); }
+  .search:focus-within { outline: 3px solid var(--link); outline-offset: 2px; }
+
+  .panel { grid-area: panel; min-height: 0; display: flex; flex-direction: column; background: var(--bg); }
+  .panel-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 40px 32px; overscroll-behavior: contain; }
+  .map-area { grid-area: map; position: relative; min-width: 0; }
+  #map { position: absolute; inset: 0; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 22px; border-radius: 24px; font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid transparent; white-space: nowrap; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); }
+  .btn-outline { background: transparent; color: var(--link); border-color: var(--link); }
+  .btn-sm { height: 44px; padding: 0 16px; font-size: 14px; color: var(--ink); border-color: var(--border); }
+  .icon-btn { width: 44px; height: 44px; border-radius: 22px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; margin: 8px 0; }
+  .empty { margin: 16px 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+
+  .chips { position: absolute; z-index: 500; top: 24px; left: 24px; right: 84px; display: flex; flex-wrap: wrap; gap: 8px; pointer-events: none; }
+  .chip { pointer-events: auto; height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid var(--map-chip-border); background: var(--map-chip-bg); color: var(--map-chip-ink); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); white-space: nowrap; }
+  .chip[aria-pressed="true"] { background: var(--map-chip-active-bg); color: var(--map-chip-active-ink); border-color: var(--map-chip-active-bg); }
+
+  .map-controls { position: absolute; z-index: 500; right: 24px; bottom: 32px; display: flex; flex-direction: column; gap: 8px; }
+  .map-btn { width: 44px; height: 44px; border-radius: 22px; border: 1px solid var(--map-chip-border); background: var(--map-chip-bg); color: var(--map-chip-ink); font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow); }
+
+  .place-list { list-style: none; margin: 0; padding: 0; }
+  .place-row { width: 100%; display: flex; align-items: center; gap: 14px; padding: 10px 8px; margin: 0 -8px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; border-radius: 0; }
+  .place-row:hover { background: var(--selected-row); border-radius: 10px; }
+  .place-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--photo); }
+  .place-name { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .place-meta { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+  .place-rating { margin-left: auto; font-size: 14px; color: var(--ink-2); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 4px; margin: 0 0 8px -4px; border: 0; background: transparent; color: var(--link); font-size: 15px; font-weight: 600; cursor: pointer; }
+  .detail-photo { width: 100%; height: 200px; border-radius: 8px; object-fit: cover; background: var(--photo); display: block; }
+  .detail-kicker { margin: 16px 0 4px; font-size: 14px; color: var(--muted); }
+  .detail-title { margin: 0; font-family: var(--font-serif); font-weight: 400; font-size: 32px; line-height: 1.08; color: var(--ink); }
+  .detail-desc { margin: 10px 0 0; font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 60ch; }
+  .detail-facts { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--ink-2); }
+  .rating-line { margin: 12px 0 0; display: flex; align-items: center; gap: 6px; font-size: 15px; color: var(--ink-2); }
+  .rating-line strong { color: var(--ink); }
+  .star { color: var(--star); }
+  .detail-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .tag { font-size: 13px; padding: 5px 10px; border-radius: 14px; background: var(--selected-row); color: var(--ink-2); }
+  .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
+  .gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; display: block; }
+  .section-title { margin: 28px 0 8px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .review { padding: 12px 0; border-top: 1px solid var(--line); }
+  .review-head { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; }
+  .review-head strong { color: var(--ink); }
+  .review-date { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .review-text { margin: 6px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+  .review-photos { display: flex; gap: 6px; margin-top: 8px; }
+  .review-photos img { width: 72px; height: 54px; object-fit: cover; border-radius: 6px; }
+  .near-row { width: 100%; display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 15px; cursor: pointer; text-align: left; }
+  .near-row span:first-child { font-weight: 600; }
+  .near-row span:last-child { color: var(--muted); white-space: nowrap; }
+
+  /* Marcadores */
+  .pin-wrap { background: none; border: 0; }
+  .pin { width: 16px; height: 16px; border-radius: 50%; background: var(--pin); border: 3px solid var(--pin-ring); box-shadow: 0 1px 4px rgba(0,0,0,0.35); box-sizing: border-box; transition: transform .15s; }
+  .pin-wrap:hover .pin { transform: scale(1.25); }
+  .pin--selected { width: 26px; height: 26px; background: var(--pin-selected); border: 4px solid var(--pin); box-shadow: 0 0 0 6px color-mix(in srgb, var(--pin) 25%, transparent), 0 2px 6px rgba(0,0,0,0.35); }
+  .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #3B82F6; border: 3px solid #FFFFFF; box-shadow: 0 0 0 8px rgba(59,130,246,0.25); box-sizing: border-box; }
+  .leaflet-tooltip.pin-label { background: var(--surface); color: var(--ink); border: 1px solid var(--border); border-radius: 14px; padding: 4px 10px; font-weight: 700; font-size: 13px; box-shadow: var(--shadow); }
+  .leaflet-tooltip.pin-label::before { display: none; }
+
+  .only-mobile { display: none !important; }
+
+  /* ---------- Celular ---------- */
+  @media (max-width: 767px) {
+    .app { display: block; }
+    .only-mobile { display: inline-flex !important; }
+    .only-desktop { display: none !important; }
+    .topbar { position: fixed; z-index: 1000; top: 0; left: 0; right: 0; padding: 12px 16px 10px; gap: 10px; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); box-shadow: 0 1px 0 var(--line); }
+    .brand { font-size: 19px; }
+    .search { height: 48px; border-radius: 24px; }
+    .map-area { position: fixed; inset: 0; }
+    .chips { top: 132px; left: 0; right: 0; padding: 0 16px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip { height: 44px; border-radius: 22px; }
+    .panel { position: fixed; z-index: 1000; left: 0; right: 0; bottom: 0; height: 46vh; border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,0.18); transition: height .2s ease; padding-bottom: env(safe-area-inset-bottom); }
+    .panel.is-collapsed { height: 64px; }
+    .panel.is-collapsed .panel-body { display: none; }
+    .panel.is-detail:not(.is-collapsed) { height: 72vh; }
+    .sheet-handle { flex-direction: column; align-items: center; gap: 6px; width: 100%; padding: 8px 0 6px; min-height: 44px; border: 0; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .grip { width: 40px; height: 5px; border-radius: 3px; background: var(--border); }
+    .panel-body { padding: 0 20px 24px; }
+    .detail-photo { height: 180px; }
+    .detail-title { font-size: 28px; }
+    .detail-actions .btn { flex: 1; }
+  }
+</style>
+
 <script>
-  import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
+  import { collection, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
   import { db } from '../lib/firebase';
-  import { doc, updateDoc, increment } from 'firebase/firestore';
-  import { esc, safeUrl, jsArg, num } from '../lib/escape';
+  import { esc, safeUrl, num } from '../lib/escape';
+
+  declare const L: any;
 
   interface Place {
-    id: string;
-    name: string;
-    category: string;
-    lat: number;
-    lng: number;
-    description: string;
-    municipality: string;
-    department: string;
-    schedule: string;
-    price: string;
-    photos: string[];
-    recommendations: string[];
-    visitCount: number;
+    id: string; name: string; category: string; lat: number; lng: number;
+    description?: string; municipality?: string; department?: string;
+    schedule?: string; price?: string; website?: string;
+    photos?: string[]; recommendations?: string[]; visitCount?: number;
   }
+  interface Review { placeId: string; userName?: string; rating: number; comment?: string; photos?: string[]; visitDate?: string; createdAt?: any; }
 
-  const categoryColors: Record<string, string> = {
-    playa: '#0ea5e9', montaña: '#10b981', histórico: '#f59e0b', gastronomía: '#ef4444',
-    cultura: '#8b5cf6', aventura: '#f97316', río: '#06b6d4', lago: '#3b82f6', other: '#6b7280'
+  const CATEGORY_NAMES: Record<string, string> = {
+    playa: 'Playa', montaña: 'Volcán o montaña', histórico: 'Sitio histórico', gastronomía: 'Comida',
+    cultura: 'Cultura', aventura: 'Aventura', río: 'Río', lago: 'Lago', other: 'Lugar',
   };
 
-  const categoryEmojis: Record<string, string> = {
-    playa: '🏖️', montaña: '🏔️', histórico: '🏛️', gastronomía: '🍽️',
-    cultura: '🎭', aventura: '🧗', río: '🏞️', lago: '🌊', other: '📍'
-  };
+  const $ = (id: string) => document.getElementById(id) as any;
+  const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+  const normalize = (s: unknown) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
   let allPlaces: Place[] = [];
-  let filteredPlaces: Place[] = [];
-  let markers: Record<string, any> = {};
-  let map: any;
-  let markerLayer: any;
+  let filtered: Place[] = [];
+  let reviewsByPlace: Record<string, Review[]> = {};
   let currentCategory = 'all';
   let currentQuery = '';
+  let selectedId: string | null = null;
+  let userPos: [number, number] | null = null;
 
-  // Minúsculas y sin tildes, para que "volcan" encuentre "Volcán".
-  const normalize = (s: unknown) =>
-    String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-
-  function applyFilters() {
-    const q = normalize(currentQuery.trim());
-    filteredPlaces = allPlaces.filter(p => {
-      if (currentCategory !== 'all' && p.category !== currentCategory) return false;
-      if (!q) return true;
-      return [p.name, p.department, p.municipality, p.category].some(v => normalize(v).includes(q));
-    });
-    const empty = document.getElementById('emptyState');
-    if (empty) empty.classList.toggle('hidden', filteredPlaces.length > 0);
-    renderPlacesList();
-    renderMarkers();
+  // ---------- Mapa ----------
+  const map = L.map('map', { zoomControl: false, attributionControl: true }).setView([13.75, -88.9], 9);
+  const TILES = {
+    light: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  };
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  let tiles: any = null;
+  function setTiles() {
+    if (tiles) tiles.remove();
+    tiles = L.tileLayer(darkQuery.matches ? TILES.dark : TILES.light, {
+      maxZoom: 19,
+      subdomains: 'abcd',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
   }
+  setTiles();
+  darkQuery.addEventListener('change', setTiles);
 
-  async function loadPlaces() {
-    try {
-      const placesRef = collection(db, 'places');
-      const q = query(placesRef, orderBy('visitCount', 'desc'));
-      const snapshot = await getDocs(q);
+  const markerLayer = L.layerGroup().addTo(map);
+  let markers: Record<string, any> = {};
+  let meMarker: any = null;
 
-      if (snapshot.empty) {
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('emptyState').classList.remove('hidden');
-        return;
-      }
-
-      allPlaces = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Place));
-      filteredPlaces = [...allPlaces];
-
-      document.getElementById('loadingState').classList.add('hidden');
-      
-
-      renderPlacesList();
-      initMap();
-      setTimeout(() => map && map.invalidateSize(), 100);
-    } catch (err) {
-      console.error('Error loading places:', err);
-      document.getElementById('loadingState').innerHTML = '<p class="text-red-500 text-sm">Error cargando</p>';
-    }
-  }
-
-  const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;
-
-  // Margen para que el popup no quede debajo del encabezado ni de la lista.
-  function popupOptions() {
-    return isDesktop()
-      ? { maxWidth: 280, autoPanPaddingTopLeft: [300, 130], autoPanPaddingBottomRight: [20, 20] }
-      : { maxWidth: 260, autoPanPaddingTopLeft: [10, 110], autoPanPaddingBottomRight: [10, Math.round(window.innerHeight * 0.42)] };
-  }
-
-  const panel = document.getElementById('placesPanel');
-  const panelToggle = document.getElementById('panelToggle');
-  function setPanelOpen(open: boolean) {
-    if (!panel || !panelToggle) return;
-    panel.classList.toggle('h-[40vh]', open);
-    panel.classList.toggle('h-10', !open);
-    panel.classList.toggle('overflow-y-auto', open);
-    panel.classList.toggle('overflow-hidden', !open);
-    panelToggle.setAttribute('aria-expanded', String(open));
-    document.getElementById('panelToggleText').textContent = open ? 'Ocultar lista' : 'Ver lista';
-  }
-  panelToggle?.addEventListener('click', () => setPanelOpen(panelToggle.getAttribute('aria-expanded') !== 'true'));
-
-  function renderPlacesList() {
-    const container = document.getElementById('placesList');
-    if (!container) return;
-    const count = document.getElementById('panelCount');
-    if (count) count.textContent = String(filteredPlaces.length);
-
-    container.innerHTML = filteredPlaces.map(place => `
-      <div class="place-card bg-white border border-gray-100 rounded-lg p-2 cursor-pointer hover:shadow-md hover:border-emerald-300 transition" data-id="${esc(place.id)}" data-lat="${num(place.lat)}" data-lng="${num(place.lng)}">
-        <div class="flex items-center gap-2">
-          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0" style="background-color: ${categoryColors[place.category] || '#10b981'}20">
-            ${safeUrl(place.photos?.[0]) ? `<img src="${safeUrl(place.photos[0])}" alt="" class="w-full h-full object-cover rounded-lg" onerror="this.remove()">` : categoryEmojis[place.category] || '📍'}
-          </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-medium text-gray-800 text-sm truncate">${esc(place.name)}</h3>
-            <p class="text-xs text-gray-500 truncate">${esc(place.municipality)}, ${esc(place.department)}</p>
-          </div>
-
-        </div>
-      </div>
-    `).join('');
-
-    container.querySelectorAll('.place-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = (card as HTMLElement).dataset.id;
-        const lat = parseFloat((card as HTMLElement).dataset.lat);
-        const lng = parseFloat((card as HTMLElement).dataset.lng);
-
-        if (map && id && lat && lng) {
-          // En celular se oculta la lista para ver el lugar en el mapa.
-          if (!isDesktop()) setPanelOpen(false);
-          map.flyTo([lat, lng], 14, { duration: 1 });
-          // Increment visit count
-          incrementVisit(id);
-          // Abre el popup al terminar el vuelo, para que no quede bajo el encabezado.
-          map.once('moveend', () => markers[id]?.openPopup());
-        }
-      });
-    });
-  }
-
-  async function incrementVisit(placeId: string) {
-    try {
-      const placeRef = doc(db, 'places', placeId);
-      await updateDoc(placeRef, { visitCount: increment(1) });
-    } catch (err) {
-      // Silent fail
-    }
-  }
-
-  function initMap() {
-    if (typeof L === 'undefined') return;
-
-    // El mapa se crea una sola vez; los filtros solo redibujan los marcadores.
-    if (!map) {
-      map = L.map('map', { zoomControl: false }).setView([13.7942, -88.8965], 8);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 18
-      }).addTo(map);
-      markerLayer = L.layerGroup().addTo(map);
-    }
-    renderMarkers();
-  }
+  const pinIcon = (selected: boolean) => L.divIcon({
+    className: 'pin-wrap',
+    html: `<div class="pin${selected ? ' pin--selected' : ''}"></div>`,
+    iconSize: selected ? [26, 26] : [16, 16],
+    iconAnchor: selected ? [13, 13] : [8, 8],
+  });
 
   function renderMarkers() {
-    if (!map || !markerLayer) return;
     markerLayer.clearLayers();
     markers = {};
-
-    filteredPlaces.forEach(place => {
-      if (!place.lat || !place.lng) return;
-
-      const emoji = categoryEmojis[place.category] || '📍';
-      const icon = L.divIcon({
-        className: 'custom-marker',
-        html: `<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:white;border:2px solid ${categoryColors[place.category] || '#10b981'};box-shadow:0 2px 8px rgba(0,0,0,0.2)">${emoji}</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      });
-
-      const marker = L.marker([place.lat, place.lng], { icon }).addTo(markerLayer);
-      markers[place.id] = marker;
-
-      const firstPhoto = safeUrl(place.photos?.[0]);
-      const photosHtml = firstPhoto
-        ? `<img src="${firstPhoto}" alt="" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px" />`
-        : '';
-
-      marker.bindPopup(`
-        <div style="min-width:240px">
-          ${photosHtml}
-          <span class="text-xs px-2 py-0.5 rounded-full capitalize" style="background-color:${categoryColors[place.category]}20;color:${categoryColors[place.category]}">${esc(place.category)}</span>
-          <h3 style="font-weight:bold;color:#1f2937;margin-top:6px;font-size:16px">${esc(place.name)}</h3>
-          <p style="font-size:12px;color:#6b7280">📍 ${esc(place.municipality)}, ${esc(place.department)}</p>
-          <p style="font-size:12px;color:#4b5563;margin-top:6px">${esc(String(place.description ?? '').substring(0, 60))}...</p>
-          <p style="font-size:12px;font-weight:600;color:#059669;margin-top:6px">💰 ${esc(place.price)}</p>
-          <div style="display:flex;gap:6px;margin-top:10px">
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${num(place.lat)},${num(place.lng)}" target="_blank" rel="noopener" style="flex:1;background:#3b82f6;color:white;padding:6px 10px;border-radius:6px;font-size:12px;text-align:center;text-decoration:none">📍 Llegar</a>
-            <button onclick="showPlaceDetail(${jsArg(place.id)})" style="flex:1;background:#10b981;color:white;padding:6px 10px;border-radius:6px;font-size:12px;border:none;cursor:pointer">Ver +</button>
-          </div>
-        </div>
-      `, popupOptions());
+    filtered.forEach((p) => {
+      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
+      const sel = p.id === selectedId;
+      const m = L.marker([p.lat, p.lng], { icon: pinIcon(sel), keyboard: true, title: p.name, alt: p.name, zIndexOffset: sel ? 1000 : 0 });
+      m.bindTooltip(esc(p.name), { direction: 'top', offset: [0, sel ? -14 : -9], className: 'pin-label', permanent: sel });
+      m.on('click', () => selectPlace(p.id));
+      m.addTo(markerLayer);
+      markers[p.id] = m;
     });
   }
 
-  (window as any).showPlaceDetail = function(placeId: string) {
-    const place = filteredPlaces.find(p => p.id === placeId);
-    if (!place) return;
+  $('zoomIn')?.addEventListener('click', () => map.zoomIn());
+  $('zoomOut')?.addEventListener('click', () => map.zoomOut());
 
-    // Close the popup first
-    if (markers[placeId]) {
-      markers[placeId].closePopup();
+  // ---------- Panel (hoja inferior en celular) ----------
+  const panel = $('panel');
+  function setSheet(open: boolean) {
+    panel.classList.toggle('is-collapsed', !open);
+    $('sheetHandle').setAttribute('aria-expanded', String(open));
+    $('sheetLabel').textContent = open ? 'Ocultar lista' : (selectedId ? 'Ver ficha' : `Ver ${filtered.length} lugares`);
+  }
+  $('sheetHandle').addEventListener('click', () => setSheet(panel.classList.contains('is-collapsed')));
+
+  // ---------- Utilidades ----------
+  function distanceKm(a: [number, number], b: [number, number]) {
+    const R = 6371, toRad = (d: number) => (d * Math.PI) / 180;
+    const dLat = toRad(b[0] - a[0]), dLng = toRad(b[1] - a[1]);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  const fmtKm = (km: number) => (km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`);
+  const placeMeta = (p: Place) => [p.municipality, p.department].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ');
+
+  function ratingOf(id: string) {
+    const list = reviewsByPlace[id] || [];
+    if (!list.length) return null;
+    return { avg: list.reduce((s, r) => s + num(r.rating), 0) / list.length, count: list.length };
+  }
+  const starSvg = '<svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l2.7 5.6 6.2.9-4.5 4.4 1 6.1L12 17.1 6.6 20l1-6.1L3.1 9.5l6.2-.9z"></path></svg>';
+
+  // ---------- Lista ----------
+  function applyFilters() {
+    const q = normalize(currentQuery.trim());
+    filtered = allPlaces.filter((p) => {
+      if (currentCategory !== 'all' && p.category !== currentCategory) return false;
+      if (!q) return true;
+      return [p.name, p.department, p.municipality, CATEGORY_NAMES[p.category], p.category].some((v) => normalize(v).includes(q));
+    });
+    if (userPos) {
+      filtered.sort((a, b) => distanceKm(userPos!, [a.lat, a.lng]) - distanceKm(userPos!, [b.lat, b.lng]));
     }
+    renderList();
+    renderMarkers();
+  }
 
-    const photoUrls = (place.photos || []).map((p: string) => safeUrl(p)).filter(Boolean);
-    const photosHtml = photoUrls.length
-      ? photoUrls.map((p: string) => `<a href="${p}" target="_blank" rel="noopener"><img src="${p}" alt="" style="width:100%;height:80px;object-fit:cover;border-radius:6px" /></a>`).join('')
-      : '<p class="text-gray-400 text-xs">Sin fotos</p>';
+  function renderList() {
+    const n = filtered.length;
+    $('resultCount').textContent = userPos
+      ? `${n} ${n === 1 ? 'lugar' : 'lugares'}, del más cercano al más lejano`
+      : `${n} ${n === 1 ? 'lugar' : 'lugares'} en el mapa`;
+    $('emptyState').hidden = n > 0;
+    $('placesList').innerHTML = filtered.map((p) => {
+      const photo = safeUrl(p.photos?.[0]);
+      const r = ratingOf(p.id);
+      const extra = userPos ? fmtKm(distanceKm(userPos, [p.lat, p.lng])) : (r ? `${starSvg}${r.avg.toFixed(1)}` : '');
+      return `<li><button type="button" class="place-row" data-id="${esc(p.id)}">
+        ${photo ? `<img class="place-thumb" src="${photo}" alt="" loading="lazy">` : '<span class="place-thumb" aria-hidden="true"></span>'}
+        <span style="min-width:0">
+          <p class="place-name">${esc(p.name)}</p>
+          <p class="place-meta">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` en ${esc(placeMeta(p))}` : ''}</p>
+        </span>
+        ${extra ? `<span class="place-rating">${extra}</span>` : ''}
+      </button></li>`;
+    }).join('');
+    if (isMobile() && panel.classList.contains('is-collapsed')) setSheet(false);
+  }
 
-    const recsHtml = place.recommendations?.length 
-      ? place.recommendations.map((r: string) => `<span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">${esc(r)}</span>`).join('')
-      : '';
+  $('placesList').addEventListener('click', (e: Event) => {
+    const row = (e.target as HTMLElement).closest('.place-row') as HTMLElement | null;
+    if (row?.dataset.id) selectPlace(row.dataset.id);
+  });
 
-    // Create and show detail modal
-    const modal = document.createElement('div');
-    modal.id = 'detailModal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px';
-    modal.innerHTML = `
-      <div style="background:white;border-radius:16px;max-width:400px;width:100%;max-height:90vh;overflow-y:auto">
-        <div style="height:120px;background:linear-gradient(135deg,#10b981,#059669);position:relative">
-          ${photoUrls[0] ? `<img src="${photoUrls[0]}" alt="" style="width:100%;height:100%;object-fit:cover" />` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:48px">${categoryEmojis[place.category] || '📍'}</div>`}
-          <button onclick="closePlaceDetail()" style="position:absolute;top:8px;right:8px;width:32px;height:32px;background:rgba(255,255,255,0.9);border-radius:9999px;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">✕</button>
-          <span style="position:absolute;bottom:8px;left:8px;background:white;color:${categoryColors[place.category]};padding:2px 8px;border-radius:12px;font-size:11px;text-transform:capitalize">${esc(place.category)}</span>
-        </div>
-        <div style="padding:16px">
-          <h2 style="font-weight:700;font-size:18px;color:#1f2937">${esc(place.name)}</h2>
-          <p style="font-size:12px;color:#6b7280;margin-top:4px">📍 ${esc(place.municipality)}, ${esc(place.department)}</p>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <span style="font-size:11px;background:#10b98120;color:#10b981;padding:4px 8px;border-radius:6px">💰 ${esc(place.price)}</span>
+  // ---------- Ficha ----------
+  function flyToPlace(p: Place) {
+    const zoom = Math.max(map.getZoom(), 12);
+    let target = L.latLng(p.lat, p.lng);
+    if (isMobile()) {
+      // Que el lugar quede visible arriba de la hoja inferior.
+      const offset = (window.innerHeight * 0.72) / 2 - 40;
+      const pt = map.project(target, zoom).add([0, offset]);
+      target = map.unproject(pt, zoom);
+    }
+    map.flyTo(target, zoom, { duration: 0.8 });
+  }
 
-          </div>
-          <p style="font-size:13px;color:#4b5563;margin-top:12px;line-height:1.5">${esc(place.description)}</p>
-          ${recsHtml ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">${recsHtml}</div>` : ''}
-          <div style="margin-top:12px">
-            <p style="font-size:12px;font-weight:600;color:#1f2937;margin-bottom:6px">📸 Fotos:</p>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${photosHtml}</div>
-          </div>
-          ${place.schedule ? `<p style="font-size:12px;color:#6b7280;margin-top:10px">🕐 ${esc(place.schedule)}</p>` : ''}
-          <div style="display:flex;gap:8px;margin-top:14px">
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${num(place.lat)},${num(place.lng)}" target="_blank" rel="noopener" style="flex:1;background:#3b82f6;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;text-decoration:none">📍 Cómo llegar</a>
-          </div>
-          <div style="margin-top:18px;border-top:1px solid #f3f4f6;padding-top:14px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
-              <p style="font-size:14px;font-weight:600;color:#1f2937">⭐ Reseñas <span id="reviewsSummary" style="font-weight:400;color:#6b7280;font-size:12px"></span></p>
-              <a href="/admin?lugar=${encodeURIComponent(place.id)}" style="font-size:12px;color:#059669;font-weight:500;text-decoration:none">Escribir reseña</a>
-            </div>
-            <div id="placeReviews"><p style="font-size:12px;color:#9ca3af">Cargando reseñas...</p></div>
-          </div>
-        </div>
+  async function bumpVisit(id: string) {
+    try { await updateDoc(doc(db, 'places', id), { visitCount: increment(1) }); } catch { /* sin conexión o sin permiso: no es grave */ }
+  }
+
+  function selectPlace(id: string, opts: { fly?: boolean; count?: boolean } = {}) {
+    const p = allPlaces.find((x) => x.id === id);
+    if (!p) return;
+    selectedId = id;
+    renderMarkers();
+    renderDetail(p);
+    if (opts.fly !== false) flyToPlace(p);
+    if (opts.count !== false) bumpVisit(id);
+    history.replaceState(null, '', `#${encodeURIComponent(id)}`);
+    panel.classList.add('is-detail');
+    if (isMobile()) setSheet(true);
+  }
+
+  function closeDetail() {
+    selectedId = null;
+    $('detailView').hidden = true;
+    $('listView').hidden = false;
+    panel.classList.remove('is-detail');
+    history.replaceState(null, '', location.pathname);
+    renderMarkers();
+    $('panelBody').scrollTop = 0;
+  }
+
+  function renderDetail(p: Place) {
+    const photos = (p.photos || []).map((u) => safeUrl(u)).filter(Boolean);
+    const r = ratingOf(p.id);
+    const reviews = [...(reviewsByPlace[p.id] || [])].sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+    const near = allPlaces
+      .filter((x) => x.id !== p.id)
+      .map((x) => ({ x, d: distanceKm([p.lat, p.lng], [x.lat, x.lng]) }))
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 3);
+    const stars = (n: number) => '★'.repeat(Math.max(0, Math.min(5, Math.round(n)))) + '☆'.repeat(5 - Math.max(0, Math.min(5, Math.round(n))));
+    const directions = `https://www.google.com/maps/dir/?api=1&destination=${num(p.lat)},${num(p.lng)}`;
+
+    $('detailView').innerHTML = `
+      <button type="button" class="back-btn" id="backBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+        Volver a la lista
+      </button>
+      ${photos[0] ? `<img class="detail-photo" src="${photos[0]}" alt="Foto de ${esc(p.name)}">` : '<div class="detail-photo" aria-hidden="true"></div>'}
+      <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` en ${esc(placeMeta(p))}` : ''}</p>
+      <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(p.name)}</h2>
+      ${r
+        ? `<p class="rating-line">${starSvg}<span><strong>${r.avg.toFixed(1)}</strong> de 5, ${r.count} ${r.count === 1 ? 'reseña' : 'reseñas'}</span></p>`
+        : '<p class="rating-line">Aún sin reseñas</p>'}
+      ${p.description ? `<p class="detail-desc">${esc(p.description)}</p>` : ''}
+      <ul class="detail-facts">
+        ${p.price ? `<li>Entrada: ${esc(p.price)}</li>` : ''}
+        ${p.schedule ? `<li>Horario: ${esc(p.schedule)}</li>` : ''}
+        ${safeUrl(p.website) ? `<li><a href="${safeUrl(p.website)}" target="_blank" rel="noopener" style="color:var(--link)">Sitio web</a></li>` : ''}
+      </ul>
+      <div class="detail-actions">
+        <a class="btn btn-primary" href="${directions}" target="_blank" rel="noopener">Cómo llegar</a>
+        <a class="btn btn-outline" href="/admin?lugar=${encodeURIComponent(p.id)}">Escribir reseña</a>
       </div>
+      ${p.recommendations?.length ? `<div class="tags">${p.recommendations.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+      ${photos.length > 1 ? `<div class="gallery">${photos.slice(1, 7).map((u) => `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
+
+      <h3 class="section-title">Reseñas</h3>
+      ${reviews.length ? reviews.map((rv) => {
+        const rp = (rv.photos || []).map((u) => safeUrl(u)).filter(Boolean).slice(0, 4);
+        return `<div class="review">
+          <div class="review-head"><strong>${esc(rv.userName || 'Visitante')}</strong><span class="star" aria-label="${num(rv.rating)} de 5">${stars(num(rv.rating))}</span></div>
+          ${rv.visitDate ? `<p class="review-date">Visitó el ${esc(rv.visitDate)}</p>` : ''}
+          ${rv.comment ? `<p class="review-text">${esc(rv.comment)}</p>` : ''}
+          ${rp.length ? `<div class="review-photos">${rp.map((u) => `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
+        </div>`;
+      }).join('') : '<p class="empty" style="margin-top:4px">Nadie ha contado su visita todavía. ¿Ya fuiste? Escribe la primera reseña.</p>'}
+
+      ${near.length ? `<h3 class="section-title">Cerca de aquí</h3>${near.map(({ x, d }) => `<button type="button" class="near-row" data-id="${esc(x.id)}"><span>${esc(x.name)}</span><span>${fmtKm(d)}</span></button>`).join('')}` : ''}
     `;
-    document.body.appendChild(modal);
-    loadPlaceReviews(place.id);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closePlaceDetail();
-    });
-  };
-
-  // Reseñas públicas del lugar (sin orderBy para no necesitar un índice compuesto).
-  async function loadPlaceReviews(placeId: string) {
-    const box = document.getElementById('placeReviews');
-    const summary = document.getElementById('reviewsSummary');
-    if (!box) return;
-    try {
-      const snap = await getDocs(query(collection(db, 'reviews'), where('placeId', '==', placeId)));
-      const reviews = snap.docs
-        .map((d) => d.data())
-        .sort((a: any, b: any) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-
-      if (!document.getElementById('placeReviews')) return; // se cerró la ficha
-      if (!reviews.length) {
-        box.innerHTML = '<p style="font-size:12px;color:#6b7280">Aún no hay reseñas. ¡Sé el primero en contar tu visita!</p>';
-        return;
-      }
-
-      const stars = (r: number) => {
-        const n = Math.max(0, Math.min(5, Math.round(num(r))));
-        return '★'.repeat(n) + '☆'.repeat(5 - n);
-      };
-      const avg = reviews.reduce((s: number, r: any) => s + num(r.rating), 0) / reviews.length;
-      if (summary) summary.textContent = `${avg.toFixed(1)} de 5 · ${reviews.length} ${reviews.length === 1 ? 'reseña' : 'reseñas'}`;
-
-      box.innerHTML = reviews.map((r: any) => {
-        const photos = (r.photos || []).map((p: string) => safeUrl(p)).filter(Boolean).slice(0, 4);
-        return `
-          <div style="padding:10px 0;border-bottom:1px solid #f3f4f6">
-            <div style="display:flex;justify-content:space-between;gap:8px">
-              <p style="font-size:13px;font-weight:600;color:#1f2937">${esc(r.userName || 'Visitante')}</p>
-              <span style="color:#f59e0b;font-size:13px;letter-spacing:1px" aria-label="${num(r.rating)} de 5">${stars(r.rating)}</span>
-            </div>
-            ${r.visitDate ? `<p style="font-size:11px;color:#9ca3af">Visitó el ${esc(r.visitDate)}</p>` : ''}
-            <p style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.45">${esc(r.comment)}</p>
-            ${photos.length ? `<div style="display:flex;gap:6px;margin-top:6px">${photos.map((p: string) => `<a href="${p}" target="_blank" rel="noopener"><img src="${p}" alt="" style="width:64px;height:48px;object-fit:cover;border-radius:6px" loading="lazy"></a>`).join('')}</div>` : ''}
-          </div>`;
-      }).join('');
-    } catch (err) {
-      console.error('Error cargando reseñas:', err);
-      box.innerHTML = '<p style="font-size:12px;color:#ef4444">No se pudieron cargar las reseñas.</p>';
-    }
+    $('listView').hidden = true;
+    $('detailView').hidden = false;
+    $('panelBody').scrollTop = 0;
+    $('backBtn').addEventListener('click', closeDetail);
+    $('detailView').querySelectorAll('.near-row').forEach((b: HTMLElement) => b.addEventListener('click', () => selectPlace(b.dataset.id!)));
+    if (!isMobile()) ($('detailTitle') as HTMLElement).focus({ preventScroll: true });
   }
 
-  (window as any).closePlaceDetail = function() {
-    const modal = document.getElementById('detailModal');
-    if (modal) modal.remove();
-  };
-
-  // Search
-  document.getElementById('searchInput').addEventListener('input', (e) => {
+  // ---------- Filtros ----------
+  $('searchInput').addEventListener('input', (e: Event) => {
     currentQuery = (e.target as HTMLInputElement).value;
+    if (selectedId) closeDetail();
     applyFilters();
   });
 
-  // Category filter
-  document.querySelectorAll('.category-filter').forEach(btn => {
+  document.querySelectorAll('.chip').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const cat = (btn as HTMLElement).dataset.category;
-      
-      document.querySelectorAll('.category-filter').forEach(b => {
-        b.classList.remove('bg-emerald-500', 'text-white');
-        b.classList.add('bg-gray-100', 'text-gray-700');
-      });
-      btn.classList.add('bg-emerald-500', 'text-white');
-      btn.classList.remove('bg-gray-100', 'text-gray-700');
-
-      currentCategory = cat || 'all';
+      currentCategory = (btn as HTMLElement).dataset.category || 'all';
+      document.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      if (selectedId) closeDetail();
       applyFilters();
+      if (isMobile()) setSheet(true);
     });
   });
 
-  loadPlaces();
+  // ---------- Cerca de mí ----------
+  function locate() {
+    if (!navigator.geolocation) {
+      $('resultCount').textContent = 'Tu navegador no permite ver tu ubicación.';
+      return;
+    }
+    $('resultCount').textContent = 'Buscando tu ubicación…';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userPos = [pos.coords.latitude, pos.coords.longitude];
+        if (meMarker) meMarker.remove();
+        meMarker = L.marker(userPos, { icon: L.divIcon({ className: 'pin-wrap', html: '<div class="me-dot"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, zIndexOffset: 2000 }).addTo(map);
+        if (selectedId) closeDetail();
+        applyFilters();
+        map.flyTo(userPos, 11, { duration: 0.8 });
+        if (isMobile()) setSheet(true);
+      },
+      () => {
+        $('resultCount').textContent = 'No se pudo obtener tu ubicación. Revisa el permiso de ubicación del navegador.';
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  }
+  $('locateBtn')?.addEventListener('click', locate);
+  $('locateBtnTop')?.addEventListener('click', locate);
+
+  // ---------- Carga ----------
+  async function load() {
+    try {
+      const [placesSnap, reviewsSnap] = await Promise.all([
+        getDocs(collection(db, 'places')),
+        getDocs(collection(db, 'reviews')).catch(() => null),
+      ]);
+      if (placesSnap.empty) throw new Error('Sin lugares');
+      allPlaces = placesSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() } as Place))
+        .map((p) => ({ ...p, lat: Number(p.lat), lng: Number(p.lng) }))
+        .sort((a, b) => num(b.visitCount) - num(a.visitCount));
+      reviewsByPlace = {};
+      reviewsSnap?.docs.forEach((d) => {
+        const r = d.data() as Review;
+        (reviewsByPlace[r.placeId] ||= []).push(r);
+      });
+      applyFilters();
+      const fromHash = decodeURIComponent(location.hash.slice(1));
+      if (fromHash && allPlaces.some((p) => p.id === fromHash)) selectPlace(fromHash, { count: false });
+    } catch (err) {
+      console.error('Error cargando lugares:', err);
+      $('resultCount').textContent = '';
+      $('errorState').hidden = false;
+    }
+  }
+
+  if (isMobile()) $('searchInput').placeholder = 'Busca un lugar';
+  window.addEventListener('resize', () => map.invalidateSize());
+  load();
 </script>
