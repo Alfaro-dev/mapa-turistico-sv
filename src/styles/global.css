@@ -84,6 +84,7 @@ button, input, select, textarea { font-family: inherit; }
 .leaflet-container { font-family: var(--font-sans); background: var(--bg); }
 .leaflet-control-attribution { font-size: 11px; }
 @media (prefers-color-scheme: dark) {
+  .leaflet-tile-pane { filter: invert(1) hue-rotate(195deg) brightness(0.9) contrast(0.92) saturate(0.55); }
   .leaflet-control-attribution { background: rgba(17, 25, 67, 0.8) !important; color: #AEB6DA; }
   .leaflet-control-attribution a { color: #C7DE95; }
 }
