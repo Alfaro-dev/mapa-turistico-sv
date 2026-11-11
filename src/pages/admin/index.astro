@@ -2,22 +2,22 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Admin - Mi Salvador Secreto">
+<Layout title="Admin - Mapa Turístico SV">
   <div class="min-h-screen bg-gray-100">
     <header class="bg-white shadow-md">
-      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <span class="text-3xl">🇸🇻</span>
-          <div>
-            <h1 class="text-xl font-bold text-gray-800">Admin - Mi Salvador Secreto</h1>
-            <p class="text-xs text-gray-500">Gestión de lugares y reseñas</p>
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-2xl">🇸🇻</span>
+          <div class="min-w-0">
+            <h1 class="text-lg font-bold text-gray-800 whitespace-nowrap">Admin · Mapa Turístico SV</h1>
+            <p class="text-xs text-gray-500">Lugares y reseñas</p>
           </div>
         </div>
-        <div class="flex items-center gap-4">
-          <a href="/" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">← Volver al Mapa</a>
-          <span id="userEmail" class="text-sm text-gray-600 hidden"></span>
-          <button id="logoutBtn" class="hidden px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">Cerrar Sesión</button>
-          <button id="loginBtn" class="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">🔑 Iniciar Sesión</button>
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="/" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 whitespace-nowrap">← Mapa</a>
+          <span id="userEmail" class="text-sm text-gray-600 hidden truncate max-w-[14rem]"></span>
+          <button id="logoutBtn" class="hidden px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 whitespace-nowrap">Cerrar sesión</button>
+          <button id="loginBtn" class="px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 whitespace-nowrap">Iniciar sesión</button>
         </div>
       </div>
     </header>
@@ -26,7 +26,7 @@ import Layout from '../../layouts/Layout.astro';
       <!-- Auth -->
       <div id="authSection" class="bg-white rounded-xl shadow-lg p-8 mb-8">
         <h2 class="text-xl font-bold text-gray-800 mb-4">🔐 Iniciar Sesión</h2>
-        <p class="text-gray-600 mb-4">Iniciá sesión con Google para agregar lugares y reseñas.</p>
+        <p class="text-gray-600 mb-4">Inicia sesión con Google para escribir reseñas.</p>
         <button id="googleLogin" class="flex items-center gap-3 px-6 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 transition">
           <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.954,4,4,12.954,4,24c0,11.046,8.954,20,20,20c11.046,0,20-8.954,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.562,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.529,35.491,26.854,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,41.07,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
           <span class="font-medium">Continuar con Google</span>
@@ -38,9 +38,10 @@ import Layout from '../../layouts/Layout.astro';
         
         <!-- Add Place Form (solo administradores) -->
         <div id="placeAdminCard" class="hidden bg-white rounded-xl shadow-lg p-8">
-          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <span>➕</span> Agregar Lugar
-          </h2>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+            <h2 id="placeFormTitle" class="text-xl font-bold text-gray-800">➕ Agregar lugar</h2>
+            <button type="button" id="cancelEditBtn" class="hidden px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">Cancelar edición</button>
+          </div>
           
           <form id="placeForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -84,8 +85,16 @@ import Layout from '../../layouts/Layout.astro';
                 <input type="text" id="placePrice" required placeholder="$3 o Gratis" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Website (opcional)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Horario</label>
+                <input type="text" id="placeSchedule" placeholder="Martes a domingo, 9:00 a. m. - 4:00 p. m." class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sitio web (opcional)</label>
                 <input type="url" id="placeWebsite" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Qué hacer (separado por comas)</label>
+                <input type="text" id="placeRecommendations" placeholder="Senderismo, Mirador, Fotografía" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
               </div>
             </div>
             
@@ -104,10 +113,22 @@ import Layout from '../../layouts/Layout.astro';
               </label>
             </div>
             
-            <button type="submit" class="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600">
-              💾 Guardar Lugar
-            </button>
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="submit" id="placeSubmitBtn" class="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 disabled:opacity-50">
+                💾 Guardar lugar
+              </button>
+              <p id="placeStatus" class="text-sm text-gray-600" role="status"></p>
+            </div>
           </form>
+        </div>
+
+        <!-- Lista de lugares (solo administradores) -->
+        <div id="placesAdminCard" class="hidden bg-white rounded-xl shadow-lg p-8">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 class="text-xl font-bold text-gray-800">📍 Lugares (<span id="placesCount">0</span>)</h2>
+            <input type="text" id="placesFilter" placeholder="Buscar lugar..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64" />
+          </div>
+          <div id="placesAdminList" class="divide-y divide-gray-100"></div>
         </div>
 
         <!-- Add Review Section -->
@@ -133,9 +154,9 @@ import Layout from '../../layouts/Layout.astro';
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">⭐ Calificación *</label>
               <div class="flex gap-2">
-                {[1,2,3,4,5].map(n => `
-                  <button type="button" class="star-btn w-12 h-12 text-2xl rounded-lg border-2 border-gray-200 hover:border-amber-400 transition" data-rating="${n}">⭐</button>
-                `).join('')}
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button type="button" class="star-btn w-12 h-12 text-2xl rounded-lg border-2 border-gray-200 hover:border-amber-400 transition" data-rating={n} aria-label={`${n} de 5`}>⭐</button>
+                ))}
               </div>
               <input type="hidden" id="reviewRating" value="0" />
             </div>
@@ -185,8 +206,16 @@ import Layout from '../../layouts/Layout.astro';
   import { uploadImage } from '../../lib/cloudinary';
   
   let currentUser: any = null;
+  let isAdmin = false;
   let placePhotos: string[] = [];
   let reviewPhotos: string[] = [];
+  let allPlaces: any[] = [];
+  let editingId: string | null = null;
+  let uploading = 0;
+
+  const $ = (id: string) => document.getElementById(id) as any;
+  const normalize = (s: unknown) =>
+    String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   
   // Auth elements
   const authSection = document.getElementById('authSection');
@@ -220,13 +249,13 @@ import Layout from '../../layouts/Layout.astro';
       userEmail.classList.remove('hidden');
       // El formulario de lugares solo aparece si existe admins/{uid}.
       // Las reglas de Firestore son las que de verdad lo impiden.
-      let isAdmin = false;
       try {
         isAdmin = (await getDoc(doc(db, 'admins', user.uid))).exists();
       } catch {
         isAdmin = false;
       }
       document.getElementById('placeAdminCard')?.classList.toggle('hidden', !isAdmin);
+      document.getElementById('placesAdminCard')?.classList.toggle('hidden', !isAdmin);
       await loadPlacesForReview();
       await loadMyReviews();
     } else {
@@ -262,9 +291,12 @@ import Layout from '../../layouts/Layout.astro';
   
   // Upload place photo
   placePhotoInput?.addEventListener('change', async (e) => {
-    const files = (e.target as HTMLInputElement).files;
+    const input = e.target as HTMLInputElement;
+    const files = input.files;
     if (!files?.length) return;
-    
+
+    uploading++;
+    $('placeStatus').textContent = 'Subiendo foto...';
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
@@ -275,7 +307,9 @@ import Layout from '../../layouts/Layout.astro';
         alert(`${file.name}: ${(err as Error).message}`);
       }
     }
-    
+    uploading--;
+    $('placeStatus').textContent = '';
+    input.value = '';
     renderPlacePhotos();
   });
   
@@ -298,47 +332,147 @@ import Layout from '../../layouts/Layout.astro';
   placeForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    if (uploading > 0) {
+      alert('Espera a que termine de subir la foto.');
+      return;
+    }
     if (placePhotos.length === 0) {
       alert('Agrega al menos una foto del lugar');
       return;
     }
-    
-    const placeData = {
-      name: (document.getElementById('placeName') as HTMLInputElement).value,
-      category: (document.getElementById('placeCategory') as HTMLSelectElement).value,
-      municipality: (document.getElementById('placeMunicipality') as HTMLInputElement).value,
-      department: (document.getElementById('placeDepartment') as HTMLInputElement).value,
-      lat: parseFloat((document.getElementById('placeLat') as HTMLInputElement).value),
-      lng: parseFloat((document.getElementById('placeLng') as HTMLInputElement).value),
-      price: (document.getElementById('placePrice') as HTMLInputElement).value,
-      description: (document.getElementById('placeDescription') as HTMLTextAreaElement).value,
-      website: (document.getElementById('placeWebsite') as HTMLInputElement).value || '',
+
+    const lat = parseFloat($('placeLat').value);
+    const lng = parseFloat($('placeLng').value);
+    // El Salvador está aprox. entre 13.1 y 14.5 N, y -90.2 y -87.6 O.
+    if (!(lat > 13 && lat < 14.6 && lng > -90.3 && lng < -87.5)) {
+      alert('Las coordenadas quedan fuera de El Salvador. Revisa latitud y longitud.');
+      return;
+    }
+
+    const fields = {
+      name: $('placeName').value.trim(),
+      category: $('placeCategory').value,
+      municipality: $('placeMunicipality').value.trim(),
+      department: $('placeDepartment').value.trim(),
+      lat,
+      lng,
+      price: $('placePrice').value.trim(),
+      schedule: $('placeSchedule').value.trim(),
+      description: $('placeDescription').value.trim(),
+      website: $('placeWebsite').value.trim(),
+      recommendations: $('placeRecommendations').value.split(',').map((s: string) => s.trim()).filter(Boolean),
       photos: placePhotos,
-      visitCount: 0,
-      createdAt: serverTimestamp(),
-      createdBy: currentUser.uid
     };
-    
+
+    const btn = $('placeSubmitBtn');
+    btn.disabled = true;
+    $('placeStatus').textContent = 'Guardando...';
     try {
-      await addDoc(collection(db, 'places'), placeData);
-      alert('¡Lugar agregado!');
-      placeForm.reset();
-      placePhotos = [];
-      renderPlacePhotos();
+      if (editingId) {
+        await updateDoc(doc(db, 'places', editingId), { ...fields, updatedAt: serverTimestamp() });
+        $('placeStatus').textContent = '✅ Cambios guardados.';
+      } else {
+        await addDoc(collection(db, 'places'), {
+          ...fields,
+          visitCount: 0,
+          createdAt: serverTimestamp(),
+          createdBy: currentUser.uid,
+        });
+        $('placeStatus').textContent = '✅ Lugar agregado.';
+      }
+      resetPlaceForm(false);
+      await loadPlacesForReview();
     } catch (err) {
       console.error('Error:', err);
-      alert('Error al guardar');
+      $('placeStatus').textContent = '';
+      alert('No se pudo guardar el lugar.');
+    } finally {
+      btn.disabled = false;
     }
   });
+
+  function resetPlaceForm(clearStatus = true) {
+    placeForm.reset();
+    placePhotos = [];
+    editingId = null;
+    renderPlacePhotos();
+    $('placeFormTitle').textContent = '➕ Agregar lugar';
+    $('placeSubmitBtn').textContent = '💾 Guardar lugar';
+    $('cancelEditBtn').classList.add('hidden');
+    if (clearStatus) $('placeStatus').textContent = '';
+  }
+
+  $('cancelEditBtn')?.addEventListener('click', () => resetPlaceForm());
+
+  (window as any).editPlace = function (id: string) {
+    const p = allPlaces.find((x) => x.id === id);
+    if (!p) return;
+    editingId = id;
+    $('placeName').value = p.name ?? '';
+    $('placeCategory').value = p.category ?? '';
+    $('placeMunicipality').value = p.municipality ?? '';
+    $('placeDepartment').value = p.department ?? '';
+    $('placeLat').value = p.lat ?? '';
+    $('placeLng').value = p.lng ?? '';
+    $('placePrice').value = p.price ?? '';
+    $('placeSchedule').value = p.schedule ?? '';
+    $('placeWebsite').value = p.website ?? '';
+    $('placeDescription').value = p.description ?? '';
+    $('placeRecommendations').value = (p.recommendations || []).join(', ');
+    placePhotos = [...(p.photos || [])];
+    renderPlacePhotos();
+    $('placeFormTitle').textContent = `✏️ Editar: ${p.name}`;
+    $('placeSubmitBtn').textContent = '💾 Guardar cambios';
+    $('cancelEditBtn').classList.remove('hidden');
+    $('placeStatus').textContent = '';
+    $('placeAdminCard').scrollIntoView({ behavior: 'smooth' });
+  };
+
+  (window as any).deletePlace = async function (id: string) {
+    const p = allPlaces.find((x) => x.id === id);
+    if (!p || !confirm(`¿Eliminar "${p.name}"? No se puede deshacer.`)) return;
+    try {
+      await deleteDoc(doc(db, 'places', id));
+      if (editingId === id) resetPlaceForm();
+      await loadPlacesForReview();
+    } catch (err) {
+      console.error('Error:', err);
+      alert('No se pudo eliminar el lugar.');
+    }
+  };
+
+  function renderPlacesAdmin() {
+    const list = $('placesAdminList');
+    if (!list || !isAdmin) return;
+    const q = normalize($('placesFilter').value);
+    const rows = allPlaces.filter((p) =>
+      !q || [p.name, p.municipality, p.department, p.category].some((v) => normalize(v).includes(q))
+    );
+    $('placesCount').textContent = String(allPlaces.length);
+    list.innerHTML = rows.map((p) => `
+      <div class="flex items-center gap-3 py-2">
+        ${safeUrl(p.photos?.[0]) ? `<img src="${safeUrl(p.photos[0])}" alt="" class="w-12 h-12 object-cover rounded-lg flex-shrink-0">` : '<div class="w-12 h-12 rounded-lg bg-gray-100 flex-shrink-0"></div>'}
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-gray-800 truncate">${esc(p.name)}</p>
+          <p class="text-xs text-gray-500 truncate">${esc(p.municipality)}, ${esc(p.department)} · ${esc(p.category)} · ${num(p.visitCount)} visitas</p>
+        </div>
+        <button type="button" onclick="editPlace(${jsArg(p.id)})" class="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-sm hover:bg-amber-200">Editar</button>
+        <button type="button" onclick="deletePlace(${jsArg(p.id)})" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100">Eliminar</button>
+      </div>
+    `).join('') || '<p class="text-sm text-gray-500 py-4">Ningún lugar coincide.</p>';
+  }
+
+  $('placesFilter')?.addEventListener('input', renderPlacesAdmin);
   
   // Load places for review dropdown
   async function loadPlacesForReview() {
     try {
       const snapshot = await getDocs(query(collection(db, 'places'), orderBy('name', 'asc')));
-      const places = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      
+      allPlaces = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
       reviewPlaceSelect.innerHTML = '<option value="">Seleccionar lugar...</option>' +
-        places.map((p: any) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+        allPlaces.map((p: any) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+      renderPlacesAdmin();
     } catch (err) {
       console.error('Error loading places:', err);
     }
@@ -367,14 +501,17 @@ import Layout from '../../layouts/Layout.astro';
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
+        uploading++;
         const url = await uploadImage(file, 'reviews', currentUser.uid);
         reviewPhotos.push(url);
       } catch (err) {
         console.error('Upload error:', err);
         alert(`${file.name}: ${(err as Error).message}`);
+      } finally {
+        uploading--;
       }
     }
-    
+    (e.target as HTMLInputElement).value = '';
     renderReviewPhotos();
   });
   
@@ -408,6 +545,11 @@ import Layout from '../../layouts/Layout.astro';
       return;
     }
     
+    if (uploading > 0) {
+      alert('Espera a que terminen de subir las fotos.');
+      return;
+    }
+
     if (reviewPhotos.length < 2) {
       alert('Agrega al menos 2 fotos de tu visita');
       return;
@@ -450,13 +592,17 @@ import Layout from '../../layouts/Layout.astro';
   // Load my reviews
   async function loadMyReviews() {
     try {
+      // Sin orderBy en la consulta: así no hace falta un índice compuesto.
       const snapshot = await getDocs(
-        query(collection(db, 'reviews'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'))
+        query(collection(db, 'reviews'), where('userId', '==', currentUser.uid))
       );
-      
+      const reviewDocs = [...snapshot.docs].sort(
+        (a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0)
+      );
+
       const reviewsEl = document.getElementById('myReviews');
       const noReviewsEl = document.getElementById('noReviews');
-      
+
       if (snapshot.empty) {
         reviewsEl.innerHTML = '';
         noReviewsEl.classList.remove('hidden');
@@ -470,7 +616,7 @@ import Layout from '../../layouts/Layout.astro';
       const placesMap: Record<string, string> = {};
       placesSnap.docs.forEach(d => placesMap[d.id] = d.data().name);
       
-      reviewsEl.innerHTML = snapshot.docs.map(doc => {
+      reviewsEl.innerHTML = reviewDocs.map(doc => {
         const data = doc.data();
         const rating = Math.max(0, Math.min(5, Math.round(num(data.rating))));
         return `
