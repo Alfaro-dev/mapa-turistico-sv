@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ---------- Tema Añil: claro por defecto, oscuro según el teléfono ---------- */
+/* ---------- Tema Añil (solo modo claro) ---------- */
 :root {
   color-scheme: light;
   --font-sans: 'Instrument Sans', system-ui, sans-serif;
@@ -31,34 +31,6 @@
   --shadow: 0 6px 20px rgba(26, 32, 64, 0.14);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --bg: #111943;
-    --surface: #18215A;
-    --ink: #EEF0FA;
-    --ink-2: #D3D8EE;
-    --muted: #AEB6DA;
-    --line: #2A3570;
-    --border: #5866B0;
-    --primary: #A8C66C;
-    --on-primary: #111943;
-    --link: #A8C66C;
-    --photo: #3A4C9E;
-    --star: #E9C46A;
-    --selected-row: #22306B;
-
-    --pin: #A8C66C;
-    --pin-ring: #0A0F2C;
-    --pin-selected: #FFFFFF;
-    --map-chip-bg: #18215A;
-    --map-chip-ink: #EEF0FA;
-    --map-chip-border: #5866B0;
-    --map-chip-active-bg: #A8C66C;
-    --map-chip-active-ink: #111943;
-    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-  }
-}
 
 html, body {
   margin: 0;
@@ -83,8 +55,3 @@ button, input, select, textarea { font-family: inherit; }
 /* ---------- Leaflet ---------- */
 .leaflet-container { font-family: var(--font-sans); background: var(--bg); }
 .leaflet-control-attribution { font-size: 11px; }
-@media (prefers-color-scheme: dark) {
-  .leaflet-tile-pane { filter: invert(1) hue-rotate(195deg) brightness(0.9) contrast(0.92) saturate(0.55); }
-  .leaflet-control-attribution { background: rgba(17, 25, 67, 0.8) !important; color: #AEB6DA; }
-  .leaflet-control-attribution a { color: #C7DE95; }
-}
