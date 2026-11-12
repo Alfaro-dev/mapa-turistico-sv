@@ -146,12 +146,12 @@ const categories = [
       </div>
 
       <div class="field">
-        <span class="field-label" id="photosLabel">Fotos <span class="field-opt">hasta 4</span></span>
+        <span class="field-label" id="photosLabel">Fotos <span class="field-opt">(opcional)</span></span>
         <div class="rv-photos" role="group" aria-labelledby="photosLabel">
           <div id="reviewPhotos" class="photo-picks"></div>
-          <label class="photo-tile" id="photoAdd">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
-            <span>Agregar</span>
+          <label class="dropzone" id="photoAdd">
+            <span class="dz-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+            <span class="dz-text"><strong id="dzTitle">Agregá fotos de tu visita</strong><span id="dzSub">Arrastralas aquí o tocá para elegir</span></span>
             <input type="file" id="reviewPhotoInput" accept="image/*" multiple class="sr-only" />
           </label>
         </div>
@@ -274,16 +274,26 @@ const categories = [
   #reviewForm [aria-invalid="true"] { border-color: #C2581F; box-shadow: 0 0 0 3px rgba(194,88,31,0.18); }
   .form-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #F6D9C8; color: #6E2E0C; font-size: 14px; font-weight: 700; }
   .form-error[hidden] { display: none; }
-  .rv-photos { display: flex; flex-wrap: wrap; gap: 10px; }
-  .photo-picks { display: contents; }
-  .photo-pick { position: relative; width: 84px; height: 84px; }
+  .rv-photos { display: flex; flex-direction: column; gap: 10px; }
+  .photo-picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .photo-picks:empty { display: none; }
+  .photo-pick { position: relative; aspect-ratio: 1; }
   .photo-pick img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; }
   .photo-pick button { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 14px; border: 2px solid #FFFFFF; background: var(--rama); color: #FFFFFF; font-size: 14px; line-height: 1; cursor: pointer; }
-  .photo-pick.is-loading { background: var(--photo); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); }
-  .photo-tile { width: 84px; height: 84px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed #9CC3C0; border-radius: 14px; background: #F1F8F7; color: var(--turquesa); font-size: 13px; font-weight: 800; cursor: pointer; }
-  .photo-tile:hover { border-style: solid; }
-  .photo-tile:focus-within { outline: 3px solid var(--turquesa); outline-offset: 2px; }
-  .photo-tile[hidden] { display: none; }
+  .photo-pick.is-loading { background: var(--photo); border-radius: 14px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); }
+  /* Zona para soltar fotos: ocupa todo el ancho; se achica cuando ya hay fotos. */
+  .dropzone { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 18px; border: 1.5px dashed #9CC3C0; border-radius: 16px; background: #F1F8F7; color: var(--turquesa); cursor: pointer; transition: background .15s, border-color .15s; }
+  .dropzone:hover { border-style: solid; }
+  .dropzone.is-over { border-style: solid; border-color: var(--turquesa); background: #E2F2F1; }
+  .dropzone:focus-within { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .dropzone[hidden] { display: none; }
+  .dz-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; }
+  .dz-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .dz-text strong { font-size: 15px; font-weight: 800; color: var(--rama); }
+  .dz-text span { font-size: 13px; color: var(--muted); }
+  .dropzone.is-compact { padding: 10px 14px; }
+  .dropzone.is-compact .dz-icon { width: 36px; height: 36px; border-radius: 10px; }
+  @media (prefers-reduced-motion: reduce) { .dropzone { transition: none; } }
   .rv-as { margin: 2px 0 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
   .rv-as strong { color: var(--ink); }
   .rv-as-avatar { width: 22px; height: 22px; border-radius: 11px; overflow: hidden; flex-shrink: 0; background: var(--plumaje); color: var(--rama); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
@@ -1166,18 +1176,33 @@ const categories = [
     $('reviewPhotos').innerHTML =
       reviewPhotos.map((u, i) => `<div class="photo-pick"><img src="${safeUrl(u)}" alt="Foto ${i + 1}"><button type="button" data-remove="${i}" aria-label="Quitar foto ${i + 1}">×</button></div>`).join('') +
       Array.from({ length: uploadingPhotos }, () => '<div class="photo-pick is-loading">Subiendo…</div>').join('');
-    $('photoAdd').hidden = reviewPhotos.length + uploadingPhotos >= 4;
+    const used = reviewPhotos.length + uploadingPhotos;
+    $('photoAdd').hidden = used >= 4;
+    $('photoAdd').classList.toggle('is-compact', used > 0);
+    $('dzTitle').textContent = used ? 'Agregar otra foto' : 'Agregá fotos de tu visita';
+    $('dzSub').textContent = used ? `Te ${4 - used === 1 ? 'queda 1' : `quedan ${4 - used}`}` : 'Arrastralas aquí o tocá para elegir · hasta 4';
   }
   $('reviewPhotos').addEventListener('click', (e: Event) => {
     const b = (e.target as HTMLElement).closest('[data-remove]') as HTMLElement | null;
     if (b) { reviewPhotos.splice(Number(b.dataset.remove), 1); renderReviewPhotos(); }
   });
-  $('reviewPhotoInput').addEventListener('change', async (e: Event) => {
+  $('reviewPhotoInput').addEventListener('change', (e: Event) => {
     const input = e.target as HTMLInputElement;
     const picked = Array.from(input.files || []);
+    input.value = '';
+    addReviewPhotos(picked);
+  });
+  // Arrastrar y soltar fotos sobre la zona.
+  const dz = $('photoAdd') as HTMLElement;
+  ['dragenter', 'dragover'].forEach((t) => dz.addEventListener(t, (e: DragEvent) => { e.preventDefault(); dz.classList.add('is-over'); }));
+  ['dragleave', 'dragend'].forEach((t) => dz.addEventListener(t, () => dz.classList.remove('is-over')));
+  dz.addEventListener('drop', (e: DragEvent) => {
+    e.preventDefault(); dz.classList.remove('is-over');
+    addReviewPhotos(Array.from(e.dataTransfer?.files || []).filter((f) => f.type.startsWith('image/')));
+  });
+  async function addReviewPhotos(picked: File[]) {
     const room = Math.max(0, 4 - reviewPhotos.length - uploadingPhotos);
     const files = picked.slice(0, room);
-    input.value = '';
     $('reviewError').hidden = true;
     if (picked.length > room) {
       $('reviewError').textContent = room
@@ -1196,7 +1221,7 @@ const categories = [
         uploadingPhotos--; renderReviewPhotos();
       }
     }
-  });
+  }
 
   $('reviewForm').addEventListener('submit', async (e: Event) => {
     e.preventDefault();
