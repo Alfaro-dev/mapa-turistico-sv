@@ -224,7 +224,7 @@ const categories = [
   .ad-btn-danger.is-confirm { background: var(--canela); color: #FFFFFF; }
   .ad-btn-sm { min-height: 36px; padding: 0 14px; font-size: 13px; }
   .ad-btn:disabled { opacity: .6; cursor: default; }
-  .ad-todo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .ad-todo { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
   .ad-todo-card { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 16px; background: var(--surface); border: 2px solid var(--line); color: var(--ink); text-decoration: none; }
   .ad-todo-card.is-hot { border-color: var(--plumaje); }
   .ad-num { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -246,7 +246,7 @@ const categories = [
   .ad-report { align-items: flex-start; }
   .ad-report-why { margin: 6px 0 0; font-size: 14px; font-weight: 800; color: var(--canela); }
   .ad-report-note { margin: 4px 0 0; padding-left: 10px; border-left: 3px solid var(--line); font-size: 14px; color: var(--ink-2); }
-  .ad-report-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex: none; }
+  .ad-report-actions { display: flex; gap: 8px; align-items: center; flex: none; }
   @media (max-width: 640px) { .ad-report { flex-wrap: wrap; } .ad-report-actions { flex-direction: row; width: 100%; } .ad-report-actions .ad-btn { flex: 1; } }
   .ad-who { color: var(--primary); font-weight: 700; text-decoration: none; }
   .ad-who:hover { text-decoration: underline; text-underline-offset: 2px; }
@@ -323,6 +323,7 @@ const categories = [
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
   import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
   import { esc, safeUrl, num } from '../../lib/escape';
+  import { datePicker } from '../../lib/datePicker';
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
 
@@ -470,7 +471,7 @@ const categories = [
     $('stPlaces').textContent = places.length; $('stBiz').textContent = active.length;
     const dest = active.filter((b) => b.plan === 'destacado' || (b.featured && b.plan !== 'pro')).length;
     const pro = active.filter((b) => b.plan === 'pro').length;
-    $('stBizPlans').textContent = active.length ? `${dest} Destacados · ${pro} Pro` : '';
+    $('stBizPlans').textContent = active.length ? `${dest} ${dest === 1 ? 'Destacado' : 'Destacados'} · ${pro} Pro` : '';
     $('stReviews').textContent = reviews.length; $('stPhotos').textContent = photos.length;
     $('sumReviews').innerHTML = reviews.slice(0, 4).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
     $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
@@ -491,7 +492,7 @@ const categories = [
       <div class="ad-row-main">
         <p class="ad-row-title">${esc(placeName(r.placeId) || r.placeName || 'Lugar')} · ${num(r.rating)} de 5${r.verified ? ' <span class="ad-tag ad-tag-ok">Verificada</span>' : ''}</p>
         ${r.comment ? `<p class="ad-row-text">${esc(r.comment)}</p>` : ''}
-        <p class="ad-row-meta">${who(r)} · ${ago(r.createdAt)}${(r.photos || []).length ? ` · ${(r.photos || []).length} fotos` : ''}</p>
+        <p class="ad-row-meta">${who(r)} · ${ago(r.createdAt)}${(r.photos || []).length ? ` · ${(r.photos || []).length} ${(r.photos || []).length === 1 ? 'foto' : 'fotos'}` : ''}</p>
       </div>
       <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="reviews/${esc(r.id)}">Borrar</button>
     </li>`;
@@ -532,7 +533,7 @@ const categories = [
         </div>
         <div class="ad-report-actions">
           ${target ? `<button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="${col}/${esc(id)}" data-del-label="Borrar la ${kind}">Borrar la ${kind}</button>` : ''}
-          <button type="button" class="ad-btn ad-btn-sm" data-keep="${type}/${esc(id)}">${target ? 'Dejarla' : 'Cerrar reporte'}</button>
+          <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-keep="${type}/${esc(id)}">${target ? 'Dejarla' : 'Cerrar reporte'}</button>
         </div>
       </li>`;
     }).join('') || '<li class="ad-empty">No hay reportes. Cuando un turista marque una reseña o una foto, aparece aquí.</li>';
@@ -642,7 +643,7 @@ const categories = [
           <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
           ${b.description ? `<p class="ad-row-text" style="margin-top:8px">${esc(b.description)}</p>` : ''}
           <p class="ad-row-meta" style="margin-top:6px">${[b.schedule, b.address, b.phone && `Tel. ${b.phone}`, b.whatsapp && `WhatsApp ${b.whatsapp}`, b.email].filter(Boolean).map((x) => esc(x)).join(' · ')}</p>
-          <p class="ad-row-meta">Dueño: ${esc(b.ownerName || '')} · ${(b.photos || []).length} fotos${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
+          <p class="ad-row-meta">Dueño: ${b.ownerId ? who({ userId: b.ownerId, userName: b.ownerName || 'ver su perfil' }) : 'sin cuenta'} · ${(b.photos || []).length} ${(b.photos || []).length === 1 ? 'foto' : 'fotos'}${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
         </div>
       </div>
       <div class="ad-two">
@@ -675,6 +676,7 @@ const categories = [
         ${st === 'active' ? '<button type="button" class="ad-btn ad-btn-outline" data-setstatus="pending">Quitar del mapa (volver a revisión)</button>' : ''}
         ${st !== 'rejected' ? '<button type="button" class="ad-btn ad-btn-danger" data-setstatus="rejected">Rechazar</button>' : ''}
       </div>`;
+    if ($('planUntil')) datePicker($('planUntil'), { min: 'today', empty: 'Sin fecha', title: 'Pagado hasta' });
     // Aprobar solo se activa con las 3 revisiones marcadas.
     const checks = [...$('bizDetail').querySelectorAll('[data-check]')] as HTMLInputElement[];
     const approveBtn = $('bizDetail').querySelector('[data-setstatus="active"]') as HTMLButtonElement | null;
@@ -721,11 +723,13 @@ const categories = [
     });
     if (miniMap) { miniMap.remove(); miniMap = null; }
     if (typeof L !== 'undefined' && Number.isFinite(Number(b.lat))) {
-      miniMap = L.map('bizMiniMap', { zoomControl: false, attributionControl: false }).setView([Number(b.lat), Number(b.lng)], 15);
+      miniMap = L.map('bizMiniMap', { zoomControl: false, attributionControl: false, scrollWheelZoom: false }).setView([Number(b.lat), Number(b.lng)], 15);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
       L.marker([Number(b.lat), Number(b.lng)], { icon: L.divIcon({ className: '', html: '<div style="width:20px;height:20px;border-radius:10px;background:#C2581F;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) }).addTo(miniMap);
       // El recuadro toma su ancho final después de pintarse: se vuelve a centrar en el punto.
       const mm = miniMap; setTimeout(() => { if (mm === miniMap) { mm.invalidateSize(); mm.setView([Number(b.lat), Number(b.lng)], 15); } }, 60);
+      // Si el mapa se creó con la sección oculta, se recentra cuando ya tiene tamaño.
+      new ResizeObserver((_, ro) => { if (mm !== miniMap) return ro.disconnect(); if ($('bizMiniMap').offsetWidth) { mm.invalidateSize(); mm.setView([Number(b.lat), Number(b.lng)], 15); } }).observe($('bizMiniMap'));
     }
   }
 
@@ -883,11 +887,17 @@ const categories = [
       const st = s.end < today ? 'Terminó' : s.start > today ? 'Próxima' : 'Activa';
       return `<li class="ad-row"><div class="ad-row-main">
         <p class="ad-row-title">${esc(s.name)} <span class="ad-tag${st === 'Activa' ? ' ad-tag-ok' : ''}">${st}</span></p>
-        <p class="ad-row-text">${esc(placeName(s.placeId))} · del ${esc(s.start)} al ${esc(s.end)}</p>
+        <p class="ad-row-text">${esc(placeName(s.placeId))} · del ${esc(fmtDay(s.start))} al ${esc(fmtDay(s.end))}</p>
         ${s.description ? `<p class="ad-row-meta">${esc(s.description)}</p>` : ''}
       </div><button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="seasonalBadges/${esc(s.id)}">Borrar</button></li>`;
     }).join('') || '<li class="ad-empty">Todavía no hay insignias de temporada.</li>';
   }
+  const MESES_C = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const fmtDay = (iso: string) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${Number(m[3])} de ${MESES_C[Number(m[2]) - 1]}${Number(m[1]) !== new Date().getFullYear() ? ` de ${m[1]}` : ''}` : iso; };
+  const seasonPickers = [
+    datePicker($('sStart'), { empty: 'Elegí el día', title: 'Primer día de la insignia' }),
+    datePicker($('sEnd'), { empty: 'Elegí el día', title: 'Último día de la insignia' }),
+  ];
   $('seasonForm').addEventListener('submit', async (e: Event) => {
     e.preventDefault();
     const st = (m: string, err = false) => { $('seasonStatus').textContent = m; $('seasonStatus').classList.toggle('is-error', err); };
@@ -898,6 +908,7 @@ const categories = [
       const ref = await addDoc(collection(db, 'seasonalBadges'), { ...data, createdAt: serverTimestamp() });
       seasonal.unshift({ id: ref.id, ...data });
       ($('seasonForm') as HTMLFormElement).reset();
+      $('sStart').value = ''; $('sEnd').value = ''; seasonPickers.forEach((x) => x.refresh());
       renderSeason(); st('Insignia creada. Ya sale en el perfil de los turistas.');
     } catch (err) { console.error(err); st('No se pudo crear. Revisá tu conexión.', true); }
   });
