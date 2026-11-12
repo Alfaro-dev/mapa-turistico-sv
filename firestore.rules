@@ -54,16 +54,26 @@ service cloud.firestore {
             && request.resource.data.get('rating', 0) <= 5);
     }
 
-    // ---------- Reseñas (web) ----------
+    // ---------- Reseñas (web y app) ----------
+    // Una sola colección para las dos. La app antes usaba "checkIns".
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if signedIn()
         && request.resource.data.userId == request.auth.uid
+        && request.resource.data.placeId is string
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5;
-      allow update: if isOwner(resource.data.userId)
-        && request.resource.data.userId == resource.data.userId;
+        && request.resource.data.rating <= 5
+        && request.resource.data.get('comment', '') is string
+        && request.resource.data.get('comment', '').size() <= 1000
+        && request.resource.data.get('photos', []) is list
+        && request.resource.data.get('photos', []).size() <= 4
+        && request.resource.data.get('verified', false) is bool;
+      allow update: if (isOwner(resource.data.userId)
+                        && request.resource.data.userId == resource.data.userId)
+        || (signedIn() && onlyChanges(['useful']) && bumpedByOne('useful'))
+        || (signedIn() && onlyChanges(['fun']) && bumpedByOne('fun'))
+        || (signedIn() && onlyChanges(['like']) && bumpedByOne('like'));
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
