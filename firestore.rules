@@ -130,6 +130,23 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
+    // ---------- Reportes de reseñas y fotos ----------
+    // Cualquiera con cuenta reporta algo una sola vez ({tipo}_{id}_{usuario}).
+    // Solo el admin los lee y los cierra.
+    match /reports/{id} {
+      allow read, update, delete: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.type in ['review', 'photo']
+        && request.resource.data.targetId is string
+        && id == request.resource.data.type + '_' + request.resource.data.targetId + '_' + request.auth.uid
+        && request.resource.data.reason in ['falsa', 'ofensiva', 'otro-lugar', 'spam', 'datos', 'otra']
+        && request.resource.data.get('note', '') is string
+        && request.resource.data.get('note', '').size() <= 300
+        && request.resource.data.status == 'open'
+        && request.resource.data.keys().hasOnly(['type', 'targetId', 'placeId', 'reason', 'note', 'userId', 'userName', 'status', 'createdAt']);
+    }
+
     // ---------- Perfiles de usuario ----------
     // Guarda el correo, así que solo lo lee su dueño (o el admin).
     match /users/{uid} {

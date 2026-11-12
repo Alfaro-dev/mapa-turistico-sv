@@ -54,6 +54,7 @@ const categories = [
           <a href="#negocios" class="ad-todo-card" data-hot><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#resenas" class="ad-todo-card" data-hot><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas nuevas esta semana</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes por vencer</span><span class="ad-todo-go">Ver pagos</span></a>
+          <a href="#resenas" class="ad-todo-card"><span class="ad-num" id="tdReports">0</span><span class="ad-todo-label">Reportes por revisar</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares por corregir</span><span class="ad-todo-go">Corregir</span></a>
         </div>
         <h2 class="ad-h2">En Goz hoy</h2>
@@ -94,6 +95,11 @@ const categories = [
       <section id="sec-resenas" class="ad-sec" hidden>
         <div class="ad-head"><h1 class="ad-h1">Reseñas y fotos</h1></div>
         <p class="ad-lead">Todo se publica al instante. Si algo rompe las reglas (fotos que no son del lugar, insultos, spam, datos personales), borralo aunque sea poco.</p>
+        <section class="ad-card ad-reports" aria-labelledby="hReports">
+          <h2 id="hReports" class="ad-h2">Reportes por revisar</h2>
+          <p class="ad-muted">Lo que los turistas marcaron. Si no rompe las reglas, dejalo y el reporte se cierra.</p>
+          <ul id="reportList" class="ad-rows"></ul>
+        </section>
         <div class="ad-two">
           <section class="ad-card">
             <h2 class="ad-h2">Reseñas</h2>
@@ -236,6 +242,12 @@ const categories = [
   .ad-row-title { margin: 0; font-weight: 800; font-size: 15px; }
   .ad-row-text { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.45; overflow-wrap: anywhere; }
   .ad-row-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .ad-reports { margin-bottom: 20px; }
+  .ad-report { align-items: flex-start; }
+  .ad-report-why { margin: 6px 0 0; font-size: 14px; font-weight: 800; color: var(--canela); }
+  .ad-report-note { margin: 4px 0 0; padding-left: 10px; border-left: 3px solid var(--line); font-size: 14px; color: var(--ink-2); }
+  .ad-report-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex: none; }
+  @media (max-width: 640px) { .ad-report { flex-wrap: wrap; } .ad-report-actions { flex-direction: row; width: 100%; } .ad-report-actions .ad-btn { flex: 1; } }
   .ad-who { color: var(--primary); font-weight: 700; text-decoration: none; }
   .ad-who:hover { text-decoration: underline; text-underline-offset: 2px; }
   .ad-empty { padding: 12px 0; font-size: 14px; color: var(--muted); }
@@ -256,6 +268,7 @@ const categories = [
   .ad-tags { display: flex; flex-wrap: wrap; gap: 4px; }
   .ad-tag { font-size: 12px; font-weight: 800; color: #8A3A10; background: #F6D9C8; padding: 2px 8px; border-radius: 10px; }
   .ad-tag-ok { color: var(--rama); background: var(--plumaje); }
+  .ad-tag-warn { color: #FFFFFF; background: var(--canela); }
   .ad-issues { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
   .ad-issues li.is-notice { background: var(--neblina); color: var(--muted); }
   .ad-tag.is-notice { background: var(--neblina); color: var(--muted); }
@@ -346,7 +359,7 @@ const categories = [
   const BIZ: Record<string, string> = { hotel: 'Hospedaje', restaurante: 'Restaurante', cafeteria: 'Cafetería', tienda: 'Tienda', otro: 'Negocio' };
 
   let user: any = null;
-  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [];
+  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [], reports: any[] = [];
   let bizFilter = 'pending', placeFilter = 'problems';
   let selBiz: string | null = null, selPlace: string | null = null;
   let placePhotos: string[] = [], uploading = 0;
@@ -376,12 +389,13 @@ const categories = [
   });
 
   async function loadAll() {
-    const [p, b, r, f, s] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges']
+    const [p, b, r, f, s, rp] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports']
       .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[])));
     places = p.map((x: any) => ({ ...x, lat: Number(x.lat), lng: Number(x.lng) })).sort((a: any, b2: any) => String(a.name).localeCompare(String(b2.name), 'es'));
     businesses = b.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     reviews = r.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     photos = f.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
+    reports = rp.filter((x: any) => x.status === 'open');
     seasonal = s.sort((a: any, b2: any) => String(b2.start).localeCompare(String(a.start)));
     renderAll();
     checkPhotos();
@@ -442,12 +456,14 @@ const categories = [
     const newReviews = reviews.filter((r) => ms(r.createdAt) >= week);
     const newPhotos = photos.filter((f) => ms(f.createdAt) >= week);
     const probs = problemPlaces();
+    const repGroups = reportGroups();
     const setCount = (id: string, n: number) => { $(`count-${id}`).hidden = !n; $(`count-${id}`).textContent = n; };
-    setCount('negocios', pendingBiz.length); setCount('resenas', newReviews.length + newPhotos.length); setCount('lugares', probs.length);
+    setCount('negocios', pendingBiz.length); setCount('resenas', newReviews.length + newPhotos.length + repGroups.length); setCount('lugares', probs.length);
 
     $('today').textContent = new Date().toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
     $('tdBiz').textContent = pendingBiz.length; $('tdReviews').textContent = newReviews.length;
     $('tdPlans').textContent = businesses.filter((b) => isPaidPlan(b) && planDays(b) <= 7).length; $('tdPlaces').textContent = probs.length;
+    $('tdReports').textContent = repGroups.length;
     // Solo se resalta lo que tiene algo pendiente.
     document.querySelectorAll('.ad-todo-card').forEach((c) => c.classList.toggle('is-hot', Number(c.querySelector('.ad-num')?.textContent) > 0));
     const active = businesses.filter((b) => b.status !== 'pending' && b.status !== 'rejected');
@@ -480,7 +496,56 @@ const categories = [
       <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="reviews/${esc(r.id)}">Borrar</button>
     </li>`;
   }
+  // ---------- Reportes ----------
+  const REASONS: Record<string, string> = {
+    falsa: 'Es falsa', ofensiva: 'Ofensiva o con insultos', 'otro-lugar': 'No es de este lugar',
+    spam: 'Publicidad o spam', datos: 'Datos personales', otra: 'Otra cosa',
+  };
+  // Un grupo por reseña o foto reportada, con todos sus reportes abiertos.
+  function reportGroups() {
+    const g: Record<string, any[]> = {};
+    reports.forEach((x) => { (g[`${x.type}/${x.targetId}`] ||= []).push(x); });
+    return Object.entries(g).map(([key, list]) => {
+      const [type, id] = key.split('/');
+      const target = (type === 'review' ? reviews : photos).find((y) => y.id === id);
+      return { type, id, list, target };
+    }).sort((a, b) => b.list.length - a.list.length);
+  }
+  function renderReports() {
+    const groups = reportGroups();
+    $('reportList').innerHTML = groups.map(({ type, id, list, target }) => {
+      const counts: Record<string, number> = {};
+      list.forEach((x) => { counts[x.reason] = (counts[x.reason] || 0) + 1; });
+      const why = Object.entries(counts).map(([k, n]) => `${REASONS[k] || k}${n > 1 ? ` (${n})` : ''}`).join(' · ');
+      const notes = list.map((x) => x.note).filter(Boolean).slice(0, 3);
+      const kind = type === 'review' ? 'reseña' : 'foto';
+      const col = type === 'review' ? 'reviews' : 'photos';
+      const pName = esc(placeName(list[0].placeId) || target?.placeName || 'Lugar');
+      return `<li class="ad-row ad-report">
+        ${type === 'photo' ? (target ? `<a href="${safeUrl(target.url)}" target="_blank" rel="noopener"><img class="ad-thumb" src="${safeUrl(target.url)}" alt="Foto reportada"></a>` : '<span class="ad-thumb"></span>') : ''}
+        <div class="ad-row-main">
+          <p class="ad-row-title">${type === 'review' ? 'Reseña' : 'Foto'} en ${pName} <span class="ad-tag ad-tag-warn">${list.length} ${list.length === 1 ? 'reporte' : 'reportes'}</span></p>
+          ${type === 'review' && target ? `<p class="ad-row-text">${num(target.rating)} de 5 · “${esc(String(target.comment || '').slice(0, 220))}”</p>` : ''}
+          ${target ? `<p class="ad-row-meta">De ${who(target)} · ${ago(target.createdAt)}</p>` : `<p class="ad-row-meta">Esta ${kind} ya no existe.</p>`}
+          <p class="ad-report-why">${esc(why)}</p>
+          ${notes.map((n) => `<p class="ad-report-note">“${esc(n)}”</p>`).join('')}
+        </div>
+        <div class="ad-report-actions">
+          ${target ? `<button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="${col}/${esc(id)}" data-del-label="Borrar la ${kind}">Borrar la ${kind}</button>` : ''}
+          <button type="button" class="ad-btn ad-btn-sm" data-keep="${type}/${esc(id)}">${target ? 'Dejarla' : 'Cerrar reporte'}</button>
+        </div>
+      </li>`;
+    }).join('') || '<li class="ad-empty">No hay reportes. Cuando un turista marque una reseña o una foto, aparece aquí.</li>';
+  }
+  // Cierra los reportes abiertos de una reseña o foto (status: kept si se deja, removed si se borró).
+  async function closeReports(type: string, id: string, status: 'kept' | 'removed') {
+    const list = reports.filter((x) => x.type === type && x.targetId === id);
+    await Promise.all(list.map((x) => updateDoc(doc(db, 'reports', x.id), { status, closedAt: serverTimestamp() })));
+    reports = reports.filter((x) => !(x.type === type && x.targetId === id));
+  }
+
   function renderModeration() {
+    renderReports();
     $('allReviews').innerHTML = reviews.slice(0, 60).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
     $('allPhotos').innerHTML = photos.slice(0, 60).map((f) => `<li>
       <a href="${safeUrl(f.url)}" target="_blank" rel="noopener"><img src="${safeUrl(f.url)}" alt="Foto de ${esc(f.userName || 'visitante')}" loading="lazy"></a>
@@ -495,17 +560,27 @@ const categories = [
     if (t.closest('[data-plans-link]')) { bizFilter = 'paid'; selBiz = null; setTimeout(() => renderBizList(), 0); }
     const openBiz = t.closest('[data-open-biz]') as HTMLElement | null;
     if (openBiz) { selBiz = openBiz.dataset.openBiz!; bizFilter = 'pending'; setTimeout(() => { renderBizList(); renderBizDetail(); }, 0); }
+    const keep = t.closest('[data-keep]') as HTMLButtonElement | null;
+    if (keep) {
+      const [type, id] = keep.dataset.keep!.split('/');
+      keep.disabled = true; keep.textContent = 'Guardando…';
+      try { await closeReports(type, id, 'kept'); renderAll(); toast('Reporte cerrado. Se queda publicada.'); }
+      catch (err) { console.error(err); keep.disabled = false; keep.textContent = 'No se pudo cerrar'; }
+      return;
+    }
     const del = t.closest('[data-del]') as HTMLButtonElement | null;
     if (!del) return;
     if (!del.classList.contains('is-confirm')) {
-      del.classList.add('is-confirm'); del.textContent = '¿Seguro? Borrar';
-      setTimeout(() => { if (del.isConnected) { del.classList.remove('is-confirm'); del.textContent = 'Borrar'; } }, 6000);
+      const label = del.dataset.delLabel || 'Borrar';
+      del.classList.add('is-confirm'); del.textContent = `¿Seguro? ${label}`;
+      setTimeout(() => { if (del.isConnected) { del.classList.remove('is-confirm'); del.textContent = label; } }, 6000);
       return;
     }
     const [col, id] = del.dataset.del!.split('/');
     del.disabled = true; del.textContent = 'Borrando…';
     try {
       await deleteDoc(doc(db, col, id));
+      if (col === 'reviews' || col === 'photos') await closeReports(col === 'reviews' ? 'review' : 'photo', id, 'removed').catch((e2) => console.error(e2));
       if (col === 'reviews') reviews = reviews.filter((x) => x.id !== id);
       if (col === 'photos') photos = photos.filter((x) => x.id !== id);
       if (col === 'seasonalBadges') seasonal = seasonal.filter((x) => x.id !== id);
