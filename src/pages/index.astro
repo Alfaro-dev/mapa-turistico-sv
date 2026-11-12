@@ -858,7 +858,7 @@ const categories = [
       <ul class="detail-facts">
         ${specific(p.schedule) ? `<li>${icoClock}<span>${esc(p.schedule!)}</span></li>` : ''}
         ${specific(p.price) ? `<li>${icoTicket}<span>${esc(priceText(p.price!.trim()))}</span></li>` : ''}
-        ${safeUrl(p.website) ? `<li>${icoLink}<a href="${safeUrl(p.website)}" target="_blank" rel="noopener" style="color:var(--link)">Sitio web</a></li>` : ''}
+        ${/^https?:\/\//i.test(p.website || '') && safeUrl(p.website) ? `<li>${icoLink}<a href="${safeUrl(p.website)}" target="_blank" rel="noopener" style="color:var(--link)">Sitio web</a></li>` : ''}
       </ul>
       ${p.recommendations?.length ? `<div class="tags">${p.recommendations.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
 

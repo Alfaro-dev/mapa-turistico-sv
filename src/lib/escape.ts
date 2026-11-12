@@ -16,7 +16,8 @@ export function esc(value: unknown): string {
 
 /** Devuelve la URL solo si es http(s); si no, cadena vacía. Ya viene escapada. */
 export function safeUrl(value: unknown): string {
-  if (typeof value !== 'string') return '';
+  // Vacío no es una URL: si no, se resolvería a la página actual (un enlace que no lleva a nada).
+  if (typeof value !== 'string' || !value.trim()) return '';
   try {
     const url = new URL(value, window.location.origin);
     return url.protocol === 'https:' || url.protocol === 'http:' ? esc(url.href) : '';
