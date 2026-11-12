@@ -6,7 +6,8 @@ import GozLoader from '../../components/GozLoader.astro';
 const sections = [
   { id: 'resumen', label: 'Resumen' },
   { id: 'negocios', label: 'Negocios' },
-  { id: 'resenas', label: 'Reseñas y fotos' },
+  { id: 'resenas', label: 'Reseñas' },
+  { id: 'fotos', label: 'Fotos' },
   { id: 'lugares', label: 'Lugares turísticos' },
   { id: 'temporada', label: 'Insignias de temporada' },
 ];
@@ -54,7 +55,7 @@ const categories = [
           <a href="#negocios" class="ad-todo-card" data-hot><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#resenas" class="ad-todo-card" data-hot><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas nuevas esta semana</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes por vencer</span><span class="ad-todo-go">Ver pagos</span></a>
-          <a href="#resenas" class="ad-todo-card"><span class="ad-num" id="tdReports">0</span><span class="ad-todo-label">Reportes por revisar</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#resenas" id="tdReportsLink" class="ad-todo-card"><span class="ad-num" id="tdReports">0</span><span class="ad-todo-label">Reportes por revisar</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares por corregir</span><span class="ad-todo-go">Corregir</span></a>
         </div>
         <h2 class="ad-h2">En Goz hoy</h2>
@@ -86,86 +87,154 @@ const categories = [
           <button type="button" class="ad-filter" data-bizfilter="rejected" aria-pressed="false">Rechazados</button>
         </div>
         <div class="ad-split">
-          <ul id="bizList" class="ad-card ad-list"></ul>
+          <div class="ad-card ad-list-wrap"><ul id="bizList" class="ad-list"></ul><nav class="ad-pager" data-pager="biz" aria-label="Páginas de negocios"></nav></div>
           <section id="bizDetail" class="ad-card ad-detail" aria-live="polite"><p class="ad-muted">Elegí un negocio de la lista.</p></section>
         </div>
       </section>
 
-      <!-- Reseñas y fotos -->
+      <!-- Reseñas -->
       <section id="sec-resenas" class="ad-sec" hidden>
-        <div class="ad-head"><h1 class="ad-h1">Reseñas y fotos</h1></div>
-        <p class="ad-lead">Todo se publica al instante. Si algo rompe las reglas (fotos que no son del lugar, insultos, spam, datos personales), borralo aunque sea poco.</p>
-        <section class="ad-card ad-reports" aria-labelledby="hReports">
-          <h2 id="hReports" class="ad-h2">Reportes por revisar</h2>
-          <p class="ad-muted">Lo que los turistas marcaron. Si no rompe las reglas, dejalo y el reporte se cierra.</p>
-          <ul id="reportList" class="ad-rows"></ul>
+        <div class="ad-head"><h1 class="ad-h1">Reseñas</h1></div>
+        <p class="ad-lead">Se publican al instante. Si una rompe las reglas (insultos, spam, datos personales, no es de ese lugar), borrala. Las borradas no se pierden: quedan en "Borradas" por si hubo un error.</p>
+        <section class="ad-card ad-reports" aria-labelledby="hRepRev">
+          <h2 id="hRepRev" class="ad-h2">Reportes por revisar</h2>
+          <p class="ad-muted">Reseñas que los turistas marcaron. Si no rompe las reglas, dejala y el reporte se cierra.</p>
+          <ul id="reportListReviews" class="ad-rows"></ul>
+          <nav class="ad-pager" data-pager="repRev" aria-label="Páginas de reportes"></nav>
         </section>
-        <div class="ad-two">
-          <section class="ad-card">
-            <h2 class="ad-h2">Reseñas</h2>
-            <ul id="allReviews" class="ad-rows"></ul>
-          </section>
-          <section class="ad-card">
-            <h2 class="ad-h2">Fotos de turistas</h2>
-            <ul id="allPhotos" class="ad-photos"></ul>
-          </section>
-        </div>
+        <section class="ad-card">
+          <div class="ad-filters" role="group" aria-label="Ver reseñas">
+            <button type="button" class="ad-filter" data-revfilter="live" aria-pressed="true">Publicadas</button>
+            <button type="button" class="ad-filter" data-revfilter="removed" aria-pressed="false">Borradas</button>
+          </div>
+          <ul id="allReviews" class="ad-rows"></ul>
+          <nav class="ad-pager" data-pager="reviews" aria-label="Páginas de reseñas"></nav>
+        </section>
       </section>
 
-      <!-- Lugares -->
+      <!-- Fotos -->
+      <section id="sec-fotos" class="ad-sec" hidden>
+        <div class="ad-head"><h1 class="ad-h1">Fotos</h1></div>
+        <p class="ad-lead">Las suben los turistas y la más votada es la portada del lugar. Borrá las que no son del lugar o muestran a alguien sin permiso. Tocá una foto para verla en grande.</p>
+        <section class="ad-card ad-reports" aria-labelledby="hRepPh">
+          <h2 id="hRepPh" class="ad-h2">Reportes por revisar</h2>
+          <p class="ad-muted">Fotos que los turistas marcaron. Si no rompe las reglas, dejala y el reporte se cierra.</p>
+          <ul id="reportListPhotos" class="ad-rows" data-gal-group></ul>
+          <nav class="ad-pager" data-pager="repPh" aria-label="Páginas de reportes"></nav>
+        </section>
+        <section class="ad-card">
+          <div class="ad-filters" role="group" aria-label="Ver fotos">
+            <button type="button" class="ad-filter" data-phfilter="live" aria-pressed="true">Publicadas</button>
+            <button type="button" class="ad-filter" data-phfilter="removed" aria-pressed="false">Borradas</button>
+          </div>
+          <ul id="allPhotos" class="ad-photos" data-gal-group></ul>
+          <nav class="ad-pager" data-pager="photos" aria-label="Páginas de fotos"></nav>
+        </section>
+      </section>
+
+      <!-- Lugares: lista -->
       <section id="sec-lugares" class="ad-sec" hidden>
         <div class="ad-head">
           <div><h1 class="ad-h1">Lugares turísticos</h1><p class="ad-muted" id="placesTotal"></p></div>
-          <button type="button" id="newPlaceBtn" class="ad-btn ad-btn-primary">Agregar lugar</button>
+          <a href="#lugares/nuevo" class="ad-btn ad-btn-primary">Agregar lugar</a>
         </div>
         <div class="ad-filters" role="group" aria-label="Filtrar lugares">
-          <button type="button" class="ad-filter" data-placefilter="all" aria-pressed="false">Todos</button>
-          <button type="button" class="ad-filter" data-placefilter="problems" aria-pressed="true">Con problemas</button>
+          <button type="button" class="ad-filter" data-placefilter="all" aria-pressed="true">Todos</button>
+          <button type="button" class="ad-filter" data-placefilter="problems" aria-pressed="false">Con problemas</button>
+          <button type="button" class="ad-filter" data-placefilter="removed" aria-pressed="false">Borrados</button>
           <label class="ad-search"><span class="sr-only">Buscar lugar</span><input type="search" id="placeSearch" placeholder="Buscar lugar"></label>
         </div>
-        <div class="ad-split">
-          <ul id="placeList" class="ad-card ad-list"></ul>
-          <section class="ad-card ad-detail">
-            <form id="placeForm" novalidate>
-              <div class="ad-card-head"><h2 id="placeFormTitle" class="ad-h2">Agregar lugar</h2><a id="placeOnMap" href="/" target="_blank" rel="noopener" hidden>Ver en el mapa</a></div>
-              <ul id="placeIssues" class="ad-issues"></ul>
-              <p class="ad-field-label">Ubicación: tocá el mapa o arrastrá el punto</p>
-              <div id="pickerMap" class="ad-picker" role="region" aria-label="Mapa para marcar la ubicación"></div>
-              <div class="ad-grid2">
-                <div class="ad-field"><label for="pLat">Latitud</label><input id="pLat" type="number" step="0.00001" required></div>
-                <div class="ad-field"><label for="pLng">Longitud</label><input id="pLng" type="number" step="0.00001" required></div>
-                <div class="ad-field"><label for="pName">Nombre</label><input id="pName" type="text" required></div>
-                <div class="ad-field"><label for="pCategory">Categoría</label>
-                  <select id="pCategory" required>{categories.map(([v, l]) => <option value={v}>{l}</option>)}</select></div>
-                <div class="ad-field"><label for="pMunicipality">Municipio</label><input id="pMunicipality" type="text"></div>
-                <div class="ad-field"><label for="pDepartment">Departamento</label><input id="pDepartment" type="text"></div>
-                <div class="ad-field"><label for="pSchedule">Horario</label><input id="pSchedule" type="text" placeholder="Martes a domingo, 9 a. m. a 4 p. m."></div>
-                <div class="ad-field"><label for="pPrice">Entrada</label><input id="pPrice" type="text" placeholder="$3 o Gratis"></div>
-                <div class="ad-field ad-span2"><label for="pWebsite">Sitio web (opcional)</label><input id="pWebsite" type="url" placeholder="https://"></div>
-                <div class="ad-field ad-span2"><label for="pRecs">Qué hacer (separado por comas)</label><input id="pRecs" type="text" placeholder="Senderismo, Mirador, Fotografía"></div>
-                <div class="ad-field ad-span2"><label for="pDesc">Descripción</label><textarea id="pDesc" rows="3"></textarea></div>
-              </div>
-              <p class="ad-field-label">Fotos de Goz (la portada la ganan los turistas con votos)</p>
-              <div id="pPhotos" class="ad-thumbs"></div>
-              <label class="ad-btn ad-btn-outline ad-upload">Subir foto<input type="file" id="pPhotoInput" accept="image/*" multiple class="sr-only"></label>
-              <p id="placeStatus" class="ad-status" role="status"></p>
-              <div class="ad-actions">
-                <button type="submit" id="saveNextBtn" class="ad-btn ad-btn-primary" data-next="1">Guardar y seguir con el próximo</button>
-                <button type="submit" id="saveBtn" class="ad-btn ad-btn-outline">Guardar</button>
-                <button type="button" id="deletePlaceBtn" class="ad-btn ad-btn-danger" hidden>Quitar del mapa</button>
-              </div>
-            </form>
-          </section>
-        </div>
+        <section class="ad-card">
+          <ul id="placeList" class="ad-cards"></ul>
+          <nav class="ad-pager" data-pager="places" aria-label="Páginas de lugares"></nav>
+        </section>
       </section>
 
-      <!-- Insignias de temporada -->
+      <!-- Lugares: formulario en su propia pantalla -->
+      <section id="sec-lugar" class="ad-sec ad-form-screen" data-parent="lugares" hidden>
+        <a href="#lugares" class="ad-back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+          Lugares turísticos
+        </a>
+        <div class="ad-head">
+          <h1 id="placeFormTitle" class="ad-h1">Agregar lugar</h1>
+          <a id="placeOnMap" class="ad-btn ad-btn-outline ad-btn-sm" href="/" target="_blank" rel="noopener" hidden>Ver en el mapa</a>
+        </div>
+        <ul id="placeIssues" class="ad-issues"></ul>
+        <form id="placeForm" class="ad-form" novalidate>
+          <section class="ad-card ad-form-card">
+            <h2 class="ad-h2">Ubicación</h2>
+            <p class="ad-muted">Tocá el mapa donde queda el lugar o arrastrá el punto.</p>
+            <div id="pickerMap" class="ad-picker" role="region" aria-label="Mapa para marcar la ubicación"></div>
+            <div class="ad-grid2">
+              <div class="ad-field"><label for="pLat">Latitud</label><input id="pLat" type="number" step="0.00001" required></div>
+              <div class="ad-field"><label for="pLng">Longitud</label><input id="pLng" type="number" step="0.00001" required></div>
+            </div>
+          </section>
+          <section class="ad-card ad-form-card">
+            <h2 class="ad-h2">Datos del lugar</h2>
+            <div class="ad-grid2">
+              <div class="ad-field"><label for="pName">Nombre</label><input id="pName" type="text" required></div>
+              <div class="ad-field"><label for="pCategory">Categoría</label>
+                <select id="pCategory" required>{categories.map(([v, l]) => <option value={v}>{l}</option>)}</select></div>
+              <div class="ad-field"><label for="pMunicipality">Municipio</label><input id="pMunicipality" type="text"></div>
+              <div class="ad-field"><label for="pDepartment">Departamento</label><input id="pDepartment" type="text"></div>
+              <div class="ad-field"><label for="pSchedule">Horario <span class="ad-opt">(si tiene)</span></label><input id="pSchedule" type="text" placeholder="Martes a domingo, 9 a. m. a 4 p. m."></div>
+              <div class="ad-field"><label for="pPrice">Entrada <span class="ad-opt">(si se paga)</span></label><input id="pPrice" type="text" placeholder="$3 o Gratis"></div>
+              <div class="ad-field ad-span2"><label for="pWebsite">Sitio web <span class="ad-opt">(opcional)</span></label><input id="pWebsite" type="url" placeholder="https://"></div>
+              <div class="ad-field ad-span2"><label for="pRecs">Qué hacer <span class="ad-opt">(separado por comas)</span></label><input id="pRecs" type="text" placeholder="Senderismo, Mirador, Fotografía"></div>
+              <div class="ad-field ad-span2"><label for="pDesc">Descripción</label><textarea id="pDesc" rows="4"></textarea></div>
+            </div>
+          </section>
+          <section class="ad-card ad-form-card">
+            <h2 class="ad-h2">Fotos</h2>
+            <p class="ad-muted">Al menos una. La portada del mapa la ganan las fotos de los turistas con votos.</p>
+            <div id="pPhotos" class="ad-thumbs" data-gal-group></div>
+            <label class="dropzone" id="pDrop">
+              <span class="dz-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+              <span class="dz-text"><strong>Agregá fotos del lugar</strong><span>Arrastralas aquí o tocá para elegir</span></span>
+              <input type="file" id="pPhotoInput" accept="image/*" multiple class="sr-only">
+            </label>
+          </section>
+          <div class="ad-form-foot">
+            <p id="placeStatus" class="ad-status" role="status"></p>
+            <div class="ad-actions">
+              <button type="submit" id="saveBtn" class="ad-btn ad-btn-primary">Guardar</button>
+              <button type="submit" id="saveNextBtn" class="ad-btn ad-btn-outline" data-next="1">Guardar y seguir con el próximo</button>
+              <button type="button" id="deletePlaceBtn" class="ad-btn ad-btn-danger" hidden>Quitar del mapa</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Insignias de temporada: lista -->
       <section id="sec-temporada" class="ad-sec" hidden>
-        <div class="ad-head"><h1 class="ad-h1">Insignias de temporada</h1></div>
+        <div class="ad-head">
+          <h1 class="ad-h1">Insignias de temporada</h1>
+          <a href="#temporada/nueva" class="ad-btn ad-btn-primary">Nueva insignia</a>
+        </div>
         <p class="ad-lead">Se ganan con una reseña con visita verificada en ese lugar, entre esas fechas. Ejemplo: Cerro de las Pavas, el 13 de diciembre. Anunciala antes en TikTok e Instagram.</p>
-        <div class="ad-two">
-          <form id="seasonForm" class="ad-card" novalidate>
-            <h2 class="ad-h2">Nueva insignia</h2>
+        <div class="ad-filters" role="group" aria-label="Ver insignias">
+          <button type="button" class="ad-filter" data-seasonfilter="active" aria-pressed="true">Activas</button>
+          <button type="button" class="ad-filter" data-seasonfilter="next" aria-pressed="false">Próximas</button>
+          <button type="button" class="ad-filter" data-seasonfilter="ended" aria-pressed="false">Terminaron</button>
+          <button type="button" class="ad-filter" data-seasonfilter="removed" aria-pressed="false">Borradas</button>
+        </div>
+        <section class="ad-card">
+          <ul id="seasonList" class="ad-rows"></ul>
+          <nav class="ad-pager" data-pager="season" aria-label="Páginas de insignias"></nav>
+        </section>
+      </section>
+
+      <!-- Insignias de temporada: formulario -->
+      <section id="sec-insignia" class="ad-sec ad-form-screen" data-parent="temporada" hidden>
+        <a href="#temporada" class="ad-back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+          Insignias de temporada
+        </a>
+        <h1 id="seasonFormTitle" class="ad-h1">Nueva insignia</h1>
+        <form id="seasonForm" class="ad-form" novalidate>
+          <section class="ad-card ad-form-card">
             <div class="ad-field"><label for="sName">Nombre</label><input id="sName" type="text" placeholder="Cerro de las Pavas 2026" required></div>
             <div class="ad-field"><label for="sDesc">Qué hay que hacer</label><input id="sDesc" type="text" placeholder="Visita verificada el 13 de diciembre"></div>
             <div class="ad-field"><label for="sPlace">Lugar</label><select id="sPlace" required></select></div>
@@ -173,14 +242,15 @@ const categories = [
               <div class="ad-field"><label for="sStart">Desde</label><input id="sStart" type="date" required></div>
               <div class="ad-field"><label for="sEnd">Hasta</label><input id="sEnd" type="date" required></div>
             </div>
-            <p id="seasonStatus" class="ad-status" role="status"></p>
-            <button type="submit" class="ad-btn ad-btn-primary">Crear insignia</button>
-          </form>
-          <section class="ad-card">
-            <h2 class="ad-h2">Creadas</h2>
-            <ul id="seasonList" class="ad-rows"></ul>
           </section>
-        </div>
+          <div class="ad-form-foot">
+            <p id="seasonStatus" class="ad-status" role="status"></p>
+            <div class="ad-actions">
+              <button type="submit" id="seasonSubmit" class="ad-btn ad-btn-primary">Crear insignia</button>
+              <a href="#temporada" class="ad-btn ad-btn-outline">Cancelar</a>
+            </div>
+          </div>
+        </form>
       </section>
     </main>
   </div>
@@ -242,7 +312,13 @@ const categories = [
   .ad-row-title { margin: 0; font-weight: 800; font-size: 15px; }
   .ad-row-text { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.45; overflow-wrap: anywhere; }
   .ad-row-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
-  .ad-reports { margin-bottom: 20px; }
+  .ad-removed { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: #8A3A10; }
+  .ad-mini-photos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .ad-mini { padding: 0; border: 0; background: var(--photo); width: 64px; height: 64px; border-radius: 10px; overflow: hidden; cursor: zoom-in; flex: none; }
+  .ad-mini-lg { width: 72px; height: 72px; }
+  .ad-mini img, .ad-photo-open img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ad-mini:focus-visible, .ad-photo-open:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .ad-photo-open { padding: 0; border: 0; background: var(--photo); width: 100%; aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: zoom-in; }
   .ad-report { align-items: flex-start; }
   .ad-report-why { margin: 6px 0 0; font-size: 14px; font-weight: 800; color: var(--canela); }
   .ad-report-note { margin: 4px 0 0; padding-left: 10px; border-left: 3px solid var(--line); font-size: 14px; color: var(--ink-2); }
@@ -256,7 +332,8 @@ const categories = [
   .ad-filter[aria-pressed="true"] { background: var(--rama); border-color: var(--rama); color: #FFFFFF; font-weight: 800; }
   .ad-search input { height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid var(--border); font: inherit; font-size: 14px; min-width: 200px; }
   .ad-split { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
-  .ad-list { flex: 1 1 320px; list-style: none; margin: 0; padding: 8px; gap: 2px; max-height: 70vh; overflow-y: auto; }
+  .ad-list-wrap { flex: 1 1 320px; padding: 8px; gap: 8px; }
+  .ad-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   .ad-detail { flex: 2 1 520px; }
   .ad-item { width: 100%; display: flex; gap: 12px; align-items: center; padding: 10px; border: 0; border-radius: 12px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
   .ad-item:hover { background: var(--neblina); }
@@ -273,7 +350,30 @@ const categories = [
   .ad-issues li.is-notice { background: var(--neblina); color: var(--muted); }
   .ad-tag.is-notice { background: var(--neblina); color: var(--muted); }
   .ad-issues li { padding: 10px 12px; border-radius: 12px; background: #F6D9C8; color: #6E2E0C; font-size: 14px; font-weight: 700; }
-  .ad-picker { height: 260px; border-radius: 12px; overflow: hidden; }
+  .ad-picker { height: 380px; border-radius: 14px; overflow: hidden; }
+  .ad-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .ad-pager[hidden] { display: none; }
+  .ad-pager-info { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .ad-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .ad-place { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); text-decoration: none; background: var(--surface); }
+  a.ad-place:hover { background: var(--neblina); border-color: #B7D3D0; }
+  a.ad-place:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .ad-place .ad-item-main { flex: 1; }
+  .ad-go { flex: none; font-size: 14px; font-weight: 800; color: var(--turquesa); }
+  .ad-back { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 40px; color: var(--ink); font-weight: 800; text-decoration: none; }
+  .ad-back:hover { color: var(--turquesa); }
+  .ad-form-screen { max-width: 860px; }
+  .ad-form { display: flex; flex-direction: column; gap: 18px; }
+  .ad-form-card { gap: 14px; padding: 24px; }
+  .ad-form-card .ad-h2 { margin: 0; }
+  .ad-form-card .ad-grid2 { gap: 16px 18px; }
+  .ad-form-foot { position: sticky; bottom: 0; z-index: 5; background: var(--neblina); padding: 12px 0 16px; display: flex; flex-direction: column; gap: 6px; }
+  .ad-form-foot .ad-actions { border-top: 0; padding-top: 0; }
+  .ad-opt { font-weight: 600; color: var(--muted); }
+  .ad-row-actions { display: flex; gap: 8px; align-items: center; flex: none; }
+  .ad-issues[hidden] { display: none; }
+  .ad-thumbs .ph .ad-ph-open { width: 100%; height: 100%; border-radius: 10px; }
+  .ad-thumbs .ph-rm { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 14px; border: 2px solid #FFFFFF; background: var(--rama); color: #FFFFFF; cursor: pointer; }
   .ad-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .ad-span2 { grid-column: span 2; }
   .ad-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -283,7 +383,6 @@ const categories = [
   .ad-thumbs:empty { display: none; }
   .ad-thumbs .ph { position: relative; width: 120px; height: 84px; }
   .ad-thumbs img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
-  .ad-thumbs button { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 14px; border: 2px solid #FFFFFF; background: var(--rama); color: #FFFFFF; cursor: pointer; }
   .ad-thumbs .stock { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 800; color: #6E2E0C; background: #F6D9C8; padding: 2px 6px; border-radius: 8px; }
   .ad-upload { align-self: flex-start; }
   .ad-status { margin: 0; font-size: 14px; font-weight: 700; color: var(--turquesa); min-height: 1em; }
@@ -291,6 +390,14 @@ const categories = [
   .ad-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); align-items: center; }
   .ad-actions .ad-btn-danger { margin-left: auto; }
   .ad-check { display: flex; gap: 10px; align-items: center; min-height: 40px; font-size: 15px; }
+  .ad-approve { flex: 1 1 300px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .ad-step { margin: 8px 0 2px; font-size: 14px; font-weight: 800; color: var(--ink); }
+  .ad-autochecks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .ad-autochecks li { display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
+  .ad-autochecks span { width: 18px; flex: none; font-weight: 800; text-align: center; }
+  .ad-autochecks .is-ok { color: var(--ink-2); }
+  .ad-autochecks .is-ok span { color: var(--turquesa); }
+  .ad-autochecks .is-bad { color: #8A3A10; font-weight: 700; }
   .ad-check input { width: 20px; height: 20px; accent-color: var(--turquesa); }
   .ad-photos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
   .ad-photos li { display: flex; flex-direction: column; gap: 4px; }
@@ -321,9 +428,10 @@ const categories = [
 
 <script>
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-  import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+  import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
   import { esc, safeUrl, num } from '../../lib/escape';
   import { datePicker } from '../../lib/datePicker';
+  import { enableGalleries } from '../../lib/gallery';
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
 
@@ -360,10 +468,37 @@ const categories = [
   const BIZ: Record<string, string> = { hotel: 'Hospedaje', restaurante: 'Restaurante', cafeteria: 'Cafetería', tienda: 'Tienda', otro: 'Negocio' };
 
   let user: any = null;
-  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [], reports: any[] = [];
-  let bizFilter = 'pending', placeFilter = 'problems';
+  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [], reports: any[] = [], archived: any[] = [];
+  let revFilter: 'live' | 'removed' = 'live', phFilter: 'live' | 'removed' = 'live';
+  let bizFilter = 'pending', placeFilter = 'all', seasonFilter = 'active', selSeason: string | null = null;
   let selBiz: string | null = null, selPlace: string | null = null;
   let placePhotos: string[] = [], uploading = 0;
+
+  enableGalleries(document);
+
+  // ---------- Paginación (todas las listas) ----------
+  const pages: Record<string, number> = {};
+  function page<T>(key: string, items: T[], per: number): T[] {
+    const total = Math.max(1, Math.ceil(items.length / per));
+    const p = (pages[key] = Math.min(Math.max(1, pages[key] || 1), total));
+    const nav = document.querySelector(`[data-pager="${key}"]`) as HTMLElement | null;
+    if (nav) {
+      nav.hidden = items.length <= per;
+      nav.innerHTML = `<button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-page="${key}" data-to="${p - 1}"${p === 1 ? ' disabled' : ''}>Anterior</button>
+        <span class="ad-pager-info">Página ${p} de ${total}</span>
+        <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-page="${key}" data-to="${p + 1}"${p === total ? ' disabled' : ''}>Siguiente</button>`;
+    }
+    return items.slice((p - 1) * per, p * per);
+  }
+  const resetPage = (...keys: string[]) => keys.forEach((k) => { pages[k] = 1; });
+  document.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest('[data-page]') as HTMLButtonElement | null;
+    if (!b || b.disabled) return;
+    pages[b.dataset.page!] = Number(b.dataset.to);
+    ({ biz: renderBizList, places: renderPlaceList, season: renderSeason } as Record<string, () => void>)[b.dataset.page!]?.() ?? renderModeration();
+    const card = b.closest('.ad-card, .ad-list-wrap') as HTMLElement | null;
+    card?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
 
   // ---------- Entrar ----------
   $('loginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
@@ -390,13 +525,14 @@ const categories = [
   });
 
   async function loadAll() {
-    const [p, b, r, f, s, rp] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports']
+    const [p, b, r, f, s, rp, ar] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports', 'archive']
       .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[])));
     places = p.map((x: any) => ({ ...x, lat: Number(x.lat), lng: Number(x.lng) })).sort((a: any, b2: any) => String(a.name).localeCompare(String(b2.name), 'es'));
     businesses = b.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     reviews = r.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     photos = f.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     reports = rp.filter((x: any) => x.status === 'open');
+    archived = ar.filter((x: any) => !x.restoredAt).sort((a: any, b2: any) => ms(b2.deletedAt) - ms(a.deletedAt));
     seasonal = s.sort((a: any, b2: any) => String(b2.start).localeCompare(String(a.start)));
     renderAll();
     checkPhotos();
@@ -417,16 +553,20 @@ const categories = [
   function hideSections() { document.querySelectorAll('.ad-sec').forEach((s) => ((s as HTMLElement).hidden = true)); }
   function route() {
     if (!user || !$('gate').hidden) return;
-    const id = (location.hash.slice(1) || 'resumen');
+    // #lugares/nuevo, #lugares/editar/ID, #temporada/nueva, #temporada/editar/ID: formularios en su propia pantalla.
+    const [id, sub, arg] = (location.hash.slice(1) || 'resumen').split('/');
+    const form = (id === 'lugares' && (sub === 'nuevo' || sub === 'editar')) ? 'lugar' : (id === 'temporada' && (sub === 'nueva' || sub === 'editar')) ? 'insignia' : '';
     hideSections();
-    const sec = $(`sec-${id}`) || $('sec-resumen');
+    const sec = $(`sec-${form || id}`) || $('sec-resumen');
     sec.hidden = false;
+    const parent = sec.dataset.parent || sec.id.replace('sec-', '');
     document.querySelectorAll('.ad-link[data-section]').forEach((a) => {
-      const on = (a as HTMLElement).dataset.section === (sec.id.replace('sec-', ''));
+      const on = (a as HTMLElement).dataset.section === parent;
       a.classList.toggle('is-active', on);
       if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
-    if (sec.id === 'sec-lugares') setTimeout(() => { initPicker(); if (!selPlace && !$('pName').value) openPlace(firstPlaceOfFilter()); }, 0);
+    if (form === 'lugar') setTimeout(() => { initPicker(); openPlace(sub === 'editar' ? decodeURIComponent(arg || '') : null); }, 0);
+    if (form === 'insignia') openSeason(sub === 'editar' ? decodeURIComponent(arg || '') : null);
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
@@ -459,12 +599,14 @@ const categories = [
     const probs = problemPlaces();
     const repGroups = reportGroups();
     const setCount = (id: string, n: number) => { $(`count-${id}`).hidden = !n; $(`count-${id}`).textContent = n; };
-    setCount('negocios', pendingBiz.length); setCount('resenas', newReviews.length + newPhotos.length + repGroups.length); setCount('lugares', probs.length);
+    setCount('negocios', pendingBiz.length); setCount('resenas', newReviews.length + repGroups.filter((g) => g.type === 'review').length);
+    setCount('fotos', newPhotos.length + repGroups.filter((g) => g.type === 'photo').length); setCount('lugares', probs.length);
 
     $('today').textContent = new Date().toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
     $('tdBiz').textContent = pendingBiz.length; $('tdReviews').textContent = newReviews.length;
     $('tdPlans').textContent = businesses.filter((b) => isPaidPlan(b) && planDays(b) <= 7).length; $('tdPlaces').textContent = probs.length;
     $('tdReports').textContent = repGroups.length;
+    ($('tdReportsLink') as HTMLAnchorElement).href = repGroups.some((g) => g.type === 'review') || !repGroups.length ? '#resenas' : '#fotos';
     // Solo se resalta lo que tiene algo pendiente.
     document.querySelectorAll('.ad-todo-card').forEach((c) => c.classList.toggle('is-hot', Number(c.querySelector('.ad-num')?.textContent) > 0));
     const active = businesses.filter((b) => b.status !== 'pending' && b.status !== 'rejected');
@@ -487,14 +629,23 @@ const categories = [
   const who = (x: any) => x.userId
     ? `<a class="ad-who" href="/perfil?u=${encodeURIComponent(x.userId)}" target="_blank" rel="noopener">${esc(x.userName || 'Visitante')}</a>`
     : esc(x.userName || 'Visitante');
-  function reviewRow(r: any) {
+  // Fotos chiquitas que abren el visor con todas las del grupo.
+  const galThumbs = (urls: string[], cap: string) => {
+    const u = urls.map((x) => safeUrl(x)).filter(Boolean);
+    return u.length ? `<div class="ad-mini-photos" data-gal-group>${u.map((x, i) => `<button type="button" class="ad-mini" data-gal data-src="${x}" data-cap="${esc(cap)}" aria-label="Ver foto ${i + 1} de ${u.length}"><img src="${x}" alt="" loading="lazy"></button>`).join('')}</div>` : '';
+  };
+  function reviewRow(r: any, arch?: any) {
     return `<li class="ad-row">
       <div class="ad-row-main">
         <p class="ad-row-title">${esc(placeName(r.placeId) || r.placeName || 'Lugar')} · ${num(r.rating)} de 5${r.verified ? ' <span class="ad-tag ad-tag-ok">Verificada</span>' : ''}</p>
         ${r.comment ? `<p class="ad-row-text">${esc(r.comment)}</p>` : ''}
-        <p class="ad-row-meta">${who(r)} · ${ago(r.createdAt)}${(r.photos || []).length ? ` · ${(r.photos || []).length} ${(r.photos || []).length === 1 ? 'foto' : 'fotos'}` : ''}</p>
+        ${galThumbs(r.photos || [], `Foto de ${r.userName || 'un visitante'}`)}
+        <p class="ad-row-meta">${who(r)} · ${ago(r.createdAt)}</p>
+        ${arch ? `<p class="ad-removed">Borrada ${ago(arch.deletedAt)} por ${esc(arch.deletedByName || 'el admin')} · ${esc(arch.reason || '')}</p>` : ''}
       </div>
-      <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="reviews/${esc(r.id)}">Borrar</button>
+      ${arch
+        ? `<button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-restore="${esc(arch.id)}">Restaurar</button>`
+        : `<button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="reviews/${esc(r.id)}">Borrar</button>`}
     </li>`;
   }
   // ---------- Reportes ----------
@@ -513,8 +664,8 @@ const categories = [
     }).sort((a, b) => b.list.length - a.list.length);
   }
   function renderReports() {
-    const groups = reportGroups();
-    $('reportList').innerHTML = groups.map(({ type, id, list, target }) => {
+    const all = reportGroups();
+    const html = (groups: ReturnType<typeof reportGroups>) => groups.map(({ type, id, list, target }) => {
       const counts: Record<string, number> = {};
       list.forEach((x) => { counts[x.reason] = (counts[x.reason] || 0) + 1; });
       const why = Object.entries(counts).map(([k, n]) => `${REASONS[k] || k}${n > 1 ? ` (${n})` : ''}`).join(' · ');
@@ -523,7 +674,7 @@ const categories = [
       const col = type === 'review' ? 'reviews' : 'photos';
       const pName = esc(placeName(list[0].placeId) || target?.placeName || 'Lugar');
       return `<li class="ad-row ad-report">
-        ${type === 'photo' ? (target ? `<a href="${safeUrl(target.url)}" target="_blank" rel="noopener"><img class="ad-thumb" src="${safeUrl(target.url)}" alt="Foto reportada"></a>` : '<span class="ad-thumb"></span>') : ''}
+        ${type === 'photo' ? (target ? `<button type="button" class="ad-mini ad-mini-lg" data-gal data-src="${safeUrl(target.url)}" data-cap="Foto reportada · de ${esc(target.userName || 'un visitante')}" aria-label="Ver la foto reportada"><img src="${safeUrl(target.url)}" alt=""></button>` : '<span class="ad-thumb"></span>') : ''}
         <div class="ad-row-main">
           <p class="ad-row-title">${type === 'review' ? 'Reseña' : 'Foto'} en ${pName} <span class="ad-tag ad-tag-warn">${list.length} ${list.length === 1 ? 'reporte' : 'reportes'}</span></p>
           ${type === 'review' && target ? `<p class="ad-row-text">${num(target.rating)} de 5 · “${esc(String(target.comment || '').slice(0, 220))}”</p>` : ''}
@@ -536,7 +687,9 @@ const categories = [
           <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-keep="${type}/${esc(id)}">${target ? 'Dejarla' : 'Cerrar reporte'}</button>
         </div>
       </li>`;
-    }).join('') || '<li class="ad-empty">No hay reportes. Cuando un turista marque una reseña o una foto, aparece aquí.</li>';
+    }).join('');
+    $('reportListReviews').innerHTML = html(page('repRev', all.filter((g) => g.type === 'review'), 5)) || '<li class="ad-empty">No hay reseñas reportadas. Cuando un turista marque una, aparece aquí.</li>';
+    $('reportListPhotos').innerHTML = html(page('repPh', all.filter((g) => g.type === 'photo'), 5)) || '<li class="ad-empty">No hay fotos reportadas. Cuando un turista marque una, aparece aquí.</li>';
   }
   // Cierra los reportes abiertos de una reseña o foto (status: kept si se deja, removed si se borró).
   async function closeReports(type: string, id: string, status: 'kept' | 'removed') {
@@ -547,12 +700,55 @@ const categories = [
 
   function renderModeration() {
     renderReports();
-    $('allReviews').innerHTML = reviews.slice(0, 60).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
-    $('allPhotos').innerHTML = photos.slice(0, 60).map((f) => `<li>
-      <a href="${safeUrl(f.url)}" target="_blank" rel="noopener"><img src="${safeUrl(f.url)}" alt="Foto de ${esc(f.userName || 'visitante')}" loading="lazy"></a>
-      <p>${esc(placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} votos · ${who(f)}</p>
-      <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="photos/${esc(f.id)}">Borrar</button>
-    </li>`).join('') || '<li class="ad-empty">Todavía no hay fotos de turistas.</li>';
+    const arRev = archived.filter((x) => x.collection === 'reviews');
+    const arPh = archived.filter((x) => x.collection === 'photos');
+    document.querySelectorAll('[data-revfilter]').forEach((b: any) => {
+      b.setAttribute('aria-pressed', String(b.dataset.revfilter === revFilter));
+      b.textContent = b.dataset.revfilter === 'live' ? `Publicadas · ${reviews.length}` : `Borradas · ${arRev.length}`;
+    });
+    document.querySelectorAll('[data-phfilter]').forEach((b: any) => {
+      b.setAttribute('aria-pressed', String(b.dataset.phfilter === phFilter));
+      b.textContent = b.dataset.phfilter === 'live' ? `Publicadas · ${photos.length}` : `Borradas · ${arPh.length}`;
+    });
+    $('allReviews').innerHTML = revFilter === 'live'
+      ? (page('reviews', reviews, 10).map((r) => reviewRow(r)).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>')
+      : (page('reviews', arRev, 10).map((a) => reviewRow({ ...a.data, id: a.docId }, a)).join('') || '<li class="ad-empty">No hay reseñas borradas.</li>');
+    const phCard = (f: any, a?: any) => `<li>
+      <button type="button" class="ad-photo-open" data-gal data-src="${safeUrl(f.url)}" data-cap="${esc(placeName(f.placeId) || f.placeName || '')} · foto de ${esc(f.userName || 'un visitante')}" aria-label="Ver la foto de ${esc(f.userName || 'un visitante')}"><img src="${safeUrl(f.url)}" alt="" loading="lazy"></button>
+      <p>${esc(placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} ${num(f.votes) === 1 ? 'voto' : 'votos'} · ${who(f)}</p>
+      ${a ? `<p class="ad-removed">Borrada ${ago(a.deletedAt)} · ${esc(a.reason || '')}</p><button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-restore="${esc(a.id)}">Restaurar</button>`
+        : `<button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="photos/${esc(f.id)}">Borrar</button>`}
+    </li>`;
+    $('allPhotos').innerHTML = phFilter === 'live'
+      ? (page('photos', photos, 24).map((f) => phCard(f)).join('') || '<li class="ad-empty">Todavía no hay fotos de turistas.</li>')
+      : (page('photos', arPh, 24).map((a) => phCard({ ...a.data, id: a.docId }, a)).join('') || '<li class="ad-empty">No hay fotos borradas.</li>');
+  }
+
+  // ---------- Nada se borra para siempre ----------
+  // Lo borrado se guarda en archive/{colección}_{id} (solo lo ve el admin) y se puede restaurar.
+  const ARCH_NAMES: Record<string, [string, string]> = {
+    reviews: ['Reseña borrada', 'review'], photos: ['Foto borrada', 'photo'],
+    places: ['Lugar quitado del mapa', ''], seasonalBadges: ['Insignia borrada', ''],
+  };
+  const listOf = (col: string): any[] => (col === 'reviews' ? reviews : col === 'photos' ? photos : col === 'places' ? places : seasonal);
+  function setList(col: string, list: any[]) {
+    if (col === 'reviews') reviews = list; else if (col === 'photos') photos = list; else if (col === 'places') places = list; else seasonal = list;
+  }
+  async function archiveDelete(col: string, id: string, why = '') {
+    const type = ARCH_NAMES[col]?.[1] || '';
+    const item = listOf(col).find((x) => x.id === id);
+    const reps = type ? reports.filter((x) => x.type === type && x.targetId === id) : [];
+    const reason = why || (reps.length ? `Reportada: ${[...new Set(reps.map((x) => REASONS[x.reason] || x.reason))].join(', ')}` : 'Desde el admin');
+    const { id: _omit, ...data } = item || {};
+    const arch = { collection: col, docId: id, placeId: data.placeId || (col === 'places' ? id : ''), data, reason, deletedAt: serverTimestamp(), deletedBy: user.uid, deletedByName: user.displayName || 'Admin' };
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'archive', `${col}_${id}`), arch);
+    batch.delete(doc(db, col, id));
+    await batch.commit();
+    archived.unshift({ ...arch, id: `${col}_${id}`, deletedAt: { toMillis: () => Date.now() } });
+    setList(col, listOf(col).filter((x) => x.id !== id));
+    if (type) await closeReports(type, id, 'removed').catch((e2) => console.error(e2));
+    toast(`${ARCH_NAMES[col]?.[0] || 'Borrado'}. Está en "Borrad${col === 'places' ? 'os' : 'as'}" por si hay que restaurarl${col === 'places' ? 'o' : 'a'}.`);
   }
 
   // Borrar pide un segundo toque en el mismo botón (sin ventanas del navegador).
@@ -561,6 +757,29 @@ const categories = [
     if (t.closest('[data-plans-link]')) { bizFilter = 'paid'; selBiz = null; setTimeout(() => renderBizList(), 0); }
     const openBiz = t.closest('[data-open-biz]') as HTMLElement | null;
     if (openBiz) { selBiz = openBiz.dataset.openBiz!; bizFilter = 'pending'; setTimeout(() => { renderBizList(); renderBizDetail(); }, 0); }
+    const restore = t.closest('[data-restore]') as HTMLButtonElement | null;
+    if (restore) {
+      const a = archived.find((x) => x.id === restore.dataset.restore);
+      if (!a) return;
+      restore.disabled = true; restore.textContent = 'Restaurando…';
+      try {
+        const batch = writeBatch(db);
+        batch.set(doc(db, a.collection, a.docId), a.data);
+        batch.update(doc(db, 'archive', a.id), { restoredAt: serverTimestamp(), restoredBy: user.uid });
+        await batch.commit();
+        archived = archived.filter((x) => x.id !== a.id);
+        const back = { ...a.data, id: a.docId };
+        if (a.collection === 'places') Object.assign(back, { lat: Number(back.lat), lng: Number(back.lng) });
+        setList(a.collection, [back, ...listOf(a.collection)]);
+        renderAll();
+        toast(a.collection === 'seasonalBadges' ? 'Insignia restaurada.' : `${a.collection === 'reviews' ? 'Reseña restaurada' : a.collection === 'photos' ? 'Foto restaurada' : 'Lugar restaurado'}. Ya se ve otra vez en el mapa.`);
+      } catch (err) { console.error(err); restore.disabled = false; restore.textContent = 'No se pudo restaurar'; }
+      return;
+    }
+    const revF = t.closest('[data-revfilter]') as HTMLElement | null;
+    if (revF) { revFilter = revF.dataset.revfilter as any; resetPage('reviews'); renderModeration(); return; }
+    const phF = t.closest('[data-phfilter]') as HTMLElement | null;
+    if (phF) { phFilter = phF.dataset.phfilter as any; resetPage('photos'); renderModeration(); return; }
     const keep = t.closest('[data-keep]') as HTMLButtonElement | null;
     if (keep) {
       const [type, id] = keep.dataset.keep!.split('/');
@@ -580,18 +799,14 @@ const categories = [
     const [col, id] = del.dataset.del!.split('/');
     del.disabled = true; del.textContent = 'Borrando…';
     try {
-      await deleteDoc(doc(db, col, id));
-      if (col === 'reviews' || col === 'photos') await closeReports(col === 'reviews' ? 'review' : 'photo', id, 'removed').catch((e2) => console.error(e2));
-      if (col === 'reviews') reviews = reviews.filter((x) => x.id !== id);
-      if (col === 'photos') photos = photos.filter((x) => x.id !== id);
-      if (col === 'seasonalBadges') seasonal = seasonal.filter((x) => x.id !== id);
+      await archiveDelete(col, id);
       renderAll();
     } catch (err) { console.error(err); del.disabled = false; del.textContent = 'No se pudo borrar'; }
   });
 
   // ---------- Negocios ----------
   document.querySelectorAll('[data-bizfilter]').forEach((b) => b.addEventListener('click', () => {
-    bizFilter = (b as HTMLElement).dataset.bizfilter!; selBiz = null; renderBizList(); renderBizDetail();
+    bizFilter = (b as HTMLElement).dataset.bizfilter!; selBiz = null; resetPage('biz'); renderBizList(); renderBizDetail();
   }));
   const bizState = (b: any) => b.status === 'pending' ? 'pending' : b.status === 'rejected' ? 'rejected' : 'active';
   // ---------- Planes ----------
@@ -617,7 +832,8 @@ const categories = [
   }
   function renderBizList() {
     document.querySelectorAll('[data-bizfilter]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.bizfilter === bizFilter)));
-    const list = businesses.filter(inFilter).sort((a, b2) => bizFilter === 'paid' ? planDays(a) - planDays(b2) : 0);
+    const all = businesses.filter(inFilter).sort((a, b2) => bizFilter === 'paid' ? planDays(a) - planDays(b2) : 0);
+    const list = page('biz', all, 8);
     if (!selBiz && list[0]) selBiz = list[0].id;
     $('bizList').innerHTML = list.map((b) => `<li><button type="button" class="ad-item${b.id === selBiz ? ' is-active' : ''}" data-biz="${esc(b.id)}">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
@@ -628,6 +844,22 @@ const categories = [
     $('bizList').querySelectorAll('[data-biz]').forEach((el: HTMLElement) => el.addEventListener('click', () => { selBiz = el.dataset.biz!; renderBizList(); renderBizDetail(); }));
     renderBizDetail();
   }
+  // Fotos del negocio sin repetir (portada + galería).
+  const bizPhotos = (b: any) => [...new Set([b.coverUrl, ...(b.photos || [])].map((x: string) => safeUrl(x || '')).filter(Boolean))];
+  const MIN_BIZ_PHOTOS = 2;
+  // Revisiones automáticas: si alguna falla, no se puede aprobar.
+  function autoChecks(b: any) {
+    const n = bizPhotos(b).length;
+    const inSV = Number(b.lat) > 13 && Number(b.lat) < 14.6 && Number(b.lng) > -90.3 && Number(b.lng) < -87.5;
+    return [
+      { ok: String(b.name || '').trim().length >= 3 && !!b.category, label: 'Tiene nombre y tipo de negocio', bad: 'Le falta el nombre o el tipo de negocio', ask: 'el nombre y el tipo de negocio' },
+      { ok: String(b.description || '').trim().length >= 40, label: 'La descripción dice qué ofrece', bad: 'La descripción está vacía o es muy corta', ask: 'una descripción de qué ofrecen (unas dos líneas)' },
+      { ok: !!String(b.schedule || '').trim(), label: 'Tiene horario', bad: 'No tiene horario', ask: 'el horario' },
+      { ok: !!String(b.phone || b.whatsapp || '').replace(/\D/g, ''), label: 'Dejó teléfono o WhatsApp', bad: 'No dejó teléfono ni WhatsApp', ask: 'un teléfono o WhatsApp' },
+      { ok: n >= MIN_BIZ_PHOTOS, label: `Tiene ${n} fotos`, bad: n ? `Solo tiene ${n} foto; se piden al menos ${MIN_BIZ_PHOTOS}` : `No tiene fotos; se piden al menos ${MIN_BIZ_PHOTOS}`, ask: `al menos ${MIN_BIZ_PHOTOS} fotos del negocio` },
+      { ok: inSV, label: 'El punto cae en El Salvador', bad: 'El punto cae fuera de El Salvador', ask: 'marcar bien la ubicación en el mapa' },
+    ];
+  }
   let miniMap: any = null;
   function renderBizDetail() {
     const b = businesses.find((x) => x.id === selBiz && inFilter(x));
@@ -635,6 +867,8 @@ const categories = [
     const wa = String(b.whatsapp || b.phone || '').replace(/\D/g, '');
     const waUrl = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}.`)}` : '';
     const st = bizState(b);
+    const missing = autoChecks(b).filter((c) => !c.ok);
+    const waAsk = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}. Para publicarlo en el mapa nos falta: ${missing.map((c) => c.ask).join('; ')}. Lo podés agregar desde la app. ¡Gracias!`)}` : '';
     $('bizDetail').innerHTML = `
       <div class="ad-biz-top">
         ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="ad-biz-photo" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="">` : '<span class="ad-biz-photo"></span>'}
@@ -643,18 +877,27 @@ const categories = [
           <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
           ${b.description ? `<p class="ad-row-text" style="margin-top:8px">${esc(b.description)}</p>` : ''}
           <p class="ad-row-meta" style="margin-top:6px">${[b.schedule, b.address, b.phone && `Tel. ${b.phone}`, b.whatsapp && `WhatsApp ${b.whatsapp}`, b.email].filter(Boolean).map((x) => esc(x)).join(' · ')}</p>
-          <p class="ad-row-meta">Dueño: ${b.ownerId ? who({ userId: b.ownerId, userName: b.ownerName || 'ver su perfil' }) : 'sin cuenta'} · ${(b.photos || []).length} ${(b.photos || []).length === 1 ? 'foto' : 'fotos'}${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
+          <p class="ad-row-meta">Dueño: ${b.ownerId ? who({ userId: b.ownerId, userName: b.ownerName || 'ver su perfil' }) : 'sin cuenta'}${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
         </div>
+      </div>
+      <div>
+        <p class="ad-field-label">Fotos (${bizPhotos(b).length})</p>
+        ${galThumbs(bizPhotos(b), b.name) || '<p class="ad-muted">No subió fotos.</p>'}
       </div>
       <div class="ad-two">
         <div><p class="ad-field-label">Ubicación que marcó</p><div id="bizMiniMap" class="ad-minimap" role="region" aria-label="Ubicación del negocio"></div></div>
-        <div${st === 'active' ? ' hidden' : ''}>
-          <p class="ad-field-label">Antes de aprobar</p>
-          <label class="ad-check"><input type="checkbox" data-check>El punto está en el lugar correcto</label>
-          <label class="ad-check"><input type="checkbox" data-check>Las fotos son del negocio (o no subió)</label>
-          <label class="ad-check"><input type="checkbox" data-check>Contestó por WhatsApp</label>
-          <p class="ad-muted" id="checkHelp">Marcá las 3 revisiones para poder aprobar.</p>
-          ${waUrl ? `<a class="ad-btn ad-btn-outline ad-btn-sm" href="${waUrl}" target="_blank" rel="noopener">Escribirle por WhatsApp</a>` : ''}
+        <div class="ad-approve"${st === 'active' ? ' hidden' : ''}>
+          <p class="ad-field-label">Revisión antes de aprobar</p>
+          <p class="ad-step">1. Lo que Goz revisa solo</p>
+          <ul class="ad-autochecks">${autoChecks(b).map((c) => `<li class="${c.ok ? 'is-ok' : 'is-bad'}"><span aria-hidden="true">${c.ok ? '✓' : '✕'}</span>${esc(c.ok ? c.label : c.bad)}</li>`).join('')}</ul>
+          ${missing.length ? `<p class="ad-muted">Falta lo que está en rojo. ${waUrl ? 'Pedíselo al dueño por WhatsApp; cuando lo agregue, aparece aquí.' : 'No dejó teléfono ni WhatsApp: si no lo agrega, rechazalo.'}</p>
+            ${waUrl ? `<a class="ad-btn ad-btn-outline ad-btn-sm" href="${waAsk}" target="_blank" rel="noopener">Pedirle lo que falta por WhatsApp</a>` : ''}` : ''}
+          <p class="ad-step">2. Lo que revisás vos</p>
+          <label class="ad-check"><input type="checkbox" data-check>El punto del mapa está donde queda el negocio</label>
+          <label class="ad-check"><input type="checkbox" data-check>Las fotos son de este negocio (no de internet ni de otro lugar)</label>
+          <label class="ad-check"><input type="checkbox" data-check>Confirmé por WhatsApp o llamada que existe y que lo registró el dueño o encargado</label>
+          ${waUrl && !missing.length ? `<a class="ad-btn ad-btn-outline ad-btn-sm" href="${waUrl}" target="_blank" rel="noopener">Escribirle por WhatsApp</a>` : ''}
+          <p class="ad-muted" id="checkHelp"></p>
         </div>
       </div>
       ${st === 'active' ? `<section class="ad-plan">
@@ -682,11 +925,14 @@ const categories = [
     const approveBtn = $('bizDetail').querySelector('[data-setstatus="active"]') as HTMLButtonElement | null;
     const syncChecks = () => {
       const done = checks.every((c) => c.checked);
-      if (approveBtn) approveBtn.disabled = !done;
-      if ($('checkHelp')) $('checkHelp').textContent = done ? 'Listo para aprobar.' : `Marcá las 3 revisiones para poder aprobar (${checks.filter((c) => c.checked).length} de 3).`;
+      if (approveBtn) approveBtn.disabled = !done || missing.length > 0;
+      if ($('checkHelp')) $('checkHelp').textContent = missing.length
+        ? 'No se puede aprobar hasta que tenga lo que falta en el paso 1.'
+        : done ? 'Listo para aprobar.' : `Marcá las 3 revisiones para poder aprobar (${checks.filter((c) => c.checked).length} de 3).`;
     };
+    syncChecks();
     checks.forEach((c) => c.addEventListener('change', syncChecks));
-    if (approveBtn && !checks.length) approveBtn.disabled = false;
+    if (approveBtn && !checks.length) approveBtn.disabled = missing.length > 0;
     $('bizDetail').querySelectorAll('[data-setstatus]').forEach((btn: HTMLButtonElement) => btn.addEventListener('click', async () => {
       const status = btn.dataset.setstatus!;
       // Rechazar o quitar del mapa piden un segundo toque.
@@ -698,7 +944,10 @@ const categories = [
       }
       btn.disabled = true;
       try {
-        await updateDoc(doc(db, 'businesses', b.id), { status, reviewedAt: serverTimestamp(), reviewedBy: user.uid });
+        await updateDoc(doc(db, 'businesses', b.id), {
+          status, reviewedAt: serverTimestamp(), reviewedBy: user.uid,
+          ...(status === 'active' ? { approvalChecks: [...autoChecks(b).map((c) => c.label), 'Punto revisado', 'Fotos revisadas', 'Dueño confirmado'] } : {}),
+        });
         b.status = status;
         toast(status === 'active' ? `${b.name} quedó aprobado y ya sale en el mapa.` : status === 'rejected' ? `${b.name} quedó rechazado. Lo encontrás en Rechazados.` : `${b.name} volvió a Por aprobar y ya no sale en el mapa.`);
         selBiz = null; renderAll();
@@ -735,41 +984,48 @@ const categories = [
 
   // ---------- Lugares ----------
   document.querySelectorAll('[data-placefilter]').forEach((b) => b.addEventListener('click', () => {
-    placeFilter = (b as HTMLElement).dataset.placefilter!; placeFilterChosen = true; renderPlaceList();
+    placeFilter = (b as HTMLElement).dataset.placefilter!; resetPage('places'); renderPlaceList();
   }));
-  $('placeSearch').addEventListener('input', renderPlaceList);
+  $('placeSearch').addEventListener('input', () => { resetPage('places'); renderPlaceList(); });
+  const matches = (p: any, q: string) => !q || [p.name, p.municipality, p.department].some((v) => normalize(v).includes(q));
   function filteredPlaces() {
     const q = normalize($('placeSearch').value);
-    return (placeFilter === 'problems' ? problemPlaces() : places)
-      .filter((p) => !q || [p.name, p.municipality, p.department].some((v) => normalize(v).includes(q)));
+    return (placeFilter === 'problems' ? problemPlaces() : places).filter((p) => matches(p, q));
   }
-  const firstPlaceOfFilter = () => filteredPlaces()[0]?.id || null;
-  let placeFilterChosen = false;
   function renderPlaceList() {
-    // Si no hay nada por corregir, se muestran todos (una lista vacía no ayuda).
-    if (!placeFilterChosen && placeFilter === 'problems' && !problemPlaces().length) placeFilter = 'all';
+    const q = normalize($('placeSearch').value);
+    const removed = archived.filter((a) => a.collection === 'places' && matches(a.data, q));
     document.querySelectorAll('[data-placefilter]').forEach((b) => {
       const f = (b as HTMLElement).dataset.placefilter;
       b.setAttribute('aria-pressed', String(f === placeFilter));
-      b.textContent = f === 'all' ? `Todos · ${places.length}` : `Con problemas · ${problemPlaces().length}`;
+      b.textContent = f === 'all' ? `Todos · ${places.length}` : f === 'problems' ? `Con problemas · ${problemPlaces().length}` : `Borrados · ${archived.filter((a) => a.collection === 'places').length}`;
     });
     $('placesTotal').textContent = `${places.length} lugares en el mapa`;
-    $('placeList').innerHTML = filteredPlaces().map((p) => {
-      // Primero los problemas reales; los avisos (sin foto, sin horario) van en gris.
+    if (placeFilter === 'removed') {
+      $('placeList').innerHTML = page('places', removed, 15).map((a) => `<li class="ad-place is-removed">
+        ${safeUrl(a.data.photos?.[0]) ? `<img class="ad-thumb" src="${safeUrl(a.data.photos[0])}" alt="">` : '<span class="ad-thumb"></span>'}
+        <span class="ad-item-main"><span class="ad-item-title">${esc(a.data.name || 'Lugar')}</span>
+        <span class="ad-removed">Quitado ${ago(a.deletedAt)} por ${esc(a.deletedByName || 'el admin')}</span></span>
+        <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-restore="${esc(a.id)}">Restaurar</button>
+      </li>`).join('') || '<li class="ad-empty">No hay lugares quitados.</li>';
+      return;
+    }
+    $('placeList').innerHTML = page('places', filteredPlaces(), 15).map((p) => {
       const is = issuesOf(p).sort((a, b) => Number(NOTICES.includes(a)) - Number(NOTICES.includes(b)));
-      return `<li><button type="button" class="ad-item${p.id === selPlace ? ' is-active' : ''}" data-place="${esc(p.id)}">
+      return `<li><a class="ad-place" href="#lugares/editar/${encodeURIComponent(p.id)}">
         ${safeUrl(p.photos?.[0]) ? `<img class="ad-thumb" src="${safeUrl(p.photos[0])}" alt="">` : '<span class="ad-thumb"></span>'}
         <span class="ad-item-main"><span class="ad-item-title">${esc(p.name)}</span>
-        ${is.length ? `<span class="ad-tags">${is.slice(0, 2).map((x) => `<span class="ad-tag${NOTICES.includes(x) ? ' is-notice' : ''}">${esc(x)}</span>`).join('')}</span>` : `<span class="ad-item-meta">${esc(CAT[p.category] || '')} · ${esc(p.department || '')}</span>`}</span>
-      </button></li>`;
+        <span class="ad-item-meta">${esc(CAT[p.category] || 'Lugar')}${p.department ? ` · ${esc(p.department)}` : ''}</span>
+        ${is.length ? `<span class="ad-tags">${is.slice(0, 3).map((x) => `<span class="ad-tag${NOTICES.includes(x) ? ' is-notice' : ''}">${esc(x)}</span>`).join('')}</span>` : ''}</span>
+        <span class="ad-go">Editar</span>
+      </a></li>`;
     }).join('') || `<li class="ad-empty">${placeFilter === 'problems' && !$('placeSearch').value ? 'Todo en orden: no hay lugares por corregir.' : 'Ningún lugar coincide con la búsqueda.'}</li>`;
-    $('placeList').querySelectorAll('[data-place]').forEach((el: HTMLElement) => el.addEventListener('click', () => openPlace(el.dataset.place!)));
   }
 
   let picker: any = null, pickerMarker: any = null;
   function initPicker() {
     if (picker || typeof L === 'undefined') { picker?.invalidateSize(); return; }
-    picker = L.map('pickerMap').setView([13.79, -88.9], 8);
+    picker = L.map('pickerMap', { scrollWheelZoom: false }).setView([13.79, -88.9], 8);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(picker);
     picker.on('click', (e: any) => { setPoint(e.latlng.lat, e.latlng.lng, false); });
     ['pLat', 'pLng'].forEach((id) => $(id).addEventListener('change', () => {
@@ -788,35 +1044,47 @@ const categories = [
   }
 
   function renderPlacePhotos() {
-    $('pPhotos').innerHTML = placePhotos.map((u, i) => `<div class="ph"><img src="${safeUrl(u)}" alt="Foto ${i + 1}">
+    $('pPhotos').innerHTML = placePhotos.map((u, i) => `<div class="ph">
+      <button type="button" class="ad-mini ad-ph-open" data-gal data-src="${safeUrl(u)}" data-cap="Foto ${i + 1} de ${placePhotos.length}" aria-label="Ver foto ${i + 1}"><img src="${safeUrl(u)}" alt=""></button>
       ${/unsplash\.com|pexels\.com|pixabay\.com/.test(u) ? '<span class="stock">Foto de stock</span>' : ''}
-      <button type="button" data-rmphoto="${i}" aria-label="Quitar foto ${i + 1}">×</button></div>`).join('');
+      <button type="button" class="ph-rm" data-rmphoto="${i}" aria-label="Quitar foto ${i + 1}">×</button></div>`).join('');
   }
   $('pPhotos').addEventListener('click', (e: Event) => {
     const b = (e.target as HTMLElement).closest('[data-rmphoto]') as HTMLElement | null;
     if (b) { placePhotos.splice(Number(b.dataset.rmphoto), 1); renderPlacePhotos(); }
   });
-  $('pPhotoInput').addEventListener('change', async (e: Event) => {
-    const input = e.target as HTMLInputElement;
-    const files = Array.from(input.files || []); input.value = '';
+  async function addPlaceFiles(files: File[]) {
     for (const f of files) {
       uploading++; status('Subiendo foto…');
       try { placePhotos.push(await uploadImage(f, 'places', user.uid)); renderPlacePhotos(); status(''); }
       catch (err: any) { status(err?.message || 'No se pudo subir la foto.', true); }
       finally { uploading--; }
     }
+  }
+  $('pPhotoInput').addEventListener('change', (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    const files = Array.from(input.files || []); input.value = '';
+    addPlaceFiles(files);
   });
+  const drop = $('pDrop') as HTMLElement;
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e: Event) => { e.preventDefault(); drop.classList.add('is-over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove('is-over')));
+  drop.addEventListener('drop', (e: DragEvent) => { e.preventDefault(); addPlaceFiles(Array.from(e.dataTransfer?.files || []).filter((f) => f.type.startsWith('image/'))); });
   function status(msg: string, error = false) { $('placeStatus').textContent = msg; $('placeStatus').classList.toggle('is-error', error); }
 
   function openPlace(id: string | null) {
-    selPlace = id;
     const p = places.find((x) => x.id === id);
+    selPlace = p ? p.id : null;
     ($('placeForm') as HTMLFormElement).reset();
     $('placeFormTitle').textContent = p ? p.name : 'Agregar lugar';
     $('placeOnMap').hidden = !p; if (p) $('placeOnMap').href = `/#${encodeURIComponent(p.id)}`;
     $('deletePlaceBtn').hidden = !p;
+    $('saveNextBtn').hidden = !p;
     $('deletePlaceBtn').classList.remove('is-confirm'); $('deletePlaceBtn').textContent = 'Quitar del mapa';
-    $('placeIssues').innerHTML = p ? issuesOf(p).map((x) => `<li${NOTICES.includes(x) ? ' class="is-notice"' : ''}>${esc(x)}</li>`).join('') : '';
+    // Arriba solo los problemas reales; "sin foto" o "sin horario" no son errores.
+    const real = p ? issuesOf(p).filter((x) => !NOTICES.includes(x)) : [];
+    $('placeIssues').innerHTML = real.map((x) => `<li>${esc(x)}</li>`).join('');
+    $('placeIssues').hidden = !real.length;
     $('pName').value = p?.name ?? ''; $('pCategory').value = p?.category ?? 'playa';
     $('pMunicipality').value = p?.municipality ?? ''; $('pDepartment').value = p?.department ?? '';
     $('pSchedule').value = p?.schedule ?? ''; $('pPrice').value = p?.price ?? '';
@@ -825,9 +1093,9 @@ const categories = [
     placePhotos = [...(p?.photos || [])]; renderPlacePhotos(); status('');
     if (pickerMarker) { pickerMarker.remove(); pickerMarker = null; }
     if (p && Number.isFinite(p.lat)) setPoint(p.lat, p.lng, true); else { $('pLat').value = ''; $('pLng').value = ''; picker?.setView([13.79, -88.9], 8); }
-    renderPlaceList();
+    setTimeout(() => picker?.invalidateSize(), 50);
+    if (id && !p) { status('Ese lugar ya no existe. Buscalo en Borrados.', true); }
   }
-  $('newPlaceBtn').addEventListener('click', () => { openPlace(null); $('pName').focus(); });
 
   let saveNext = false;
   $('saveNextBtn').addEventListener('click', () => { saveNext = true; });
@@ -842,78 +1110,130 @@ const categories = [
     if (!(lat > 13 && lat < 14.6 && lng > -90.3 && lng < -87.5)) return status('El punto queda fuera de El Salvador. Marcalo en el mapa.', true);
     const web = $('pWebsite').value.trim();
     if (web && !/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(web)) { $('pWebsite').focus(); return status('El sitio web tiene que empezar con https:// (por ejemplo https://ejemplo.com).', true); }
+    if (!placePhotos.length) { drop.focus?.(); return status('Agregá al menos una foto del lugar.', true); }
     const fields = {
       name, category: $('pCategory').value, municipality: $('pMunicipality').value.trim(), department: $('pDepartment').value.trim(),
-      lat, lng, schedule: $('pSchedule').value.trim(), price: $('pPrice').value.trim(), website: $('pWebsite').value.trim(),
-      recommendations: $('pRecs').value.split(',').map((s: string) => s.trim()).filter(Boolean),
+      lat, lng, schedule: $('pSchedule').value.trim(), price: $('pPrice').value.trim(), website: web,
+      recommendations: $('pRecs').value.split(',').map((x: string) => x.trim()).filter(Boolean),
       description: $('pDesc').value.trim(), photos: placePhotos,
     };
     status('Guardando…');
     try {
+      let savedId = selPlace;
       if (selPlace) {
         await updateDoc(doc(db, 'places', selPlace), { ...fields, updatedAt: serverTimestamp() });
         Object.assign(places.find((x) => x.id === selPlace), fields);
       } else {
         const ref = await addDoc(collection(db, 'places'), { ...fields, visitCount: 0, createdAt: serverTimestamp(), createdBy: user.uid });
         places.push({ id: ref.id, ...fields });
-        selPlace = ref.id;
+        savedId = ref.id;
       }
       renderAll();
-      if (saveNext) {
+      if (saveNext && savedId) {
         const list = filteredPlaces();
-        const i = list.findIndex((x) => x.id === selPlace);
-        openPlace(list[i + 1]?.id || list[0]?.id || null);
-        status('Guardado. Seguimos con el próximo.');
-      } else { openPlace(selPlace); status('Cambios guardados.'); }
+        const i = list.findIndex((x) => x.id === savedId);
+        const next = list[i + 1] || list[0];
+        toast('Guardado. Seguimos con el próximo.');
+        location.hash = next ? `#lugares/editar/${encodeURIComponent(next.id)}` : '#lugares';
+      } else {
+        toast(selPlace ? 'Cambios guardados.' : `${name} quedó en el mapa.`);
+        location.hash = '#lugares';
+      }
     } catch (err) { console.error(err); status('No se pudo guardar. Revisá tu conexión.', true); }
   });
 
   $('deletePlaceBtn').addEventListener('click', async () => {
     const btn = $('deletePlaceBtn');
     if (!selPlace) return;
-    if (!btn.classList.contains('is-confirm')) { btn.classList.add('is-confirm'); btn.textContent = '¿Seguro? No se puede deshacer'; return; }
+    if (!btn.classList.contains('is-confirm')) {
+      btn.classList.add('is-confirm'); btn.textContent = '¿Seguro? Quitar del mapa';
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove('is-confirm'); btn.textContent = 'Quitar del mapa'; } }, 6000);
+      return;
+    }
+    btn.disabled = true;
     try {
-      await deleteDoc(doc(db, 'places', selPlace));
-      places = places.filter((x) => x.id !== selPlace);
-      renderAll(); openPlace(firstPlaceOfFilter()); status('Lugar quitado del mapa.');
-    } catch (err) { console.error(err); status('No se pudo quitar.', true); }
+      await archiveDelete('places', selPlace, 'Quitado desde el admin');
+      renderAll(); location.hash = '#lugares';
+    } catch (err) { console.error(err); status('No se pudo quitar. Revisá tu conexión.', true); }
+    finally { btn.disabled = false; }
   });
 
   // ---------- Insignias de temporada ----------
-  function renderSeason() {
-    const keep = $('sPlace').value;
-    $('sPlace').innerHTML = '<option value="">Elegí un lugar</option>' + places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-    $('sPlace').value = keep;
-    const today = new Date().toLocaleDateString('en-CA');
-    // Primero las activas, luego las próximas y al final las que ya terminaron.
-    const rank = (s: any) => (s.end < today ? 2 : s.start > today ? 1 : 0);
-    $('seasonList').innerHTML = [...seasonal].sort((a, b) => rank(a) - rank(b) || String(a.start).localeCompare(String(b.start))).map((s) => {
-      const st = s.end < today ? 'Terminó' : s.start > today ? 'Próxima' : 'Activa';
-      return `<li class="ad-row"><div class="ad-row-main">
-        <p class="ad-row-title">${esc(s.name)} <span class="ad-tag${st === 'Activa' ? ' ad-tag-ok' : ''}">${st}</span></p>
-        <p class="ad-row-text">${esc(placeName(s.placeId))} · del ${esc(fmtDay(s.start))} al ${esc(fmtDay(s.end))}</p>
-        ${s.description ? `<p class="ad-row-meta">${esc(s.description)}</p>` : ''}
-      </div><button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="seasonalBadges/${esc(s.id)}">Borrar</button></li>`;
-    }).join('') || '<li class="ad-empty">Todavía no hay insignias de temporada.</li>';
-  }
   const MESES_C = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   const fmtDay = (iso: string) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${Number(m[3])} de ${MESES_C[Number(m[2]) - 1]}${Number(m[1]) !== new Date().getFullYear() ? ` de ${m[1]}` : ''}` : iso; };
+  const seasonState = (x: any, today: string) => (x.end < today ? 'ended' : x.start > today ? 'next' : 'active');
+  const SEASON_TAG: Record<string, string> = { active: 'Activa', next: 'Próxima', ended: 'Terminó' };
+  document.querySelectorAll('[data-seasonfilter]').forEach((b) => b.addEventListener('click', () => {
+    seasonFilter = (b as HTMLElement).dataset.seasonfilter!; resetPage('season'); renderSeason();
+  }));
+  function renderSeason() {
+    const today = new Date().toLocaleDateString('en-CA');
+    const removed = archived.filter((a) => a.collection === 'seasonalBadges');
+    const count = (f: string) => f === 'removed' ? removed.length : seasonal.filter((x) => seasonState(x, today) === f).length;
+    document.querySelectorAll('[data-seasonfilter]').forEach((b: any) => {
+      const f = b.dataset.seasonfilter;
+      b.setAttribute('aria-pressed', String(f === seasonFilter));
+      b.textContent = `${{ active: 'Activas', next: 'Próximas', ended: 'Terminaron', removed: 'Borradas' }[f as 'active']} · ${count(f)}`;
+    });
+    const row = (x: any, a?: any) => {
+      const st = seasonState(x, today);
+      return `<li class="ad-row"><div class="ad-row-main">
+        <p class="ad-row-title">${esc(x.name)} ${a ? '' : `<span class="ad-tag${st === 'active' ? ' ad-tag-ok' : ''}">${SEASON_TAG[st]}</span>`}</p>
+        <p class="ad-row-text">${esc(placeName(x.placeId) || 'Lugar')} · del ${esc(fmtDay(x.start))} al ${esc(fmtDay(x.end))}</p>
+        ${x.description ? `<p class="ad-row-meta">${esc(x.description)}</p>` : ''}
+        ${a ? `<p class="ad-removed">Borrada ${ago(a.deletedAt)} por ${esc(a.deletedByName || 'el admin')}</p>` : ''}
+      </div>
+      <div class="ad-row-actions">${a
+        ? `<button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-restore="${esc(a.id)}">Restaurar</button>`
+        : `<a class="ad-btn ad-btn-outline ad-btn-sm" href="#temporada/editar/${encodeURIComponent(x.id)}">Editar</a><button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="seasonalBadges/${esc(x.id)}">Borrar</button>`}</div></li>`;
+    };
+    const empty: Record<string, string> = {
+      active: 'No hay insignias activas hoy. Creá una o revisá las próximas.', next: 'No hay insignias programadas.',
+      ended: 'Todavía no ha terminado ninguna.', removed: 'No hay insignias borradas.',
+    };
+    $('seasonList').innerHTML = seasonFilter === 'removed'
+      ? (page('season', removed, 10).map((a) => row({ ...a.data, id: a.docId }, a)).join('') || `<li class="ad-empty">${empty.removed}</li>`)
+      : (page('season', seasonal.filter((x) => seasonState(x, today) === seasonFilter)
+          .sort((a, b) => seasonFilter === 'ended' ? String(b.end).localeCompare(String(a.end)) : String(a.start).localeCompare(String(b.start))), 10)
+          .map((x) => row(x)).join('') || `<li class="ad-empty">${empty[seasonFilter]}</li>`);
+  }
   const seasonPickers = [
     datePicker($('sStart'), { empty: 'Elegí el día', title: 'Primer día de la insignia' }),
     datePicker($('sEnd'), { empty: 'Elegí el día', title: 'Último día de la insignia' }),
   ];
+  const seasonMsg = (m: string, err = false) => { $('seasonStatus').textContent = m; $('seasonStatus').classList.toggle('is-error', err); };
+  function openSeason(id: string | null) {
+    const x = seasonal.find((y) => y.id === id);
+    selSeason = x ? x.id : null;
+    ($('seasonForm') as HTMLFormElement).reset();
+    $('sPlace').innerHTML = '<option value="">Elegí un lugar</option>' + places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    $('seasonFormTitle').textContent = x ? 'Editar insignia' : 'Nueva insignia';
+    $('seasonSubmit').textContent = x ? 'Guardar cambios' : 'Crear insignia';
+    $('sName').value = x?.name ?? ''; $('sDesc').value = x?.description ?? ''; $('sPlace').value = x?.placeId ?? '';
+    $('sStart').value = x?.start ?? ''; $('sEnd').value = x?.end ?? '';
+    seasonPickers.forEach((pk) => pk.refresh());
+    seasonMsg(id && !x ? 'Esa insignia ya no existe. Buscala en Borradas.' : '', !!(id && !x));
+  }
   $('seasonForm').addEventListener('submit', async (e: Event) => {
     e.preventDefault();
-    const st = (m: string, err = false) => { $('seasonStatus').textContent = m; $('seasonStatus').classList.toggle('is-error', err); };
     const data = { name: $('sName').value.trim(), description: $('sDesc').value.trim(), placeId: $('sPlace').value, start: $('sStart').value, end: $('sEnd').value };
-    if (!data.name || !data.placeId || !data.start || !data.end) return st('Completá nombre, lugar y fechas.', true);
-    if (data.end < data.start) return st('La fecha final va después de la inicial.', true);
+    if (!data.name) { $('sName').focus(); return seasonMsg('Falta el nombre de la insignia.', true); }
+    if (!data.placeId) { $('sPlace').focus(); return seasonMsg('Elegí en qué lugar se gana.', true); }
+    if (!data.start || !data.end) return seasonMsg('Elegí el primer y el último día.', true);
+    if (data.end < data.start) return seasonMsg('El último día tiene que ser igual o después del primero.', true);
     try {
-      const ref = await addDoc(collection(db, 'seasonalBadges'), { ...data, createdAt: serverTimestamp() });
-      seasonal.unshift({ id: ref.id, ...data });
-      ($('seasonForm') as HTMLFormElement).reset();
-      $('sStart').value = ''; $('sEnd').value = ''; seasonPickers.forEach((x) => x.refresh());
-      renderSeason(); st('Insignia creada. Ya sale en el perfil de los turistas.');
-    } catch (err) { console.error(err); st('No se pudo crear. Revisá tu conexión.', true); }
+      if (selSeason) {
+        await updateDoc(doc(db, 'seasonalBadges', selSeason), { ...data, updatedAt: serverTimestamp() });
+        Object.assign(seasonal.find((y) => y.id === selSeason), data);
+        toast('Insignia guardada.');
+      } else {
+        const ref = await addDoc(collection(db, 'seasonalBadges'), { ...data, createdAt: serverTimestamp() });
+        seasonal.unshift({ id: ref.id, ...data });
+        toast('Insignia creada. Ya sale en el perfil de los turistas.');
+      }
+      seasonFilter = seasonState(data, new Date().toLocaleDateString('en-CA'));
+      renderSeason();
+      location.hash = '#temporada';
+    } catch (err) { console.error(err); seasonMsg('No se pudo guardar. Revisá tu conexión.', true); }
   });
 </script>

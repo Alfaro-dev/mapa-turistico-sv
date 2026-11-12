@@ -1,0 +1,13 @@
+/* Recuadro para subir fotos (reseñas y admin) */
+.dropzone { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 18px; border: 1.5px dashed #9CC3C0; border-radius: 16px; background: #F1F8F7; color: var(--turquesa); cursor: pointer; transition: background .15s, border-color .15s; }
+.dropzone:hover { border-style: solid; }
+.dropzone.is-over { border-style: solid; border-color: var(--turquesa); background: #E2F2F1; }
+.dropzone:focus-within { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+.dropzone[hidden] { display: none; }
+.dz-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; }
+.dz-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dz-text strong { font-size: 15px; font-weight: 800; color: var(--rama); }
+.dz-text span { font-size: 13px; color: var(--muted); }
+.dropzone.is-compact { padding: 10px 14px; }
+.dropzone.is-compact .dz-icon { width: 36px; height: 36px; border-radius: 10px; }
+@media (prefers-reduced-motion: reduce) { .dropzone { transition: none; } }
