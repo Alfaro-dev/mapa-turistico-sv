@@ -447,7 +447,7 @@ const categories = [
     if (!del) return;
     if (!del.classList.contains('is-confirm')) {
       del.classList.add('is-confirm'); del.textContent = '¿Seguro? Borrar';
-      setTimeout(() => { if (del.isConnected) { del.classList.remove('is-confirm'); del.textContent = 'Borrar'; } }, 4000);
+      setTimeout(() => { if (del.isConnected) { del.classList.remove('is-confirm'); del.textContent = 'Borrar'; } }, 6000);
       return;
     }
     const [col, id] = del.dataset.del!.split('/');
@@ -512,7 +512,7 @@ const categories = [
         ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="ad-biz-photo" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="">` : '<span class="ad-biz-photo"></span>'}
         <div style="flex:1;min-width:220px">
           <h2 class="ad-h1" style="font-size:26px">${esc(b.name)}</h2>
-          <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''} · plan ${esc(b.plan || 'basico')}</p>
+          <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
           ${b.description ? `<p class="ad-row-text" style="margin-top:8px">${esc(b.description)}</p>` : ''}
           <p class="ad-row-meta" style="margin-top:6px">${[b.schedule, b.address, b.phone && `Tel. ${b.phone}`, b.whatsapp && `WhatsApp ${b.whatsapp}`, b.email].filter(Boolean).map((x) => esc(x)).join(' · ')}</p>
           <p class="ad-row-meta">Dueño: ${esc(b.ownerName || '')} · ${(b.photos || []).length} fotos${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
