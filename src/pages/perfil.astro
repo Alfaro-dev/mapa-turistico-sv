@@ -111,7 +111,9 @@ import GozMark from '../components/GozMark.astro';
   .pf-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
   .pf-grid li { position: relative; }
   .pf-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; display: block; background: var(--photo); }
-  .pf-grid-meta { position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; justify-content: space-between; gap: 6px; }
+  .pf-grid-meta { position: absolute; left: 6px; right: 6px; bottom: 6px; display: flex; justify-content: space-between; gap: 4px; }
+  .pf-grid-meta span:first-child { flex: 1 1 auto; min-width: 0; }
+  .pf-grid-meta .pf-votes { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 3px; }
   .pf-grid-meta span { padding: 2px 8px; border-radius: 10px; background: rgba(20,48,47,0.78); color: #FFFFFF; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pf-grid-cover { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 10px; background: var(--plumaje); color: var(--rama); font-size: 11px; font-weight: 800; }
   .pf-map { height: 420px; border-radius: 16px; overflow: hidden; }
@@ -224,7 +226,7 @@ import GozMark from '../components/GozMark.astro';
     $('galleryEmpty').hidden = photos.length > 0;
     $('gallery').innerHTML = photos.map((ph) => `<li>
       <a href="/#${encodeURIComponent(ph.placeId)}"><img src="${safeUrl(ph.url)}" alt="Tu foto en ${esc(placeName(ph.placeId) || ph.placeName || 'un lugar')}" loading="lazy"></a>
-      <span class="pf-grid-meta"><span>${esc(placeName(ph.placeId) || ph.placeName || '')}</span><span>${num(ph.votes)} ${num(ph.votes) === 1 ? 'voto' : 'votos'}</span></span>
+      <span class="pf-grid-meta"><span>${esc(placeName(ph.placeId) || ph.placeName || '')}</span><span class="pf-votes" aria-label="${num(ph.votes)} ${num(ph.votes) === 1 ? 'voto' : 'votos'}"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.6C12 6.1 13.6 5 15.6 5 19 5 21.1 8.4 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>${num(ph.votes)}</span></span>
     </li>`).join('');
 
     // Mis reseñas.
