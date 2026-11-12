@@ -294,6 +294,7 @@ const categories = [
   .back-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 4px; margin: 0 0 8px -4px; border: 0; background: transparent; color: var(--link); font-size: 15px; font-weight: 700; cursor: pointer; }
   .detail-photo { width: 100%; height: 196px; border-radius: 16px; object-fit: cover; background: var(--photo); display: block; }
   .detail-title { margin: 16px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1.08; color: var(--ink); }
+  .detail-title:focus { outline: none; }
   .detail-kicker { margin: 4px 0 0; font-size: 14px; font-weight: 600; color: var(--muted); }
   .rating-line { margin: 8px 0 0; display: flex; align-items: center; gap: 6px; font-size: 15px; color: var(--ink-2); }
   .rating-line strong { color: var(--ink); }
@@ -307,6 +308,18 @@ const categories = [
   .detail-facts svg { color: var(--turquesa); flex-shrink: 0; }
   .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .tag { font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 14px; background: var(--neblina); color: var(--ink-2); }
+  .cover { margin: 0; position: relative; }
+  .cover-credit { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 12px; background: rgba(20,48,47,0.78); color: #FFFFFF; font-size: 12px; font-weight: 800; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 28px; }
+  .section-head .section-title { margin: 0; }
+  .section-help { margin: 4px 0 10px; font-size: 13px; color: var(--muted); }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .photo-cell { position: relative; }
+  .photo-cell img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; background: var(--photo); }
+  .photo-badge { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 10px; background: var(--plumaje); color: var(--rama); font-size: 11px; font-weight: 800; }
+  .vote-btn { position: absolute; right: 6px; bottom: 6px; min-width: 44px; height: 30px; padding: 0 8px; border: 0; border-radius: 15px; background: rgba(255,255,255,0.94); color: var(--ink); display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 1px 4px rgba(20,48,47,0.25); }
+  .vote-btn svg { fill: none; stroke: var(--canela); stroke-width: 2.2; }
+  .vote-btn.is-voted svg { fill: var(--canela); }
   .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
   .gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; display: block; }
   .section-title { margin: 28px 0 8px; font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--ink); }
@@ -374,7 +387,7 @@ const categories = [
 </style>
 
 <script>
-  import { collection, getDocs, getDoc, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+  import { collection, getDocs, getDoc, addDoc, doc, updateDoc, increment, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
   import { db, auth, googleProvider } from '../lib/firebase';
   import { uploadImage } from '../lib/cloudinary';
@@ -403,6 +416,17 @@ const categories = [
   let allPlaces: Place[] = [];
   let filtered: Place[] = [];
   let reviewsByPlace: Record<string, Review[]> = {};
+  // Fotos que suben los turistas. La más votada es la portada del lugar.
+  interface CPhoto { id: string; placeId: string; userId: string; userName?: string; userPhoto?: string; url: string; votes?: number; createdAt?: any; }
+  let photosByPlace: Record<string, CPhoto[]> = {};
+  let votedPhotos = new Set<string>();
+  const sortPhotos = (list: CPhoto[]) => list.sort((a, b) => num(b.votes) - num(a.votes) || (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+  // Portada: la foto de turista con más votos (si tiene al menos 1); si no, la foto que cargó Goz.
+  function coverOf(p: Place): { url: string; photo?: CPhoto } {
+    const top = photosByPlace[p.id]?.[0];
+    if (top && num(top.votes) > 0 && safeUrl(top.url)) return { url: safeUrl(top.url), photo: top };
+    return { url: safeUrl(p.photos?.[0]) };
+  }
   let currentCategory = 'all';
   let currentQuery = '';
   let selectedId: string | null = null;
@@ -588,7 +612,7 @@ const categories = [
     $('listBtnLabel').textContent = `Ver lista · ${lugares}`;
     $('emptyState').hidden = n > 0;
     $('placesList').innerHTML = filtered.map((p) => {
-      const photo = safeUrl(p.photos?.[0]);
+      const photo = coverOf(p).url;
       const r = ratingOf(p.id);
       const extra = userPos ? fmtKm(distanceKm(userPos, [p.lat, p.lng])) : (r ? `${starSvg}${r.avg.toFixed(1)}` : '');
       return `<li><button type="button" class="place-row" data-id="${esc(p.id)}">
@@ -667,6 +691,8 @@ const categories = [
 
   function renderDetail(p: Place) {
     const photos = (p.photos || []).map((u) => safeUrl(u)).filter(Boolean);
+    const cover = coverOf(p);
+    const community = photosByPlace[p.id] || [];
     const r = ratingOf(p.id);
     const reviews = [...(reviewsByPlace[p.id] || [])].sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
     const near = allPlaces
@@ -682,7 +708,7 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a la lista
       </button>` : ''}
-      ${photos[0] ? `<img class="detail-photo" src="${photos[0]}" alt="Foto de ${esc(p.name)}">` : '<div class="detail-photo" aria-hidden="true"></div>'}
+      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}">${cover.photo ? `<figcaption class="cover-credit">Portada de ${esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : '<div class="detail-photo" aria-hidden="true"></div>'}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r
@@ -701,6 +727,25 @@ const categories = [
         ${safeUrl(p.website) ? `<li>${icoLink}<a href="${safeUrl(p.website)}" target="_blank" rel="noopener" style="color:var(--link)">Sitio web</a></li>` : ''}
       </ul>
       ${p.recommendations?.length ? `<div class="tags">${p.recommendations.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+
+      <div class="section-head">
+        <h3 class="section-title">Fotos de quienes fueron</h3>
+        <button type="button" class="btn btn-outline btn-sm" data-addphoto="${esc(p.id)}">Subir foto</button>
+      </div>
+      <p class="section-help">La foto con más votos pasa a ser la portada del lugar. Un voto por persona.</p>
+      <input type="file" id="placePhotoInput" accept="image/*" class="sr-only" aria-label="Elegir foto para subir">
+      <p id="photoStatus" class="field-help" aria-live="polite"></p>
+      ${community.length ? `<div class="photo-grid">${community.map((ph, i) => {
+        const voted = votedPhotos.has(ph.id);
+        return `<div class="photo-cell">
+          <a href="${safeUrl(ph.url)}" target="_blank" rel="noopener"><img src="${safeUrl(ph.url)}" alt="Foto de ${esc(ph.userName || 'un visitante')}" loading="lazy"></a>
+          ${i === 0 && num(ph.votes) > 0 ? '<span class="photo-badge">Portada</span>' : ''}
+          <button type="button" class="vote-btn${voted ? ' is-voted' : ''}" data-vote="${esc(ph.id)}" aria-pressed="${voted}" aria-label="${voted ? 'Ya votaste por esta foto' : 'Votar por esta foto'}, ${num(ph.votes)} votos">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z"></path></svg>
+            ${num(ph.votes)}
+          </button>
+        </div>`;
+      }).join('')}</div>` : '<p class="empty" style="margin-top:4px">Todavía nadie ha subido fotos. La primera que suba alguien puede ser la portada.</p>'}
       ${photos.length > 1 ? `<div class="gallery">${photos.slice(1, 7).map((u) => `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
 
       <h3 class="section-title">Reseñas</h3>
@@ -724,6 +769,12 @@ const categories = [
     $('panelBody').scrollTop = 0;
     $('backBtn')?.addEventListener('click', () => { closeDetail(true); });
     $('detailView').querySelectorAll('[data-review]').forEach((b: HTMLElement) => b.addEventListener('click', () => openReview(b.dataset.review!)));
+    $('detailView').querySelectorAll('[data-vote]').forEach((b: HTMLElement) => b.addEventListener('click', () => votePhoto(b.dataset.vote!)));
+    $('detailView').querySelector('[data-addphoto]')?.addEventListener('click', async () => {
+      if (!currentUser && !(await login())) return;
+      $('placePhotoInput').click();
+    });
+    $('placePhotoInput')?.addEventListener('change', (e: Event) => uploadPlacePhoto(p, e.target as HTMLInputElement));
     $('detailView').querySelectorAll('.near-row').forEach((b: HTMLElement) => b.addEventListener('click', () => selectPlace(b.dataset.id!)));
     if (!isMobile()) ($('detailTitle') as HTMLElement).focus({ preventScroll: true });
   }
@@ -763,9 +814,15 @@ const categories = [
     $('accountBtn').setAttribute('aria-label', user ? `Cuenta de ${user.displayName || 'usuario'}` : 'Entrar con Google');
     $('accountName').textContent = user ? (user.displayName || user.email || '') : '';
     $('adminLink').hidden = true;
+    votedPhotos = new Set();
     if (user) {
       try { $('adminLink').hidden = !(await getDoc(doc(db, 'admins', user.uid))).exists(); } catch { /* no es admin */ }
+      try {
+        const vs = await getDocs(query(collection(db, 'photoVotes'), where('userId', '==', user.uid)));
+        vs.docs.forEach((d) => votedPhotos.add(d.data().photoId));
+      } catch { /* sin votos */ }
     }
+    if (selectedId) { const sp = allPlaces.find((x) => x.id === selectedId); if (sp) renderDetail(sp); }
     if (dialog.open && reviewPlace) showReviewStep();
   });
 
@@ -903,6 +960,8 @@ const categories = [
         createdAt: serverTimestamp(),
       };
       await addDoc(collection(db, 'reviews'), data);
+      // Las fotos de la reseña también entran a la galería y se pueden votar.
+      for (const u of reviewPhotos) { try { await addCommunityPhoto(reviewPlace, u); } catch (e3) { console.error(e3); } }
       (reviewsByPlace[reviewPlace.id] ||= []).push({ ...data, createdAt: { toMillis: () => Date.now() } });
       renderList();
       if (selectedId === reviewPlace.id) renderDetail(reviewPlace);
@@ -914,6 +973,58 @@ const categories = [
       submit.disabled = false; submit.textContent = 'Publicar reseña';
     }
   });
+
+  // ---------- Fotos y votos ----------
+  // Un voto por persona: el documento photoVotes/{foto}_{usuario} y el +1 van juntos,
+  // y las reglas de Firestore no dejan sumar sin ese documento.
+  async function votePhoto(photoId: string) {
+    if (!currentUser && !(await login())) return;
+    if (votedPhotos.has(photoId)) return;
+    const ph = Object.values(photosByPlace).flat().find((x) => x.id === photoId);
+    if (!ph) return;
+    try {
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'photoVotes', `${photoId}_${currentUser.uid}`), { photoId, placeId: ph.placeId, userId: currentUser.uid, createdAt: serverTimestamp() });
+      batch.update(doc(db, 'photos', photoId), { votes: increment(1) });
+      await batch.commit();
+      votedPhotos.add(photoId);
+      ph.votes = num(ph.votes) + 1;
+      sortPhotos(photosByPlace[ph.placeId]);
+      renderList();
+      const sp = allPlaces.find((x) => x.id === ph.placeId);
+      if (sp && selectedId === sp.id) renderDetail(sp);
+    } catch (err) {
+      console.error('No se pudo votar:', err);
+      votedPhotos.add(photoId);
+      const sp = allPlaces.find((x) => x.id === ph.placeId);
+      if (sp && selectedId === sp.id) { renderDetail(sp); $('photoStatus').textContent = 'No se pudo contar tu voto. Puede que ya hayas votado por esta foto.'; }
+    }
+  }
+
+  async function addCommunityPhoto(p: Place, url: string) {
+    const data = {
+      placeId: p.id, placeName: p.name, url, caption: '',
+      userId: currentUser.uid, userName: currentUser.displayName || 'Visitante', userPhoto: currentUser.photoURL || '',
+      votes: 0, useful: 0, fun: 0, like: 0, rating: 0, createdAt: serverTimestamp(),
+    };
+    const ref = await addDoc(collection(db, 'photos'), data);
+    (photosByPlace[p.id] ||= []).push({ ...data, id: ref.id, createdAt: { toMillis: () => Date.now() } } as CPhoto);
+    sortPhotos(photosByPlace[p.id]);
+  }
+
+  async function uploadPlacePhoto(p: Place, input: HTMLInputElement) {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || !currentUser) return;
+    $('photoStatus').textContent = 'Subiendo tu foto…';
+    try {
+      await addCommunityPhoto(p, await uploadImage(file, 'reviews', currentUser.uid));
+      renderDetail(p);
+      $('photoStatus').textContent = 'Listo: tu foto ya está en la galería.';
+    } catch (err: any) {
+      $('photoStatus').textContent = err?.message || 'No se pudo subir la foto.';
+    }
+  }
 
   // ---------- Filtros ----------
   $('searchInput').addEventListener('input', (e: Event) => {
@@ -974,10 +1085,17 @@ const categories = [
   // ---------- Carga ----------
   async function load() {
     try {
-      const [placesSnap, reviewsSnap] = await Promise.all([
+      const [placesSnap, reviewsSnap, photosSnap] = await Promise.all([
         getDocs(collection(db, 'places')),
         getDocs(collection(db, 'reviews')).catch(() => null),
+        getDocs(collection(db, 'photos')).catch(() => null),
       ]);
+      photosByPlace = {};
+      photosSnap?.docs.forEach((d) => {
+        const ph = { id: d.id, ...d.data() } as CPhoto;
+        if (ph.placeId && ph.url) (photosByPlace[ph.placeId] ||= []).push(ph);
+      });
+      Object.values(photosByPlace).forEach(sortPhotos);
       if (placesSnap.empty) throw new Error('Sin lugares');
       allPlaces = placesSnap.docs
         .map((d) => ({ id: d.id, ...d.data() } as Place))

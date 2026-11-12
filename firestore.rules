@@ -77,16 +77,42 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
-    // ---------- Fotos y check-ins (app) ----------
+    // ---------- Fotos de turistas (web y app) ----------
+    // La foto con más votos es la portada del lugar. Para que nadie infle los
+    // votos, "votes" solo sube de 1 en 1 y solo si en la misma escritura se crea
+    // photoVotes/{foto}_{usuario}, que no se puede crear dos veces.
+    function voteId(photoId) {
+      return photoId + '_' + request.auth.uid;
+    }
+
     match /photos/{photoId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.get('votes', 0) == 0;
       allow update: if (isOwner(resource.data.userId)
-                        && request.resource.data.userId == resource.data.userId)
+                        && request.resource.data.userId == resource.data.userId
+                        && request.resource.data.get('votes', 0) == resource.data.get('votes', 0))
+        || (signedIn()
+            && onlyChanges(['votes'])
+            && bumpedByOne('votes')
+            && !exists(/databases/$(database)/documents/photoVotes/$(voteId(photoId)))
+            && existsAfter(/databases/$(database)/documents/photoVotes/$(voteId(photoId))))
+        // Reacciones viejas de la app: no cuentan para la portada.
         || (signedIn() && onlyChanges(['useful']) && bumpedByOne('useful'))
         || (signedIn() && onlyChanges(['fun']) && bumpedByOne('fun'))
         || (signedIn() && onlyChanges(['like']) && bumpedByOne('like'));
       allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    match /photoVotes/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && id == request.resource.data.photoId + '_' + request.auth.uid
+        && getAfter(/databases/$(database)/documents/photos/$(request.resource.data.photoId)).data.get('votes', 0)
+           == get(/databases/$(database)/documents/photos/$(request.resource.data.photoId)).data.get('votes', 0) + 1;
+      allow update, delete: if false;
     }
 
     match /checkIns/{checkInId} {
