@@ -1,5 +1,5 @@
 // Datos del turista para el perfil y la pantalla de insignias.
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from './firebase';
 import { num } from './escape';
 import { computeBadges, type BadgeResult, type SeasonalBadge } from './badges';
@@ -12,18 +12,23 @@ export interface UserData {
 }
 
 export async function loadUserData(uid: string): Promise<UserData> {
-  const [pSnap, rSnap, fSnap, sSnap] = await Promise.all([
-    getDocs(collection(db, 'places')),
+  const [rSnap, fSnap, sSnap] = await Promise.all([
     getDocs(query(collection(db, 'reviews'), where('userId', '==', uid))),
     getDocs(query(collection(db, 'photos'), where('userId', '==', uid))),
     getDocs(collection(db, 'seasonalBadges')).catch(() => null),
   ]);
+  const reviews = rSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any))
+    .sort((a: any, b: any) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+  const photos = fSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any))
+    .sort((a: any, b: any) => num(b.votes) - num(a.votes));
+  // Solo los lugares donde esta persona tiene reseñas o fotos (de 30 en 30), no todo el mapa.
+  const ids = [...new Set([...reviews, ...photos].map((x: any) => x.placeId).filter(Boolean))] as string[];
+  const groups = Array.from({ length: Math.ceil(ids.length / 30) }, (_, i) => ids.slice(i * 30, i * 30 + 30));
+  const pSnaps = await Promise.all(groups.map((g) => getDocs(query(collection(db, 'places'), where(documentId(), 'in', g))).catch(() => null)));
   return {
-    places: pSnap.docs.map((d) => ({ id: d.id, ...d.data(), lat: Number(d.data().lat), lng: Number(d.data().lng) })),
-    reviews: rSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-      .sort((a: any, b: any) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0)),
-    photos: fSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-      .sort((a: any, b: any) => num(b.votes) - num(a.votes)),
+    places: pSnaps.flatMap((sn) => sn?.docs || []).map((d) => ({ id: d.id, ...d.data(), lat: Number(d.data().lat), lng: Number(d.data().lng) })),
+    reviews,
+    photos,
     seasonal: (sSnap?.docs || []).map((d) => ({ id: d.id, ...d.data() } as SeasonalBadge)),
   };
 }

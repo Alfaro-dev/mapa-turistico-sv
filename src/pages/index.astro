@@ -609,7 +609,7 @@ const categories = [
 </style>
 
 <script>
-  import { collection, getDocs, getDoc, addDoc, setDoc, doc, updateDoc, increment, serverTimestamp, query, where, writeBatch } from 'firebase/firestore';
+  import { collection, getDocs, getDoc, addDoc, setDoc, doc, updateDoc, increment, serverTimestamp, query, where, writeBatch, orderBy, limit } from 'firebase/firestore';
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
   import { db, auth, googleProvider } from '../lib/firebase';
   import { uploadImage } from '../lib/cloudinary';
@@ -735,6 +735,8 @@ const categories = [
   map.createPane('selPane'); (map.getPane('selPane') as HTMLElement).style.zIndex = '650';
   const bizLayer = L.layerGroup();
   const BIZ_MIN_ZOOM = 12;
+  // Carga por zona: franjas de 0.2° de latitud; desde el zoom 10 se piden por zona.
+  const BAND = 0.2, ZONE_ZOOM = 10, TOP_LIMIT = 40;
 
   function renderBizMarkers() {
     bizLayer.clearLayers();
@@ -918,15 +920,20 @@ const categories = [
   }
 
   function renderList() {
-    const n = filtered.length;
+    // Sin búsqueda, la lista muestra lo que se ve en el mapa (como en un mapa de calles).
+    const zone = !currentQuery.trim() && map.getZoom() >= ZONE_ZOOM;
+    const view = map.getBounds().pad(0.05);
+    const shown = zone ? filtered.filter((p) => view.contains([p.lat, p.lng])) : filtered;
+    const n = shown.length;
     const lugares = `${n} ${n === 1 ? 'lugar' : 'lugares'}`;
     $('resultCount').textContent = userPos
       ? `Lo más chulo de aquí, cerquita: ${lugares}, del más cercano al más lejano`
-      : `${lugares} en el mapa`;
+      : zone ? `${lugares} en esta zona` : `${lugares} en el mapa`;
     $('peekTitle').textContent = userPos ? `${lugares} cerca de vos` : `${lugares} para conocer`;
     $('listBtnLabel').textContent = `Ver lista · ${lugares}`;
     $('emptyState').hidden = n > 0;
-    $('placesList').innerHTML = filtered.map((p) => {
+    $('emptyState').textContent = zone && filtered.length ? 'No hay lugares en esta parte del mapa. Alejate un poco o movete a otra zona.' : 'Ningún lugar coincide. Probá con otra palabra o tocá “Todo”.';
+    $('placesList').innerHTML = shown.map((p) => {
       const photo = coverOf(p).url;
       const r = ratingOf(p.id);
       const extra = userPos ? fmtKm(distanceKm(userPos, [p.lat, p.lng])) : (r ? `${starSvg}${r.avg.toFixed(1)}` : '');
@@ -1852,6 +1859,7 @@ const categories = [
   // ---------- Filtros ----------
   $('searchInput').addEventListener('input', (e: Event) => {
     currentQuery = (e.target as HTMLInputElement).value;
+    if (currentQuery.trim().length >= 2) loadAllPlaces();
     if (selectedId || selectedBizId) closeDetail(true);
     applyFilters();
     if (currentQuery) openList();
@@ -1860,6 +1868,7 @@ const categories = [
   document.querySelectorAll('.chip').forEach((btn) => {
     btn.addEventListener('click', () => {
       currentCategory = (btn as HTMLElement).dataset.category || 'all';
+      if (currentCategory !== 'all') loadCategory(currentCategory);
       document.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
       if (selectedId || selectedBizId) closeDetail(true);
       applyFilters();
@@ -1895,71 +1904,166 @@ const categories = [
   $('locateBtn')?.addEventListener('click', locate);
 
   // Encuadra todo el país dejando libre lo que tapan el buscador, las categorías y la hoja.
+  const SV_BOUNDS: [[number, number], [number, number]] = [[13.15, -90.13], [14.45, -87.68]];
   function fitAll() {
-    const pts = allPlaces.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => [p.lat, p.lng]);
-    if (!pts.length) return;
     const mobile = isMobile();
-    map.fitBounds(L.latLngBounds(pts), {
+    map.fitBounds(L.latLngBounds(SV_BOUNDS), {
       paddingTopLeft: [mobile ? 20 : 40, mobile ? 130 : 90],
       paddingBottomRight: [mobile ? 20 : 90, mobile ? PEEK + 24 : 90],
     });
   }
 
-  // ---------- Carga ----------
+  // ---------- Carga por zona, como un mapa de calles ----------
+  // Lejos (todo el país) se piden solo los lugares más visitados. Al acercarse, se piden los de la
+  // franja que se está viendo (por latitud, en franjas de 0.2°) y cada franja se pide una sola vez.
+  // Las reseñas, fotos, negocios y cupones se piden solo para lo que ya está cargado.
+  const loadedBands = new Set<number>();
+  const loadedExtras = new Set<string>();
+  const loadedBizBands = new Set<number>();
+  let loadedAll = false;
+  const asPlace = (d: any) => ({ id: d.id, ...d.data(), lat: Number(d.data().lat), lng: Number(d.data().lng) } as Place);
+  const chunks = <T,>(a: T[], n = 30) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+  function addPlaces(list: Place[]) {
+    const fresh: string[] = [];
+    const byId = new Map(allPlaces.map((x) => [x.id, x]));
+    list.forEach((x) => { if (!byId.has(x.id)) fresh.push(x.id); byId.set(x.id, x); });
+    allPlaces = [...byId.values()].sort((a, b) => num(b.visitCount) - num(a.visitCount));
+    return fresh;
+  }
+  // Reseñas y fotos de los lugares recién cargados (de 30 en 30, que es lo que permite Firestore).
+  async function loadExtras(ids: string[]) {
+    const todo = ids.filter((x) => !loadedExtras.has(x));
+    if (!todo.length) return;
+    todo.forEach((x) => loadedExtras.add(x));
+    const res = await Promise.all(chunks(todo).flatMap((c) => [
+      getDocs(query(collection(db, 'reviews'), where('placeId', 'in', c))).catch(() => null),
+      getDocs(query(collection(db, 'photos'), where('placeId', 'in', c))).catch(() => null),
+    ]));
+    res.forEach((snap, i) => snap?.docs.forEach((d) => {
+      if (i % 2 === 0) {
+        const r = { id: d.id, ...d.data() } as Review;
+        const list = (reviewsByPlace[r.placeId] ||= []);
+        if (!list.some((x) => x.id === r.id)) list.push(r);
+      } else {
+        const ph = { id: d.id, ...d.data() } as CPhoto;
+        if (!ph.placeId || !ph.url) return;
+        const list = (photosByPlace[ph.placeId] ||= []);
+        if (!list.some((x) => x.id === ph.id)) list.push(ph);
+      }
+    }));
+    todo.forEach((x) => photosByPlace[x] && sortPhotos(photosByPlace[x]));
+  }
+  // Negocios aprobados de las franjas a la vista, y sus cupones.
+  async function loadBusinesses(bands: number[]) {
+    const todo = bands.filter((k) => !loadedBizBands.has(k));
+    if (!todo.length) return;
+    todo.forEach((k) => loadedBizBands.add(k));
+    const snaps = await Promise.all(todo.map((k) => getDocs(query(collection(db, 'businesses'), where('lat', '>=', k * BAND), where('lat', '<', (k + 1) * BAND))).catch(() => null)));
+    const fresh: Business[] = [];
+    snaps.forEach((snap) => snap?.docs.forEach((d) => {
+      const b = { id: d.id, ...d.data() } as Business;
+      if (b.status === 'pending' || b.status === 'rejected' || allBusinesses.some((x) => x.id === b.id)) return;
+      fresh.push({ ...b, lat: Number(b.lat), lng: Number(b.lng) });
+    }));
+    if (!fresh.length) return;
+    allBusinesses = [...allBusinesses, ...fresh];
+    renderBizMarkers(); updateBizLayer();
+    const cs = await Promise.all(chunks(fresh.map((b) => b.id)).map((c) => getDocs(query(collection(db, 'coupons'), where('businessId', 'in', c))).catch(() => null)));
+    cs.forEach((snap) => snap?.docs.forEach((d) => { const c = { id: d.id, ...d.data() } as Coupon; (couponsByBiz[c.businessId] ||= []).push(c); }));
+    if (selectedBizId) { const sb = allBusinesses.find((x) => x.id === selectedBizId); if (sb) renderBusinessDetail(sb); }
+  }
+  const bandsFor = (south: number, north: number) => {
+    const out: number[] = [];
+    for (let k = Math.floor(south / BAND); k <= Math.floor(north / BAND); k++) out.push(k);
+    return out;
+  };
+  // Después de cargar algo nuevo: lista, puntos y la ficha abierta se actualizan sin mover el mapa.
+  function refreshAfterLoad() {
+    applyFilters();
+    if (selectedId) { const sp = allPlaces.find((x) => x.id === selectedId); if (sp) renderDetail(sp); }
+  }
+  async function loadZone() {
+    const b = map.getBounds().pad(0.25);
+    const bands = bandsFor(b.getSouth(), b.getNorth());
+    if (map.getZoom() >= BIZ_MIN_ZOOM - 1) loadBusinesses(bands);
+    if (map.getZoom() < ZONE_ZOOM || loadedAll) return;
+    const todo = bands.filter((k) => !loadedBands.has(k));
+    if (!todo.length) return;
+    todo.forEach((k) => loadedBands.add(k));
+    try {
+      const snaps = await Promise.all(todo.map((k) => getDocs(query(collection(db, 'places'), where('lat', '>=', k * BAND), where('lat', '<', (k + 1) * BAND)))));
+      const fresh = addPlaces(snaps.flatMap((sn) => sn.docs.map(asPlace)));
+      if (fresh.length) { refreshAfterLoad(); await loadExtras(fresh); refreshAfterLoad(); }
+    } catch (err) { console.error('No se pudo cargar la zona:', err); todo.forEach((k) => loadedBands.delete(k)); }
+  }
+  let zoneTimer: any;
+  map.on('moveend', () => { clearTimeout(zoneTimer); zoneTimer = setTimeout(() => { loadZone(); if (!currentQuery) renderList(); }, 250); });
+  // Buscar por nombre necesita todos: se piden una sola vez, solo si alguien busca.
+  async function loadAllPlaces() {
+    if (loadedAll) return;
+    loadedAll = true;
+    try {
+      const snap = await getDocs(collection(db, 'places'));
+      const fresh = addPlaces(snap.docs.map(asPlace));
+      refreshAfterLoad();
+      if (fresh.length) { await loadExtras(fresh); refreshAfterLoad(); }
+    } catch (err) { console.error(err); loadedAll = false; }
+  }
+  // Al elegir una categoría se piden todos los de esa categoría (una vez por categoría).
+  const loadedCats = new Set<string>();
+  async function loadCategory(cat: string) {
+    if (loadedAll || loadedCats.has(cat)) return;
+    loadedCats.add(cat);
+    try {
+      const snap = await getDocs(query(collection(db, 'places'), where('category', '==', cat)));
+      const fresh = addPlaces(snap.docs.map(asPlace));
+      if (fresh.length) { refreshAfterLoad(); await loadExtras(fresh); refreshAfterLoad(); }
+    } catch (err) { console.error(err); loadedCats.delete(cat); }
+  }
+  // Un lugar que llega por enlace (#id) y todavía no está cargado.
+  async function ensurePlace(id: string) {
+    if (allPlaces.some((p) => p.id === id)) return true;
+    try {
+      const d = await getDoc(doc(db, 'places', id));
+      if (!d.exists()) return false;
+      addPlaces([asPlace(d)]);
+      await loadExtras([id]);
+      applyFilters();
+      return true;
+    } catch { return false; }
+  }
+
   async function load() {
     try {
-      const [placesSnap, reviewsSnap, photosSnap] = await Promise.all([
-        getDocs(collection(db, 'places')),
-        getDocs(collection(db, 'reviews')).catch(() => null),
-        getDocs(collection(db, 'photos')).catch(() => null),
-      ]);
-      // Negocios: solo los aprobados (los que no tienen estado son de antes y se muestran).
-      getDocs(collection(db, 'businesses')).then((snap) => {
-        allBusinesses = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() } as Business))
-          .map((b) => ({ ...b, lat: Number(b.lat), lng: Number(b.lng) }))
-          .filter((b) => b.status !== 'pending' && b.status !== 'rejected');
-        renderBizMarkers(); updateBizLayer();
-        getDocs(collection(db, 'coupons')).then((cs) => {
-          couponsByBiz = {};
-          cs.docs.forEach((d) => { const c = { id: d.id, ...d.data() } as Coupon; (couponsByBiz[c.businessId] ||= []).push(c); });
-          if (selectedBizId) { const sb = allBusinesses.find((x) => x.id === selectedBizId); if (sb) renderBusinessDetail(sb); }
-        }).catch(() => { /* sin cupones */ });
-        const h = decodeURIComponent(location.hash.slice(1));
-        if (h.startsWith('b-')) selectBusiness(h.slice(2));
-        else if (selectedId) { const sp = allPlaces.find((x) => x.id === selectedId); if (sp) renderDetail(sp); }
-      }).catch(() => { /* sin negocios */ });
-      photosByPlace = {};
-      photosSnap?.docs.forEach((d) => {
-        const ph = { id: d.id, ...d.data() } as CPhoto;
-        if (ph.placeId && ph.url) (photosByPlace[ph.placeId] ||= []).push(ph);
-      });
-      Object.values(photosByPlace).forEach(sortPhotos);
-      if (placesSnap.empty) throw new Error('Sin lugares');
-      allPlaces = placesSnap.docs
-        .map((d) => ({ id: d.id, ...d.data() } as Place))
-        .map((p) => ({ ...p, lat: Number(p.lat), lng: Number(p.lng) }))
-        .sort((a, b) => num(b.visitCount) - num(a.visitCount));
-      reviewsByPlace = {};
-      reviewsSnap?.docs.forEach((d) => {
-        const r = { id: d.id, ...d.data() } as Review;
-        (reviewsByPlace[r.placeId] ||= []).push(r);
-      });
+      const snap = await getDocs(query(collection(db, 'places'), orderBy('visitCount', 'desc'), limit(TOP_LIMIT)));
+      if (snap.empty) throw new Error('Sin lugares');
+      const fresh = addPlaces(snap.docs.map(asPlace));
       applyFilters();
       $('placesList').removeAttribute('aria-busy');
       hideMapLoading();
       // Abrir lugar o negocio cuando cambia el enlace (#id o #b-id) sin recargar.
-      window.addEventListener('hashchange', () => {
+      window.addEventListener('hashchange', async () => {
         const h = decodeURIComponent(location.hash.slice(1));
         if (h.startsWith('b-')) { if (h.slice(2) !== selectedBizId) selectBusiness(h.slice(2)); }
-        else if (h && h !== selectedId && allPlaces.some((p) => p.id === h)) selectPlace(h, { count: false });
+        else if (h && h !== selectedId && await ensurePlace(h)) selectPlace(h, { count: false });
       });
       const fromHash = decodeURIComponent(location.hash.slice(1));
-      if (fromHash && allPlaces.some((p) => p.id === fromHash)) {
+      if (fromHash.startsWith('b-')) {
+        // Negocio por enlace: se pide directo y se abre.
+        const d = await getDoc(doc(db, 'businesses', fromHash.slice(2))).catch(() => null);
+        if (d?.exists()) {
+          const b = { id: d.id, ...d.data() } as Business;
+          if (b.status !== 'pending' && b.status !== 'rejected') { allBusinesses.push({ ...b, lat: Number(b.lat), lng: Number(b.lng) }); renderBizMarkers(); selectBusiness(b.id); }
+        } else fitAll();
+      } else if (fromHash && await ensurePlace(fromHash)) {
         selectPlace(fromHash, { count: false });
       } else {
         fitAll();
       }
+      await loadExtras(fresh);
+      refreshAfterLoad();
+      loadZone();
     } catch (err) {
       console.error('Error cargando lugares:', err);
       $('placesList').innerHTML = ''; $('placesList').removeAttribute('aria-busy');
