@@ -334,6 +334,11 @@ const categories = [
   .verified { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; color: var(--turquesa); }
   .review-avatar { width: 28px; height: 28px; border-radius: 14px; object-fit: cover; background: #FDF1D3; color: #6B4E0A; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
   .review-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  a.review-who { color: inherit; text-decoration: none; border-radius: 20px; margin: -4px; padding: 4px 10px 4px 4px; }
+  a.review-who:hover strong { text-decoration: underline; text-underline-offset: 3px; color: var(--primary); }
+  a.review-who:focus-visible { outline: 3px solid var(--primary); outline-offset: 1px; }
+  .cover-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .cover-credit a:hover { color: var(--plumaje); }
 
   /* ---------- Botones sobre el mapa ---------- */
   .list-btn { position: fixed; z-index: 1000; left: 16px; bottom: 24px; height: 48px; padding: 0 20px 0 16px; border: 0; border-radius: 24px; background: var(--rama); color: #FFFFFF; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(20,48,47,0.3); }
@@ -982,6 +987,9 @@ const categories = [
   const icoTicket = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 002-2h14a2 2 0 002 2v2a2 2 0 000 4v2a2 2 0 00-2 2H5a2 2 0 00-2-2v-2a2 2 0 000-4z"></path></svg>';
   const icoLink = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"></path></svg>';
 
+  // Perfil público de quien publicó algo.
+  const profileHref = (uid: string) => `/perfil?u=${encodeURIComponent(uid)}`;
+
   // ---------- Visor de fotos ----------
   // photoId: foto de la comunidad (se puede votar). userId: se muestra quién la subió con enlace a su perfil.
   interface LbItem { url: string; cap?: string; photoId?: string; userId?: string; userName?: string; userPhoto?: string }
@@ -1006,7 +1014,7 @@ const categories = [
     who.hidden = !it.userId;
     if (it.userId) {
       const name = it.userName || 'Visitante';
-      who.href = `/perfil?u=${encodeURIComponent(it.userId)}`;
+      who.href = profileHref(it.userId);
       who.setAttribute('aria-label', `Foto de ${name}. Ver su perfil`);
       $('lbName').textContent = name;
       const pic = safeUrl(it.userPhoto || '');
@@ -1126,7 +1134,7 @@ const categories = [
     const rp = (rv.photos || []).map((u) => safeUrl(u)).filter(Boolean).slice(0, 4);
     return `<div class="review">
       <div class="review-head">
-        <span class="review-who">${safeUrl(rv.userPhoto) ? `<img class="review-avatar" src="${safeUrl(rv.userPhoto)}" alt="" referrerpolicy="no-referrer">` : `<span class="review-avatar" aria-hidden="true">${esc((rv.userName || 'V').charAt(0).toUpperCase())}</span>`}<strong>${esc(rv.userName || 'Visitante')}</strong></span>
+        ${rv.userId ? `<a class="review-who is-link" href="${profileHref(rv.userId)}" title="Ver el perfil de ${esc(rv.userName || 'Visitante')}">` : '<span class="review-who">'}${safeUrl(rv.userPhoto) ? `<img class="review-avatar" src="${safeUrl(rv.userPhoto)}" alt="" referrerpolicy="no-referrer">` : `<span class="review-avatar" aria-hidden="true">${esc((rv.userName || 'V').charAt(0).toUpperCase())}</span>`}<strong>${esc(rv.userName || 'Visitante')}</strong>${rv.userId ? '</a>' : '</span>'}
         <span class="star" aria-label="${num(rv.rating)} de 5">${starsTxt(num(rv.rating))}</span>
       </div>
       <p class="review-date">${rv.verified ? `<span class="verified">${icoCheck} Visita verificada</span>${rv.visitDate ? ' · ' : ''}` : ''}${rv.visitDate ? `Fue el ${esc(fmtDate(rv.visitDate))}` : ''}</p>
@@ -1211,7 +1219,7 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a la lista
       </button>` : ''}
-      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty" aria-hidden="true">${catIcon(p.category, 40)}</div>`}
+      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${cover.photo.userId ? `<a href="${profileHref(cover.photo.userId)}">${esc(cover.photo.userName || 'un visitante')}</a>` : esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty" aria-hidden="true">${catIcon(p.category, 40)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r

@@ -235,6 +235,8 @@ const categories = [
   .ad-row-title { margin: 0; font-weight: 800; font-size: 15px; }
   .ad-row-text { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.45; overflow-wrap: anywhere; }
   .ad-row-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .ad-who { color: var(--primary); font-weight: 700; text-decoration: none; }
+  .ad-who:hover { text-decoration: underline; text-underline-offset: 2px; }
   .ad-empty { padding: 12px 0; font-size: 14px; color: var(--muted); }
   .ad-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .ad-filter { min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -463,12 +465,16 @@ const categories = [
 
   // ---------- Reseñas y fotos ----------
   const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';
+  // El nombre de quien publicó lleva a su perfil público.
+  const who = (x: any) => x.userId
+    ? `<a class="ad-who" href="/perfil?u=${encodeURIComponent(x.userId)}" target="_blank" rel="noopener">${esc(x.userName || 'Visitante')}</a>`
+    : esc(x.userName || 'Visitante');
   function reviewRow(r: any) {
     return `<li class="ad-row">
       <div class="ad-row-main">
         <p class="ad-row-title">${esc(placeName(r.placeId) || r.placeName || 'Lugar')} · ${num(r.rating)} de 5${r.verified ? ' <span class="ad-tag ad-tag-ok">Verificada</span>' : ''}</p>
         ${r.comment ? `<p class="ad-row-text">${esc(r.comment)}</p>` : ''}
-        <p class="ad-row-meta">${esc(r.userName || 'Visitante')} · ${ago(r.createdAt)}${(r.photos || []).length ? ` · ${(r.photos || []).length} fotos` : ''}</p>
+        <p class="ad-row-meta">${who(r)} · ${ago(r.createdAt)}${(r.photos || []).length ? ` · ${(r.photos || []).length} fotos` : ''}</p>
       </div>
       <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="reviews/${esc(r.id)}">Borrar</button>
     </li>`;
@@ -477,7 +483,7 @@ const categories = [
     $('allReviews').innerHTML = reviews.slice(0, 60).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
     $('allPhotos').innerHTML = photos.slice(0, 60).map((f) => `<li>
       <a href="${safeUrl(f.url)}" target="_blank" rel="noopener"><img src="${safeUrl(f.url)}" alt="Foto de ${esc(f.userName || 'visitante')}" loading="lazy"></a>
-      <p>${esc(placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} votos · ${esc(f.userName || 'Visitante')}</p>
+      <p>${esc(placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} votos · ${who(f)}</p>
       <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="photos/${esc(f.id)}">Borrar</button>
     </li>`).join('') || '<li class="ad-empty">Todavía no hay fotos de turistas.</li>';
   }
