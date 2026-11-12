@@ -369,6 +369,18 @@ const categories = [
     photos = f.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     seasonal = s.sort((a: any, b2: any) => String(b2.start).localeCompare(String(a.start)));
     renderAll();
+    checkPhotos();
+  }
+
+  // Revisa que las fotos de cada lugar carguen; las que no, se marcan como problema.
+  const brokenPhotos = new Set<string>();
+  let brokenTimer: any;
+  function checkPhotos() {
+    places.forEach((p) => (p.photos || []).filter(Boolean).forEach((u: string) => {
+      const img = new Image();
+      img.onerror = () => { if (!brokenPhotos.has(u)) { brokenPhotos.add(u); clearTimeout(brokenTimer); brokenTimer = setTimeout(renderAll, 800); } };
+      img.src = u;
+    }));
   }
 
   // ---------- Navegación por secciones (#resumen, #negocios…) ----------
@@ -394,10 +406,13 @@ const categories = [
     const out: string[] = [];
     if (!(p.lat > 13 && p.lat < 14.6 && p.lng > -90.3 && p.lng < -87.5)) out.push('El punto cae fuera de El Salvador');
     const ph = (p.photos || []).filter(Boolean);
+    const broken = ph.filter((u: string) => brokenPhotos.has(u)).length;
+    if (broken) out.push(broken === 1 ? 'Una foto no carga' : `${broken} fotos no cargan`);
     if (!ph.length) out.push('No tiene foto');
     else if (ph.some((u: string) => /unsplash\.com|pexels\.com|pixabay\.com/.test(u))) out.push('Foto de stock: puede no ser del lugar');
     if (!p.description || String(p.description).length < 40) out.push('Descripción muy corta o vacía');
     if (!p.schedule) out.push('Sin horario');
+    if (/\b(Cascade|Waterfall|Beach|Lake|Park|Church|Volcano)\b/i.test(p.name || '')) out.push('Nombre con palabras en inglés');
     if (/various|variou/i.test(p.municipality || '') || /\.[a-z]/.test(p.description || '')) out.push('Datos con errores de texto');
     return out;
   }

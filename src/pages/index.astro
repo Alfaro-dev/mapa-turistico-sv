@@ -473,7 +473,7 @@ const categories = [
   let detailFromList = false;
 
   // ---------- Mapa ----------
-  const map = L.map('map', { zoomControl: false, attributionControl: true }).setView([13.75, -88.9], 9);
+  const map = L.map('map', { zoomControl: false, attributionControl: true, zoomSnap: 0.25 }).setView([13.75, -88.9], 9);
   // Teselas de OpenStreetMap (gratis, sin clave).
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,

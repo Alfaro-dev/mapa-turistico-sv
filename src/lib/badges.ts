@@ -26,6 +26,8 @@ const ICONS: Record<string, string> = {
   camara: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle>',
   resena: '<path d="M4 5h16v11H9l-5 4z"></path><path d="M8 9h8M8 12h5"></path>',
   verificado: '<path d="M12 3l2.4 1.8 3-.1.9 2.8 2.4 1.8-.9 2.8.9 2.8-2.4 1.8-.9 2.8-3-.1L12 21l-2.4-1.8-3 .1-.9-2.8L3.3 14.7l.9-2.8-.9-2.8L5.7 7.3l.9-2.8 3 .1z"></path><path d="M8.5 12l2.5 2.5 4.5-5"></path>',
+  mochila: '<path d="M7 8a5 5 0 0110 0v12H7z"></path><path d="M9 4.5V3h6v1.5M7 13h10M10 13v3h4v-3"></path>',
+  cumbre: '<path d="M2 20l7-12 4 6 2-3 7 9z"></path><path d="M9 8V3l4 1.5L9 6"></path>',
   estrella: '<path d="M12 3l2.7 5.6 6.2.9-4.5 4.4 1 6.1L12 17.1 6.6 20l1-6.1L3.1 9.5l6.2-.9z"></path>',
 };
 
@@ -63,8 +65,8 @@ export function computeBadges(
     { id: 'early_bird', name: 'Madrugador', description: '5 reseñas antes de las 7 a. m.', icon: 'sol', count: byHour((h) => h < 7), required: 5 },
     { id: 'night_owl', name: 'Noctámbulo', description: '5 reseñas después de las 10 p. m.', icon: 'luna', count: byHour((h) => h >= 22), required: 5 },
     { id: 'explorer_10', name: 'Explorador', description: '10 lugares visitados', icon: 'brujula', count: distinct(), required: 10 },
-    { id: 'explorer_25', name: 'Aventurero', description: '25 lugares visitados', icon: 'brujula', count: distinct(), required: 25 },
-    { id: 'explorer_50', name: 'Conquistador', description: '50 lugares visitados', icon: 'brujula', count: distinct(), required: 50 },
+    { id: 'explorer_25', name: 'Aventurero', description: '25 lugares visitados', icon: 'mochila', count: distinct(), required: 25 },
+    { id: 'explorer_50', name: 'Conquistador', description: '50 lugares visitados', icon: 'cumbre', count: distinct(), required: 50 },
     { id: 'photo_pro', name: 'Fotógrafo pro', description: '20 fotos subidas', icon: 'camara', count: photoCount, required: 20 },
     { id: 'reviewer', name: 'Crítico', description: '10 reseñas escritas', icon: 'resena', count: reviews.length, required: 10 },
     { id: 'verified_visits', name: 'Viajero verificado', description: '10 visitas verificadas en el lugar', icon: 'verificado', count: verified, required: 10 },
