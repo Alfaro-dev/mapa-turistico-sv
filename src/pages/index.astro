@@ -137,7 +137,8 @@ const categories = [
 
       <div class="field">
         <label for="reviewComment" class="field-label">Contá tu visita</label>
-        <textarea id="reviewComment" rows="4" maxlength="1000" placeholder="Qué hiciste, cuándo conviene ir, qué llevar…"></textarea>
+        <textarea id="reviewComment" rows="4" maxlength="1000" aria-describedby="commentCount" placeholder="Qué hiciste, cuándo conviene ir, qué llevar…"></textarea>
+        <p id="commentCount" class="field-help field-count">Mínimo 10 letras · 0 de 1000</p>
       </div>
 
       <div class="field-row">
@@ -237,6 +238,8 @@ const categories = [
   .field textarea { resize: vertical; line-height: 1.5; }
   .field-help { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
   .field-help.is-ok { color: var(--turquesa); font-weight: 800; }
+  .field-count { margin: 4px 0 0; text-align: right; }
+  #reviewForm [aria-invalid="true"] { border-color: #C2581F; box-shadow: 0 0 0 3px rgba(194,88,31,0.18); }
   .form-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #F6D9C8; color: #6E2E0C; font-size: 14px; font-weight: 700; }
   .form-error[hidden] { display: none; }
   .photo-picks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
@@ -971,6 +974,8 @@ const categories = [
     reviewRating = 0; reviewPhotos = []; reviewVerified = false;
     document.querySelectorAll('.star-pick').forEach((b) => { b.classList.remove('is-on'); b.setAttribute('aria-pressed', 'false'); });
     ($('reviewComment') as HTMLTextAreaElement).value = '';
+    $('commentCount').textContent = 'Mínimo 10 letras · 0 de 1000';
+    document.querySelectorAll('#reviewForm [aria-invalid]').forEach((x) => x.removeAttribute('aria-invalid'));
     ($('reviewDate') as HTMLInputElement).value = new Date().toLocaleDateString('en-CA');
     ($('reviewDate') as HTMLInputElement).max = new Date().toLocaleDateString('en-CA');
     $('verifyStatus').textContent = 'Opcional. Usa tu ubicación una sola vez y no la guarda.';
@@ -1033,6 +1038,19 @@ const categories = [
     );
   });
 
+  // Al corregir un campo se quita su error.
+  const clearFieldError = (e: Event) => {
+    (e.target as HTMLElement).removeAttribute('aria-invalid');
+    if (!$('reviewError').hidden && !uploadingPhotos) $('reviewError').hidden = true;
+  };
+  $('reviewComment').addEventListener('input', (e: Event) => {
+    clearFieldError(e);
+    const n = ($('reviewComment') as HTMLTextAreaElement).value.trim().length;
+    $('commentCount').textContent = n < 10 ? `Mínimo 10 letras · ${n} de 1000` : `${n} de 1000`;
+  });
+  $('reviewDate').addEventListener('input', clearFieldError);
+  document.querySelectorAll('.star-pick').forEach((b) => b.addEventListener('click', () => { if ($('reviewError').textContent.includes('estrellas')) $('reviewError').hidden = true; }));
+
   function renderReviewPhotos() {
     $('reviewPhotos').innerHTML =
       reviewPhotos.map((u, i) => `<div class="photo-pick"><img src="${safeUrl(u)}" alt="Foto ${i + 1}"><button type="button" data-remove="${i}" aria-label="Quitar foto ${i + 1}">×</button></div>`).join('') +
@@ -1044,9 +1062,17 @@ const categories = [
   });
   $('reviewPhotoInput').addEventListener('change', async (e: Event) => {
     const input = e.target as HTMLInputElement;
-    const files = Array.from(input.files || []).slice(0, Math.max(0, 4 - reviewPhotos.length - uploadingPhotos));
+    const picked = Array.from(input.files || []);
+    const room = Math.max(0, 4 - reviewPhotos.length - uploadingPhotos);
+    const files = picked.slice(0, room);
     input.value = '';
     $('reviewError').hidden = true;
+    if (picked.length > room) {
+      $('reviewError').textContent = room
+        ? `Podés subir hasta 4 fotos. Se van a subir solo ${room} de las ${picked.length} que elegiste.`
+        : 'Ya tenés 4 fotos. Quitá una para subir otra.';
+      $('reviewError').hidden = false;
+    }
     for (const f of files) {
       uploadingPhotos++; renderReviewPhotos();
       try {
@@ -1062,11 +1088,22 @@ const categories = [
 
   $('reviewForm').addEventListener('submit', async (e: Event) => {
     e.preventDefault();
-    const err = (msg: string) => { $('reviewError').textContent = msg; $('reviewError').hidden = false; };
+    // Muestra el error y lleva el foco al campo que hay que corregir.
+    const err = (msg: string, field?: string) => {
+      $('reviewError').textContent = msg; $('reviewError').hidden = false;
+      if (field) { const f = $(field) as HTMLElement; f.setAttribute('aria-invalid', 'true'); f.focus(); }
+      else $('reviewError').scrollIntoView({ block: 'nearest' });
+    };
+    $('reviewError').hidden = true;
+    document.querySelectorAll('#reviewForm [aria-invalid]').forEach((x) => x.removeAttribute('aria-invalid'));
     if (!currentUser || !reviewPlace) return;
-    if (!reviewRating) return err('Elegí de 1 a 5 estrellas.');
+    if (!reviewRating) { err('Elegí de 1 a 5 estrellas.'); (document.querySelector('.star-pick') as HTMLElement)?.focus(); return; }
     const comment = ($('reviewComment') as HTMLTextAreaElement).value.trim();
-    if (comment.length < 10) return err('Contá un poquito más: al menos 10 letras.');
+    if (comment.length < 10) return err(`Contá un poquito más: faltan ${10 - comment.length} letras.`, 'reviewComment');
+    const visit = ($('reviewDate') as HTMLInputElement).value;
+    const today = new Date().toLocaleDateString('en-CA');
+    if (visit && visit > today) return err('La fecha de tu visita no puede ser después de hoy.', 'reviewDate');
+    if (visit && visit < '2000-01-01') return err('Revisá la fecha de tu visita.', 'reviewDate');
     if (uploadingPhotos > 0) return err('Esperá a que terminen de subir las fotos.');
     const submit = $('reviewSubmit') as HTMLButtonElement;
     submit.disabled = true; submit.textContent = 'Publicando…';
@@ -1083,7 +1120,7 @@ const categories = [
         rating: reviewRating,
         comment,
         photos: reviewPhotos,
-        visitDate: ($('reviewDate') as HTMLInputElement).value || '',
+        visitDate: visit || '',
         verified: reviewVerified,
         useful: 0, fun: 0, like: 0,
         createdAt: serverTimestamp(),

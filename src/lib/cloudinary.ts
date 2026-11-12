@@ -12,10 +12,10 @@ export type PhotoKind = 'places' | 'reviews';
 /** Sube una imagen y devuelve su URL https. Lanza Error con un mensaje en español. */
 export async function uploadImage(file: File, kind: PhotoKind, uid: string): Promise<string> {
   if (!file.type.startsWith('image/')) {
-    throw new Error('Solo se pueden subir imágenes.');
+    throw new Error('Ese archivo no es una foto. Elegí una imagen JPG, PNG o HEIC.');
   }
   if (file.size > MAX_BYTES) {
-    throw new Error('La imagen pesa más de 5 MB.');
+    throw new Error('La foto pesa más de 5 MB. Elegí otra o tomala con menos resolución.');
   }
 
   const form = new FormData();
@@ -30,7 +30,11 @@ export async function uploadImage(file: File, kind: PhotoKind, uid: string): Pro
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.secure_url) {
-    throw new Error(data?.error?.message || 'No se pudo subir la imagen.');
+    // El mensaje de Cloudinary viene en inglés: al turista le damos uno claro en español.
+    console.error('Cloudinary:', data?.error?.message || res.status);
+    throw new Error(res.status >= 500 || !res.status
+      ? 'No se pudo subir la foto. Revisá tu conexión e intentá de nuevo.'
+      : 'Esa foto no se pudo subir. Probá con otra en JPG o PNG.');
   }
   return data.secure_url as string;
 }

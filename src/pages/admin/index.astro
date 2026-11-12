@@ -593,6 +593,8 @@ const categories = [
       const plan = $('planSel').value;
       const planUntil = plan === 'basico' ? '' : $('planUntil').value;
       if (plan !== 'basico' && !planUntil) { $('bizStatus').textContent = 'Poné hasta qué fecha está pagado.'; $('bizStatus').classList.add('is-error'); return; }
+      if (plan !== 'basico' && planUntil < todayIso()) { $('bizStatus').textContent = 'Esa fecha ya pasó: el negocio no saldría como destacado. Usá "Pagó 1 mes" o poné una fecha futura.'; $('bizStatus').classList.add('is-error'); return; }
+      $('bizStatus').classList.remove('is-error');
       try {
         await updateDoc(doc(db, 'businesses', b.id), { plan, planUntil, featured: plan !== 'basico', planUpdatedAt: serverTimestamp() });
         Object.assign(b, { plan, planUntil, featured: plan !== 'basico' });
@@ -706,10 +708,13 @@ const categories = [
   $('placeForm').addEventListener('submit', async (e: Event) => {
     e.preventDefault();
     if (uploading) return status('Esperá a que termine de subir la foto.', true);
-    const lat = parseFloat($('pLat').value), lng = parseFloat($('pLng').value);
-    if (!(lat > 13 && lat < 14.6 && lng > -90.3 && lng < -87.5)) return status('El punto queda fuera de El Salvador. Marcalo en el mapa.', true);
     const name = $('pName').value.trim();
-    if (!name) return status('Falta el nombre.', true);
+    if (!name) { $('pName').focus(); return status('Falta el nombre del lugar.', true); }
+    const lat = parseFloat($('pLat').value), lng = parseFloat($('pLng').value);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return status('Falta la ubicación. Tocá el mapa donde está el lugar.', true);
+    if (!(lat > 13 && lat < 14.6 && lng > -90.3 && lng < -87.5)) return status('El punto queda fuera de El Salvador. Marcalo en el mapa.', true);
+    const web = $('pWebsite').value.trim();
+    if (web && !/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(web)) { $('pWebsite').focus(); return status('El sitio web tiene que empezar con https:// (por ejemplo https://ejemplo.com).', true); }
     const fields = {
       name, category: $('pCategory').value, municipality: $('pMunicipality').value.trim(), department: $('pDepartment').value.trim(),
       lat, lng, schedule: $('pSchedule').value.trim(), price: $('pPrice').value.trim(), website: $('pWebsite').value.trim(),
