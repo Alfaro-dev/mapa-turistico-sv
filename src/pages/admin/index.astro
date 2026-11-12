@@ -1,739 +1,695 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import GozMark from '../../components/GozMark.astro';
+
+const sections = [
+  { id: 'resumen', label: 'Resumen' },
+  { id: 'negocios', label: 'Negocios' },
+  { id: 'resenas', label: 'Reseñas y fotos' },
+  { id: 'lugares', label: 'Lugares turísticos' },
+  { id: 'temporada', label: 'Insignias de temporada' },
+];
+const categories = [
+  ['playa', 'Playa'], ['montaña', 'Volcán o montaña'], ['lago', 'Lago'], ['histórico', 'Sitio histórico'],
+  ['cultura', 'Cultura'], ['río', 'Río'], ['aventura', 'Aventura'], ['gastronomía', 'Comida'], ['other', 'Otro'],
+];
 ---
 
 <Layout title="Admin · Goz">
-  <div class="min-h-screen bg-gray-100">
-    <header class="bg-white shadow-md">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <GozMark size={28} id="admin" />
-          <div class="min-w-0">
-            <h1 class="text-lg font-bold text-gray-800 whitespace-nowrap">Admin · Goz</h1>
-            <p class="text-xs text-gray-500">Lugares y reseñas</p>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <a href="/" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 whitespace-nowrap">← Mapa</a>
-          <span id="userEmail" class="text-sm text-gray-600 hidden truncate max-w-[14rem]"></span>
-          <button id="logoutBtn" class="hidden px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 whitespace-nowrap">Cerrar sesión</button>
-          <button id="loginBtn" class="px-3 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600 whitespace-nowrap">Iniciar sesión</button>
-        </div>
+  <div class="ad">
+    <nav class="ad-nav" aria-label="Secciones del panel">
+      <div class="ad-brand">
+        <span class="ad-mark"><GozMark size={17} simple id="admin" /></span>
+        <span class="ad-word">goz</span>
+        <span class="ad-chip">admin</span>
       </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-4 py-8">
-      <!-- Auth -->
-      <div id="authSection" class="bg-white rounded-xl shadow-lg p-8 mb-8">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">🔐 Iniciar Sesión</h2>
-        <p class="text-gray-600 mb-4">Inicia sesión con Google para escribir reseñas.</p>
-        <button id="googleLogin" class="flex items-center gap-3 px-6 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-emerald-500 transition">
-          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.954,4,4,12.954,4,24c0,11.046,8.954,20,20,20c11.046,0,20-8.954,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.562,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.529,35.491,26.854,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,41.07,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
-          <span class="font-medium">Continuar con Google</span>
-        </button>
+      <div class="ad-links">
+        {sections.map((s) => (
+          <a href={`#${s.id}`} class="ad-link" data-section={s.id}>
+            <span>{s.label}</span><span class="ad-count" id={`count-${s.id}`} hidden></span>
+          </a>
+        ))}
       </div>
+      <div class="ad-nav-foot">
+        <a href="/" class="ad-link ad-link-map">Ver el mapa público</a>
+        <button type="button" id="logoutBtn" class="ad-link ad-logout" hidden>Salir</button>
+      </div>
+    </nav>
 
-      <!-- Admin Panel -->
-      <div id="adminSection" class="hidden space-y-8">
-        
-        <!-- Add Place Form (solo administradores) -->
-        <div id="placeAdminCard" class="hidden bg-white rounded-xl shadow-lg p-8">
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
-            <h2 id="placeFormTitle" class="text-xl font-bold text-gray-800">➕ Agregar lugar</h2>
-            <button type="button" id="cancelEditBtn" class="hidden px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">Cancelar edición</button>
-          </div>
-          
-          <form id="placeForm" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-                <input type="text" id="placeName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-                <select id="placeCategory" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  <option value="">Seleccionar...</option>
-                  <option value="playa">🏖️ Playa</option>
-                  <option value="montaña">🏔️ Montaña</option>
-                  <option value="histórico">🏛️ Histórico</option>
-                  <option value="gastronomía">🍽️ Gastronomía</option>
-                  <option value="cultura">🎭 Cultura</option>
-                  <option value="aventura">🧗 Aventura</option>
-                  <option value="río">🏞️ Río</option>
-                  <option value="lago">🌊 Lago</option>
-                  <option value="other">📌 Otro</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Municipio *</label>
-                <input type="text" id="placeMunicipality" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Departamento *</label>
-                <input type="text" id="placeDepartment" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Latitud *</label>
-                <input type="number" step="0.0001" id="placeLat" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Longitud *</label>
-                <input type="number" step="0.0001" id="placeLng" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Precio *</label>
-                <input type="text" id="placePrice" required placeholder="$3 o Gratis" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Horario</label>
-                <input type="text" id="placeSchedule" placeholder="Martes a domingo, 9:00 a. m. - 4:00 p. m." class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Sitio web (opcional)</label>
-                <input type="url" id="placeWebsite" placeholder="https://..." class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Qué hacer (separado por comas)</label>
-                <input type="text" id="placeRecommendations" placeholder="Senderismo, Mirador, Fotografía" class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-            </div>
-            
-            <div>
-              <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
-                <label class="block text-sm font-medium text-gray-700">📍 Ubicación en el mapa</label>
-                <span class="text-xs text-gray-500">Toca el mapa o arrastra el marcador; la latitud y longitud se llenan solas.</span>
-              </div>
-              <div id="pickerMap" class="w-full h-72 rounded-lg border border-gray-300 z-0"></div>
-            </div>
+    <main class="ad-main" id="adMain">
+      <!-- Sin sesión o sin permiso -->
+      <section id="gate" class="ad-card ad-gate" hidden>
+        <h1 class="ad-h1">Panel de administrador</h1>
+        <p id="gateText" class="ad-lead">Entrá con la cuenta de Google de administrador de Goz.</p>
+        <button type="button" id="loginBtn" class="ad-btn ad-btn-primary">Entrar con Google</button>
+      </section>
+      <p id="loading" class="ad-lead">Cargando…</p>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
-              <textarea id="placeDescription" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+      <!-- Resumen -->
+      <section id="sec-resumen" class="ad-sec" hidden>
+        <div class="ad-head"><div><h1 class="ad-h1">Resumen</h1><p class="ad-muted" id="today"></p></div></div>
+        <h2 class="ad-h2">Para hacer hoy</h2>
+        <div class="ad-todo">
+          <a href="#negocios" class="ad-todo-card is-hot"><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#resenas" class="ad-todo-card is-hot"><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#resenas" class="ad-todo-card"><span class="ad-num" id="tdPhotos">0</span><span class="ad-todo-label">Fotos de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares con problemas</span><span class="ad-todo-go">Corregir</span></a>
+        </div>
+        <h2 class="ad-h2">En Goz hoy</h2>
+        <dl class="ad-stats">
+          <div><dt>Lugares turísticos</dt><dd id="stPlaces">0</dd></div>
+          <div><dt>Negocios activos</dt><dd id="stBiz">0</dd><p class="ad-muted" id="stBizPlans"></p></div>
+          <div><dt>Reseñas</dt><dd id="stReviews">0</dd></div>
+          <div><dt>Fotos de turistas</dt><dd id="stPhotos">0</dd></div>
+        </dl>
+        <div class="ad-two">
+          <section class="ad-card">
+            <div class="ad-card-head"><h2 class="ad-h2">Reseñas nuevas</h2><a href="#resenas">Ver todas</a></div>
+            <p class="ad-muted">Ya están publicadas. Borrá las que rompan las reglas de la comunidad.</p>
+            <ul id="sumReviews" class="ad-rows"></ul>
+          </section>
+          <section class="ad-card">
+            <div class="ad-card-head"><h2 class="ad-h2">Negocios por aprobar</h2><a href="#negocios">Ver todos</a></div>
+            <p class="ad-muted">No salen en el mapa hasta que los apruebes.</p>
+            <ul id="sumBiz" class="ad-rows"></ul>
+          </section>
+        </div>
+      </section>
+
+      <!-- Negocios -->
+      <section id="sec-negocios" class="ad-sec" hidden>
+        <div class="ad-head"><h1 class="ad-h1">Negocios</h1></div>
+        <div class="ad-filters" role="group" aria-label="Filtrar negocios">
+          <button type="button" class="ad-filter" data-bizfilter="pending" aria-pressed="true">Por aprobar</button>
+          <button type="button" class="ad-filter" data-bizfilter="active" aria-pressed="false">Activos</button>
+          <button type="button" class="ad-filter" data-bizfilter="rejected" aria-pressed="false">Rechazados</button>
+        </div>
+        <div class="ad-split">
+          <ul id="bizList" class="ad-card ad-list"></ul>
+          <section id="bizDetail" class="ad-card ad-detail" aria-live="polite"><p class="ad-muted">Elegí un negocio de la lista.</p></section>
+        </div>
+      </section>
+
+      <!-- Reseñas y fotos -->
+      <section id="sec-resenas" class="ad-sec" hidden>
+        <div class="ad-head"><h1 class="ad-h1">Reseñas y fotos</h1></div>
+        <p class="ad-lead">Todo se publica al instante. Si algo rompe las reglas (fotos que no son del lugar, insultos, spam, datos personales), borralo aunque sea poco.</p>
+        <div class="ad-two">
+          <section class="ad-card">
+            <h2 class="ad-h2">Reseñas</h2>
+            <ul id="allReviews" class="ad-rows"></ul>
+          </section>
+          <section class="ad-card">
+            <h2 class="ad-h2">Fotos de turistas</h2>
+            <ul id="allPhotos" class="ad-photos"></ul>
+          </section>
+        </div>
+      </section>
+
+      <!-- Lugares -->
+      <section id="sec-lugares" class="ad-sec" hidden>
+        <div class="ad-head">
+          <div><h1 class="ad-h1">Lugares turísticos</h1><p class="ad-muted" id="placesTotal"></p></div>
+          <button type="button" id="newPlaceBtn" class="ad-btn ad-btn-primary">Agregar lugar</button>
+        </div>
+        <div class="ad-filters" role="group" aria-label="Filtrar lugares">
+          <button type="button" class="ad-filter" data-placefilter="all" aria-pressed="false">Todos</button>
+          <button type="button" class="ad-filter" data-placefilter="problems" aria-pressed="true">Con problemas</button>
+          <label class="ad-search"><span class="sr-only">Buscar lugar</span><input type="search" id="placeSearch" placeholder="Buscar lugar"></label>
+        </div>
+        <div class="ad-split">
+          <ul id="placeList" class="ad-card ad-list"></ul>
+          <section class="ad-card ad-detail">
+            <form id="placeForm" novalidate>
+              <div class="ad-card-head"><h2 id="placeFormTitle" class="ad-h2">Agregar lugar</h2><a id="placeOnMap" href="/" target="_blank" rel="noopener" hidden>Ver en el mapa</a></div>
+              <ul id="placeIssues" class="ad-issues"></ul>
+              <p class="ad-field-label">Ubicación: tocá el mapa o arrastrá el punto</p>
+              <div id="pickerMap" class="ad-picker" role="region" aria-label="Mapa para marcar la ubicación"></div>
+              <div class="ad-grid2">
+                <div class="ad-field"><label for="pLat">Latitud</label><input id="pLat" type="number" step="0.00001" required></div>
+                <div class="ad-field"><label for="pLng">Longitud</label><input id="pLng" type="number" step="0.00001" required></div>
+                <div class="ad-field"><label for="pName">Nombre</label><input id="pName" type="text" required></div>
+                <div class="ad-field"><label for="pCategory">Categoría</label>
+                  <select id="pCategory" required>{categories.map(([v, l]) => <option value={v}>{l}</option>)}</select></div>
+                <div class="ad-field"><label for="pMunicipality">Municipio</label><input id="pMunicipality" type="text"></div>
+                <div class="ad-field"><label for="pDepartment">Departamento</label><input id="pDepartment" type="text"></div>
+                <div class="ad-field"><label for="pSchedule">Horario</label><input id="pSchedule" type="text" placeholder="Martes a domingo, 9 a. m. a 4 p. m."></div>
+                <div class="ad-field"><label for="pPrice">Entrada</label><input id="pPrice" type="text" placeholder="$3 o Gratis"></div>
+                <div class="ad-field ad-span2"><label for="pWebsite">Sitio web (opcional)</label><input id="pWebsite" type="url" placeholder="https://"></div>
+                <div class="ad-field ad-span2"><label for="pRecs">Qué hacer (separado por comas)</label><input id="pRecs" type="text" placeholder="Senderismo, Mirador, Fotografía"></div>
+                <div class="ad-field ad-span2"><label for="pDesc">Descripción</label><textarea id="pDesc" rows="3"></textarea></div>
+              </div>
+              <p class="ad-field-label">Fotos de Goz (la portada la ganan los turistas con votos)</p>
+              <div id="pPhotos" class="ad-thumbs"></div>
+              <label class="ad-btn ad-btn-outline ad-upload">Subir foto<input type="file" id="pPhotoInput" accept="image/*" multiple class="sr-only"></label>
+              <p id="placeStatus" class="ad-status" role="status"></p>
+              <div class="ad-actions">
+                <button type="submit" id="saveNextBtn" class="ad-btn ad-btn-primary" data-next="1">Guardar y seguir con el próximo</button>
+                <button type="submit" id="saveBtn" class="ad-btn ad-btn-outline">Guardar</button>
+                <button type="button" id="deletePlaceBtn" class="ad-btn ad-btn-danger" hidden>Quitar del mapa</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <!-- Insignias de temporada -->
+      <section id="sec-temporada" class="ad-sec" hidden>
+        <div class="ad-head"><h1 class="ad-h1">Insignias de temporada</h1></div>
+        <p class="ad-lead">Se ganan con una reseña con visita verificada en ese lugar, entre esas fechas. Ejemplo: Cerro de las Pavas, el 13 de diciembre. Anunciala antes en TikTok e Instagram.</p>
+        <div class="ad-two">
+          <form id="seasonForm" class="ad-card" novalidate>
+            <h2 class="ad-h2">Nueva insignia</h2>
+            <div class="ad-field"><label for="sName">Nombre</label><input id="sName" type="text" placeholder="Cerro de las Pavas 2026" required></div>
+            <div class="ad-field"><label for="sDesc">Qué hay que hacer</label><input id="sDesc" type="text" placeholder="Visita verificada el 13 de diciembre"></div>
+            <div class="ad-field"><label for="sPlace">Lugar</label><select id="sPlace" required></select></div>
+            <div class="ad-grid2">
+              <div class="ad-field"><label for="sStart">Desde</label><input id="sStart" type="date" required></div>
+              <div class="ad-field"><label for="sEnd">Hasta</label><input id="sEnd" type="date" required></div>
             </div>
-            
-            <!-- Photos -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">📸 Fotos del Lugar (mínimo 1)</label>
-              <div id="placePhotos" class="grid grid-cols-4 gap-4 mb-2"></div>
-              <label class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer text-sm">
-                <span>➕</span> Agregar foto
-                <input type="file" id="placePhotoInput" accept="image/*" class="hidden" />
-              </label>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-3">
-              <button type="submit" id="placeSubmitBtn" class="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 disabled:opacity-50">
-                💾 Guardar lugar
-              </button>
-              <p id="placeStatus" class="text-sm text-gray-600" role="status"></p>
-            </div>
+            <p id="seasonStatus" class="ad-status" role="status"></p>
+            <button type="submit" class="ad-btn ad-btn-primary">Crear insignia</button>
           </form>
+          <section class="ad-card">
+            <h2 class="ad-h2">Creadas</h2>
+            <ul id="seasonList" class="ad-rows"></ul>
+          </section>
         </div>
-
-        <!-- Lista de lugares (solo administradores) -->
-        <div id="placesAdminCard" class="hidden bg-white rounded-xl shadow-lg p-8">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 class="text-xl font-bold text-gray-800">📍 Lugares (<span id="placesCount">0</span>)</h2>
-            <input type="text" id="placesFilter" placeholder="Buscar lugar..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64" />
-          </div>
-          <div id="placesAdminList" class="divide-y divide-gray-100"></div>
-        </div>
-
-        <!-- Add Review Section -->
-        <div class="bg-white rounded-xl shadow-lg p-8">
-          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <span>⭐</span> Escribir Reseña
-          </h2>
-          
-          <form id="reviewForm" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Lugar *</label>
-                <select id="reviewPlace" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-                  <option value="">Seleccionar lugar...</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Visita *</label>
-                <input type="date" id="reviewVisitDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" />
-              </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">⭐ Calificación *</label>
-              <div class="flex gap-2">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <button type="button" class="star-btn w-12 h-12 text-2xl rounded-lg border-2 border-gray-200 hover:border-amber-400 transition" data-rating={n} aria-label={`${n} de 5`}>⭐</button>
-                ))}
-              </div>
-              <input type="hidden" id="reviewRating" value="0" />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tu Reseña *</label>
-              <textarea id="reviewComment" rows="4" required placeholder="Cuéntanos tu experiencia..." class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
-            </div>
-            
-            <!-- Review Photos - minimum 2 required -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">📸 Fotos de tu Visita * (mínimo 2)</label>
-              <p class="text-xs text-gray-500 mb-2">Sube al menos 2 fotos de tu visita al lugar</p>
-              <div id="reviewPhotos" class="grid grid-cols-4 gap-4 mb-2"></div>
-              <label class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer text-sm">
-                <span>➕</span> Agregar foto
-                <input type="file" id="reviewPhotoInput" accept="image/*" multiple class="hidden" />
-              </label>
-            </div>
-            
-            <button type="submit" class="px-6 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600">
-              ⭐ Publicar Reseña
-            </button>
-          </form>
-        </div>
-
-        <!-- My Reviews -->
-        <div class="bg-white rounded-xl shadow-lg p-8">
-          <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <span>📝</span> Mis Reseñas
-          </h2>
-          <div id="myReviews" class="space-y-4"></div>
-          <div id="noReviews" class="hidden text-center py-8 text-gray-500">
-            Aún no has escrito reseñas
-          </div>
-        </div>
-      </div>
+      </section>
     </main>
   </div>
 </Layout>
 
+<style is:global>
+  html, body { height: auto; min-height: 100%; background: var(--neblina); }
+  .sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ad { display: flex; flex-wrap: wrap; min-height: 100vh; color: var(--ink); }
+  .ad-nav { flex: 0 0 248px; box-sizing: border-box; background: var(--surface); border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 0; height: 100vh; }
+  .ad-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 16px; }
+  .ad-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--plumaje); display: flex; align-items: center; justify-content: center; }
+  .ad-word { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 1; }
+  .ad-chip { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--neblina); padding: 3px 8px; border-radius: 10px; }
+  .ad-links { display: flex; flex-direction: column; gap: 4px; }
+  .ad-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 12px; color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 700; border: 0; background: transparent; cursor: pointer; text-align: left; }
+  .ad-link:hover { background: var(--neblina); }
+  .ad-link.is-active { background: var(--rama); color: #FFFFFF; font-weight: 800; }
+  .ad-count { min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: var(--plumaje); color: var(--rama); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .ad-count[hidden] { display: none; }
+  .ad-nav-foot { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
+  .ad-link-map { color: var(--turquesa); font-weight: 800; }
+  .ad-logout { color: var(--muted); }
+  .ad-logout[hidden] { display: none; }
+  .ad-main { flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 32px 56px; }
+  .ad-sec { display: flex; flex-direction: column; gap: 18px; }
+  .ad-sec[hidden], .ad-card[hidden] { display: none; }
+  .ad-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .ad-h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 1.1; }
+  .ad-h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 20px; }
+  .ad-lead { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); max-width: 70ch; }
+  .ad-muted { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .ad-card { background: var(--surface); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .ad-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .ad-card-head a { font-size: 14px; font-weight: 800; color: var(--turquesa); text-decoration: none; }
+  .ad-gate { align-items: flex-start; gap: 14px; max-width: 560px; }
+  .ad-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 22px; border: 2px solid transparent; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; text-decoration: none; white-space: nowrap; box-sizing: border-box; }
+  .ad-btn-primary { background: var(--primary); color: #FFFFFF; }
+  .ad-btn-outline { background: var(--surface); color: var(--turquesa); border-color: var(--turquesa); }
+  .ad-btn-danger { background: transparent; color: #8A3A10; }
+  .ad-btn-danger.is-confirm { background: var(--canela); color: #FFFFFF; }
+  .ad-btn-sm { min-height: 36px; padding: 0 14px; font-size: 13px; }
+  .ad-btn:disabled { opacity: .6; cursor: default; }
+  .ad-todo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .ad-todo-card { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 16px; background: var(--surface); border: 2px solid var(--line); color: var(--ink); text-decoration: none; }
+  .ad-todo-card.is-hot { border-color: var(--plumaje); }
+  .ad-num { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .ad-todo-label { font-size: 15px; font-weight: 800; }
+  .ad-todo-go { font-size: 14px; font-weight: 800; color: var(--turquesa); }
+  .ad-stats { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .ad-stats div { background: var(--surface); border-radius: 16px; padding: 16px 18px; }
+  .ad-stats dt { font-size: 14px; font-weight: 700; color: var(--muted); }
+  .ad-stats dd { margin: 4px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; font-variant-numeric: tabular-nums; }
+  .ad-two { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  .ad-two > * { flex: 1 1 420px; }
+  .ad-rows { list-style: none; margin: 0; padding: 0; }
+  .ad-row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line); }
+  .ad-row-main { flex: 1; min-width: 0; }
+  .ad-row-title { margin: 0; font-weight: 800; font-size: 15px; }
+  .ad-row-text { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.45; overflow-wrap: anywhere; }
+  .ad-row-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .ad-empty { padding: 12px 0; font-size: 14px; color: var(--muted); }
+  .ad-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .ad-filter { min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .ad-filter[aria-pressed="true"] { background: var(--rama); border-color: var(--rama); color: #FFFFFF; font-weight: 800; }
+  .ad-search input { height: 38px; padding: 0 14px; border-radius: 19px; border: 1px solid var(--border); font: inherit; font-size: 14px; min-width: 200px; }
+  .ad-split { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+  .ad-list { flex: 1 1 320px; list-style: none; margin: 0; padding: 8px; gap: 2px; max-height: 70vh; overflow-y: auto; }
+  .ad-detail { flex: 2 1 520px; }
+  .ad-item { width: 100%; display: flex; gap: 12px; align-items: center; padding: 10px; border: 0; border-radius: 12px; background: transparent; color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+  .ad-item:hover { background: var(--neblina); }
+  .ad-item.is-active { background: var(--neblina); box-shadow: inset 3px 0 0 var(--turquesa); }
+  .ad-thumb { width: 48px; height: 48px; border-radius: 10px; background: var(--photo); object-fit: cover; flex-shrink: 0; }
+  .ad-item-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .ad-item-title { font-weight: 800; font-size: 15px; }
+  .ad-item-meta { font-size: 13px; color: var(--muted); }
+  .ad-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ad-tag { font-size: 12px; font-weight: 800; color: #8A3A10; background: #F6D9C8; padding: 2px 8px; border-radius: 10px; }
+  .ad-tag-ok { color: var(--rama); background: var(--plumaje); }
+  .ad-issues { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ad-issues li { padding: 10px 12px; border-radius: 12px; background: #F6D9C8; color: #6E2E0C; font-size: 14px; font-weight: 700; }
+  .ad-picker { height: 260px; border-radius: 12px; overflow: hidden; }
+  .ad-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .ad-span2 { grid-column: span 2; }
+  .ad-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ad-field label, .ad-field-label { font-size: 14px; font-weight: 800; margin: 0; }
+  .ad-field input, .ad-field select, .ad-field textarea { min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); width: 100%; }
+  .ad-thumbs { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ad-thumbs:empty { display: none; }
+  .ad-thumbs .ph { position: relative; width: 120px; height: 84px; }
+  .ad-thumbs img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .ad-thumbs button { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 14px; border: 2px solid #FFFFFF; background: var(--rama); color: #FFFFFF; cursor: pointer; }
+  .ad-thumbs .stock { position: absolute; left: 6px; bottom: 6px; font-size: 11px; font-weight: 800; color: #6E2E0C; background: #F6D9C8; padding: 2px 6px; border-radius: 8px; }
+  .ad-upload { align-self: flex-start; }
+  .ad-status { margin: 0; font-size: 14px; font-weight: 700; color: var(--turquesa); min-height: 1em; }
+  .ad-status.is-error { color: #8A3A10; }
+  .ad-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); align-items: center; }
+  .ad-actions .ad-btn-danger { margin-left: auto; }
+  .ad-check { display: flex; gap: 10px; align-items: center; min-height: 40px; font-size: 15px; }
+  .ad-check input { width: 20px; height: 20px; accent-color: var(--turquesa); }
+  .ad-photos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .ad-photos li { display: flex; flex-direction: column; gap: 4px; }
+  .ad-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--photo); }
+  .ad-photos p { margin: 0; font-size: 12px; color: var(--muted); }
+  .ad-minimap { height: 180px; border-radius: 12px; overflow: hidden; }
+  .ad-biz-top { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .ad-biz-photo { width: 180px; height: 120px; border-radius: 14px; object-fit: cover; background: var(--photo); }
+  @media (max-width: 860px) {
+    .ad-nav { flex: 1 1 100%; height: auto; position: static; flex-direction: column; padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .ad-brand { padding-bottom: 8px; }
+    .ad-links { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
+    .ad-link { flex-shrink: 0; white-space: nowrap; }
+    .ad-nav-foot { flex-direction: row; margin-top: 0; }
+    .ad-main { padding: 20px 16px 48px; }
+    .ad-todo, .ad-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ad-grid2 { grid-template-columns: 1fr; }
+    .ad-span2 { grid-column: auto; }
+  }
+</style>
+
 <script>
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-  import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, query, orderBy, where, increment, serverTimestamp } from 'firebase/firestore';
-  import { esc, safeUrl, jsArg, num } from '../../lib/escape';
+  import { collection, getDocs, getDoc, addDoc, doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+  import { esc, safeUrl, num } from '../../lib/escape';
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
-  
-  let currentUser: any = null;
-  let isAdmin = false;
-  let placePhotos: string[] = [];
-  let reviewPhotos: string[] = [];
-  let allPlaces: any[] = [];
-  let editingId: string | null = null;
-  let uploading = 0;
 
+  declare const L: any;
   const $ = (id: string) => document.getElementById(id) as any;
-  const normalize = (s: unknown) =>
-    String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  
-  // Auth elements
-  const authSection = document.getElementById('authSection');
-  const adminSection = document.getElementById('adminSection');
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const userEmail = document.getElementById('userEmail');
-  const googleLogin = document.getElementById('googleLogin');
-  
-  // Place form
-  const placeForm = document.getElementById('placeForm') as HTMLFormElement;
-  const placePhotosDiv = document.getElementById('placePhotos');
-  const placePhotoInput = document.getElementById('placePhotoInput') as HTMLInputElement;
-  
-  // Review form
-  const reviewForm = document.getElementById('reviewForm') as HTMLFormElement;
-  const reviewPhotosDiv = document.getElementById('reviewPhotos');
-  const reviewPhotoInput = document.getElementById('reviewPhotoInput') as HTMLInputElement;
-  const reviewPlaceSelect = document.getElementById('reviewPlace') as HTMLSelectElement;
-  const starBtns = document.querySelectorAll('.star-btn');
-  
-  // Auth state
-  onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    if (user) {
-      authSection.classList.add('hidden');
-      adminSection.classList.remove('hidden');
-      loginBtn.classList.add('hidden');
-      logoutBtn.classList.remove('hidden');
-      userEmail.textContent = user.email;
-      userEmail.classList.remove('hidden');
-      // El formulario de lugares solo aparece si existe admins/{uid}.
-      // Las reglas de Firestore son las que de verdad lo impiden.
-      try {
-        isAdmin = (await getDoc(doc(db, 'admins', user.uid))).exists();
-      } catch {
-        isAdmin = false;
-      }
-      document.getElementById('placeAdminCard')?.classList.toggle('hidden', !isAdmin);
-      document.getElementById('placesAdminCard')?.classList.toggle('hidden', !isAdmin);
-      if (isAdmin) initPickerMap();
-      await loadPlacesForReview();
-      // Viene de "Escribir reseña" en la ficha: deja elegido ese lugar.
-      const wanted = new URLSearchParams(location.search).get('lugar');
-      if (wanted && [...reviewPlaceSelect.options].some((o) => o.value === wanted)) {
-        reviewPlaceSelect.value = wanted;
-        document.getElementById('reviewForm')?.scrollIntoView({ behavior: 'smooth' });
-      }
-      await loadMyReviews();
-    } else {
-      authSection.classList.remove('hidden');
-      adminSection.classList.add('hidden');
-      loginBtn.classList.remove('hidden');
-      logoutBtn.classList.add('hidden');
-      userEmail.classList.add('hidden');
-    }
-  });
-  
-  googleLogin?.addEventListener('click', async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err) {
-      console.error('Login error:', err);
-      alert('Error al iniciar sesión');
-    }
-  });
-
-  loginBtn?.addEventListener('click', async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err) {
-      console.error('Login error:', err);
-      alert('Error al iniciar sesión');
-    }
-  });
-  
-  logoutBtn?.addEventListener('click', async () => {
-    await signOut(auth);
-  });
-  
-  // Upload place photo
-  placePhotoInput?.addEventListener('change', async (e) => {
-    const input = e.target as HTMLInputElement;
-    const files = input.files;
-    if (!files?.length) return;
-
-    uploading++;
-    $('placeStatus').textContent = 'Subiendo foto...';
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      try {
-        const url = await uploadImage(file, 'places', currentUser.uid);
-        placePhotos.push(url);
-      } catch (err) {
-        console.error('Upload error:', err);
-        alert(`${file.name}: ${(err as Error).message}`);
-      }
-    }
-    uploading--;
-    $('placeStatus').textContent = '';
-    input.value = '';
-    renderPlacePhotos();
-  });
-  
-  function renderPlacePhotos() {
-    if (!placePhotosDiv) return;
-    placePhotosDiv.innerHTML = placePhotos.map((url, i) => `
-      <div class="relative">
-        <img src="${safeUrl(url)}" alt="" class="w-full h-24 object-cover rounded-lg" />
-        <button type="button" onclick="removePlacePhoto(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">✕</button>
-      </div>
-    `).join('');
-  }
-  
-  (window as any).removePlacePhoto = function(index: number) {
-    placePhotos.splice(index, 1);
-    renderPlacePhotos();
+  const normalize = (s: unknown) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const ms = (t: any) => t?.toMillis?.() ?? (typeof t === 'string' ? Date.parse(t) || 0 : 0);
+  const ago = (t: any) => {
+    const m = ms(t); if (!m) return '';
+    const h = Math.round((Date.now() - m) / 3600000);
+    if (h < 1) return 'hace un momento'; if (h < 24) return `hace ${h} h`;
+    const d = Math.round(h / 24); return d === 1 ? 'ayer' : `hace ${d} días`;
   };
-  
-  // Submit place form
-  placeForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    if (uploading > 0) {
-      alert('Espera a que termine de subir la foto.');
+  const CAT: Record<string, string> = { playa: 'Playa', montaña: 'Volcán o montaña', lago: 'Lago', histórico: 'Sitio histórico', cultura: 'Cultura', río: 'Río', aventura: 'Aventura', gastronomía: 'Comida', other: 'Otro' };
+  const BIZ: Record<string, string> = { hotel: 'Hospedaje', restaurante: 'Restaurante', cafeteria: 'Cafetería', tienda: 'Tienda', otro: 'Negocio' };
+
+  let user: any = null;
+  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [];
+  let bizFilter = 'pending', placeFilter = 'problems';
+  let selBiz: string | null = null, selPlace: string | null = null;
+  let placePhotos: string[] = [], uploading = 0;
+
+  // ---------- Entrar ----------
+  $('loginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
+  $('logoutBtn').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, async (u) => {
+    user = u;
+    $('loading').hidden = true;
+    $('logoutBtn').hidden = !u;
+    hideSections();
+    if (!u) { $('gate').hidden = false; $('gateText').textContent = 'Entrá con la cuenta de Google de administrador de Goz.'; $('loginBtn').hidden = false; return; }
+    let admin = false;
+    try { admin = (await getDoc(doc(db, 'admins', u.uid))).exists(); } catch { admin = false; }
+    if (!admin) {
+      $('gate').hidden = false; $('loginBtn').hidden = true;
+      $('gateText').innerHTML = 'Esta sección es solo para el administrador de Goz. <a href="/">Volver al mapa</a>';
       return;
     }
-    if (placePhotos.length === 0) {
-      alert('Agrega al menos una foto del lugar');
-      return;
-    }
-
-    const lat = parseFloat($('placeLat').value);
-    const lng = parseFloat($('placeLng').value);
-    // El Salvador está aprox. entre 13.1 y 14.5 N, y -90.2 y -87.6 O.
-    if (!(lat > 13 && lat < 14.6 && lng > -90.3 && lng < -87.5)) {
-      alert('Las coordenadas quedan fuera de El Salvador. Revisa latitud y longitud.');
-      return;
-    }
-
-    const fields = {
-      name: $('placeName').value.trim(),
-      category: $('placeCategory').value,
-      municipality: $('placeMunicipality').value.trim(),
-      department: $('placeDepartment').value.trim(),
-      lat,
-      lng,
-      price: $('placePrice').value.trim(),
-      schedule: $('placeSchedule').value.trim(),
-      description: $('placeDescription').value.trim(),
-      website: $('placeWebsite').value.trim(),
-      recommendations: $('placeRecommendations').value.split(',').map((s: string) => s.trim()).filter(Boolean),
-      photos: placePhotos,
-    };
-
-    const btn = $('placeSubmitBtn');
-    btn.disabled = true;
-    $('placeStatus').textContent = 'Guardando...';
-    try {
-      if (editingId) {
-        await updateDoc(doc(db, 'places', editingId), { ...fields, updatedAt: serverTimestamp() });
-        $('placeStatus').textContent = '✅ Cambios guardados.';
-      } else {
-        await addDoc(collection(db, 'places'), {
-          ...fields,
-          visitCount: 0,
-          createdAt: serverTimestamp(),
-          createdBy: currentUser.uid,
-        });
-        $('placeStatus').textContent = '✅ Lugar agregado.';
-      }
-      resetPlaceForm(false);
-      await loadPlacesForReview();
-    } catch (err) {
-      console.error('Error:', err);
-      $('placeStatus').textContent = '';
-      alert('No se pudo guardar el lugar.');
-    } finally {
-      btn.disabled = false;
-    }
+    $('gate').hidden = true;
+    $('loading').hidden = false;
+    await loadAll();
+    $('loading').hidden = true;
+    route();
   });
 
-  // ---------- Mapa para marcar la ubicación ----------
-  let pickerMap: any = null;
-  let pickerMarker: any = null;
-  const SV_CENTER: [number, number] = [13.7942, -88.8965];
-
-  function setPickerPoint(lat: number, lng: number, pan = true) {
-    if (!pickerMap) return;
-    if (!pickerMarker) {
-      const icon = L.divIcon({
-        className: '',
-        html: '<div style="font-size:30px;line-height:30px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))">📍</div>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-      });
-      pickerMarker = L.marker([lat, lng], { draggable: true, icon }).addTo(pickerMap);
-      pickerMarker.on('dragend', () => {
-        const p = pickerMarker.getLatLng();
-        fillLatLng(p.lat, p.lng);
-      });
-    } else {
-      pickerMarker.setLatLng([lat, lng]);
-    }
-    if (pan) pickerMap.setView([lat, lng], Math.max(pickerMap.getZoom(), 13));
+  async function loadAll() {
+    const [p, b, r, f, s] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges']
+      .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[])));
+    places = p.map((x: any) => ({ ...x, lat: Number(x.lat), lng: Number(x.lng) })).sort((a: any, b2: any) => String(a.name).localeCompare(String(b2.name), 'es'));
+    businesses = b.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
+    reviews = r.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
+    photos = f.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
+    seasonal = s.sort((a: any, b2: any) => String(b2.start).localeCompare(String(a.start)));
+    renderAll();
   }
 
-  function fillLatLng(lat: number, lng: number) {
-    $('placeLat').value = lat.toFixed(5);
-    $('placeLng').value = lng.toFixed(5);
-  }
-
-  function clearPickerPoint() {
-    if (pickerMarker) {
-      pickerMarker.remove();
-      pickerMarker = null;
-    }
-    pickerMap?.setView(SV_CENTER, 8);
-  }
-
-  function initPickerMap() {
-    if (typeof L === 'undefined' || !$('pickerMap')) return;
-    if (!pickerMap) {
-      pickerMap = L.map('pickerMap').setView(SV_CENTER, 8);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 18,
-      }).addTo(pickerMap);
-      pickerMap.on('click', (e: any) => {
-        setPickerPoint(e.latlng.lat, e.latlng.lng, false);
-        fillLatLng(e.latlng.lat, e.latlng.lng);
-      });
-      // Si escriben las coordenadas a mano, el marcador se mueve.
-      ['placeLat', 'placeLng'].forEach((id) =>
-        $(id).addEventListener('change', () => {
-          const lat = parseFloat($('placeLat').value);
-          const lng = parseFloat($('placeLng').value);
-          if (Number.isFinite(lat) && Number.isFinite(lng)) setPickerPoint(lat, lng);
-        })
-      );
-    }
-    // El contenedor estaba oculto al crearse: recalcular tamaño.
-    setTimeout(() => pickerMap.invalidateSize(), 100);
-  }
-
-  function resetPlaceForm(clearStatus = true) {
-    clearPickerPoint();
-    placeForm.reset();
-    placePhotos = [];
-    editingId = null;
-    renderPlacePhotos();
-    $('placeFormTitle').textContent = '➕ Agregar lugar';
-    $('placeSubmitBtn').textContent = '💾 Guardar lugar';
-    $('cancelEditBtn').classList.add('hidden');
-    if (clearStatus) $('placeStatus').textContent = '';
-  }
-
-  $('cancelEditBtn')?.addEventListener('click', () => resetPlaceForm());
-
-  (window as any).editPlace = function (id: string) {
-    const p = allPlaces.find((x) => x.id === id);
-    if (!p) return;
-    editingId = id;
-    $('placeName').value = p.name ?? '';
-    $('placeCategory').value = p.category ?? '';
-    $('placeMunicipality').value = p.municipality ?? '';
-    $('placeDepartment').value = p.department ?? '';
-    $('placeLat').value = p.lat ?? '';
-    $('placeLng').value = p.lng ?? '';
-    $('placePrice').value = p.price ?? '';
-    $('placeSchedule').value = p.schedule ?? '';
-    $('placeWebsite').value = p.website ?? '';
-    $('placeDescription').value = p.description ?? '';
-    $('placeRecommendations').value = (p.recommendations || []).join(', ');
-    placePhotos = [...(p.photos || [])];
-    renderPlacePhotos();
-    $('placeFormTitle').textContent = `✏️ Editar: ${p.name}`;
-    $('placeSubmitBtn').textContent = '💾 Guardar cambios';
-    $('cancelEditBtn').classList.remove('hidden');
-    $('placeStatus').textContent = '';
-    if (Number.isFinite(p.lat) && Number.isFinite(p.lng)) setPickerPoint(p.lat, p.lng);
-    $('placeAdminCard').scrollIntoView({ behavior: 'smooth' });
-  };
-
-  (window as any).deletePlace = async function (id: string) {
-    const p = allPlaces.find((x) => x.id === id);
-    if (!p || !confirm(`¿Eliminar "${p.name}"? No se puede deshacer.`)) return;
-    try {
-      await deleteDoc(doc(db, 'places', id));
-      if (editingId === id) resetPlaceForm();
-      await loadPlacesForReview();
-    } catch (err) {
-      console.error('Error:', err);
-      alert('No se pudo eliminar el lugar.');
-    }
-  };
-
-  function renderPlacesAdmin() {
-    const list = $('placesAdminList');
-    if (!list || !isAdmin) return;
-    const q = normalize($('placesFilter').value);
-    const rows = allPlaces.filter((p) =>
-      !q || [p.name, p.municipality, p.department, p.category].some((v) => normalize(v).includes(q))
-    );
-    $('placesCount').textContent = String(allPlaces.length);
-    list.innerHTML = rows.map((p) => `
-      <div class="flex items-center gap-3 py-2">
-        ${safeUrl(p.photos?.[0]) ? `<img src="${safeUrl(p.photos[0])}" alt="" class="w-12 h-12 object-cover rounded-lg flex-shrink-0">` : '<div class="w-12 h-12 rounded-lg bg-gray-100 flex-shrink-0"></div>'}
-        <div class="flex-1 min-w-0">
-          <p class="font-medium text-gray-800 truncate">${esc(p.name)}</p>
-          <p class="text-xs text-gray-500 truncate">${esc(p.municipality)}, ${esc(p.department)} · ${esc(p.category)} · ${num(p.visitCount)} visitas</p>
-        </div>
-        <button type="button" onclick="editPlace(${jsArg(p.id)})" class="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-sm hover:bg-amber-200">Editar</button>
-        <button type="button" onclick="deletePlace(${jsArg(p.id)})" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm hover:bg-red-100">Eliminar</button>
-      </div>
-    `).join('') || '<p class="text-sm text-gray-500 py-4">Ningún lugar coincide.</p>';
-  }
-
-  $('placesFilter')?.addEventListener('input', renderPlacesAdmin);
-  
-  // Load places for review dropdown
-  async function loadPlacesForReview() {
-    try {
-      const snapshot = await getDocs(query(collection(db, 'places'), orderBy('name', 'asc')));
-      allPlaces = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
-      reviewPlaceSelect.innerHTML = '<option value="">Seleccionar lugar...</option>' +
-        allPlaces.map((p: any) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-      renderPlacesAdmin();
-    } catch (err) {
-      console.error('Error loading places:', err);
-    }
-  }
-  
-  // Star rating
-  starBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const rating = parseInt((btn as HTMLElement).dataset.rating);
-      (document.getElementById('reviewRating') as HTMLInputElement).value = rating.toString();
-      starBtns.forEach((b, i) => {
-        if (i < rating) {
-          b.classList.add('bg-amber-100', 'border-amber-400');
-        } else {
-          b.classList.remove('bg-amber-100', 'border-amber-400');
-        }
-      });
+  // ---------- Navegación por secciones (#resumen, #negocios…) ----------
+  function hideSections() { document.querySelectorAll('.ad-sec').forEach((s) => ((s as HTMLElement).hidden = true)); }
+  function route() {
+    if (!user || !$('gate').hidden) return;
+    const id = (location.hash.slice(1) || 'resumen');
+    hideSections();
+    const sec = $(`sec-${id}`) || $('sec-resumen');
+    sec.hidden = false;
+    document.querySelectorAll('.ad-link[data-section]').forEach((a) => {
+      const on = (a as HTMLElement).dataset.section === (sec.id.replace('sec-', ''));
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
-  });
-  
-  // Upload review photo
-  reviewPhotoInput?.addEventListener('change', async (e) => {
-    const files = (e.target as HTMLInputElement).files;
-    if (!files?.length) return;
-    
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      try {
-        uploading++;
-        const url = await uploadImage(file, 'reviews', currentUser.uid);
-        reviewPhotos.push(url);
-      } catch (err) {
-        console.error('Upload error:', err);
-        alert(`${file.name}: ${(err as Error).message}`);
-      } finally {
-        uploading--;
-      }
-    }
-    (e.target as HTMLInputElement).value = '';
-    renderReviewPhotos();
-  });
-  
-  function renderReviewPhotos() {
-    if (!reviewPhotosDiv) return;
-    reviewPhotosDiv.innerHTML = reviewPhotos.map((url, i) => `
-      <div class="relative">
-        <img src="${safeUrl(url)}" alt="" class="w-full h-24 object-cover rounded-lg" />
-        <button type="button" onclick="removeReviewPhoto(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs">✕</button>
+    if (sec.id === 'sec-lugares') setTimeout(() => { initPicker(); if (!selPlace && !$('pName').value) openPlace(firstPlaceOfFilter()); }, 0);
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+
+  // ---------- Problemas de los lugares ----------
+  function issuesOf(p: any): string[] {
+    const out: string[] = [];
+    if (!(p.lat > 13 && p.lat < 14.6 && p.lng > -90.3 && p.lng < -87.5)) out.push('El punto cae fuera de El Salvador');
+    const ph = (p.photos || []).filter(Boolean);
+    if (!ph.length) out.push('No tiene foto');
+    else if (ph.some((u: string) => /unsplash\.com|pexels\.com|pixabay\.com/.test(u))) out.push('Foto de stock: puede no ser del lugar');
+    if (!p.description || String(p.description).length < 40) out.push('Descripción muy corta o vacía');
+    if (!p.schedule) out.push('Sin horario');
+    if (/various|variou/i.test(p.municipality || '') || /\.[a-z]/.test(p.description || '')) out.push('Datos con errores de texto');
+    return out;
+  }
+  const problemPlaces = () => places.filter((p) => issuesOf(p).length);
+
+  function renderAll() {
+    const pendingBiz = businesses.filter((b) => b.status === 'pending');
+    const week = Date.now() - 7 * 864e5;
+    const newReviews = reviews.filter((r) => ms(r.createdAt) >= week);
+    const newPhotos = photos.filter((f) => ms(f.createdAt) >= week);
+    const probs = problemPlaces();
+    const setCount = (id: string, n: number) => { $(`count-${id}`).hidden = !n; $(`count-${id}`).textContent = n; };
+    setCount('negocios', pendingBiz.length); setCount('resenas', newReviews.length + newPhotos.length); setCount('lugares', probs.length);
+
+    $('today').textContent = new Date().toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
+    $('tdBiz').textContent = pendingBiz.length; $('tdReviews').textContent = newReviews.length;
+    $('tdPhotos').textContent = newPhotos.length; $('tdPlaces').textContent = probs.length;
+    const active = businesses.filter((b) => b.status !== 'pending' && b.status !== 'rejected');
+    $('stPlaces').textContent = places.length; $('stBiz').textContent = active.length;
+    const dest = active.filter((b) => b.plan === 'destacado' || (b.featured && b.plan !== 'pro')).length;
+    const pro = active.filter((b) => b.plan === 'pro').length;
+    $('stBizPlans').textContent = active.length ? `${dest} Destacados · ${pro} Pro` : '';
+    $('stReviews').textContent = reviews.length; $('stPhotos').textContent = photos.length;
+    $('sumReviews').innerHTML = reviews.slice(0, 4).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
+    $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
+      ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
+      <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
+      <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">No hay negocios esperando.</li>';
+    renderBizList(); renderModeration(); renderPlaceList(); renderSeason();
+  }
+
+  // ---------- Reseñas y fotos ----------
+  const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';
+  function reviewRow(r: any) {
+    return `<li class="ad-row">
+      <div class="ad-row-main">
+        <p class="ad-row-title">${esc(placeName(r.placeId) || r.placeName || 'Lugar')} · ${num(r.rating)} de 5${r.verified ? ' <span class="ad-tag ad-tag-ok">Verificada</span>' : ''}</p>
+        ${r.comment ? `<p class="ad-row-text">${esc(r.comment)}</p>` : ''}
+        <p class="ad-row-meta">${esc(r.userName || 'Visitante')} · ${ago(r.createdAt)}${(r.photos || []).length ? ` · ${(r.photos || []).length} fotos` : ''}</p>
       </div>
-    `).join('');
-    
-    // Show minimum warning
-    const warning = reviewPhotos.length < 2 ? `<p class="col-span-4 text-xs text-red-500">Necesitas al menos 2 fotos (tienes ${reviewPhotos.length})</p>` : '';
-    reviewPhotosDiv.innerHTML += warning;
+      <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="reviews/${esc(r.id)}">Borrar</button>
+    </li>`;
   }
-  
-  (window as any).removeReviewPhoto = function(index: number) {
-    reviewPhotos.splice(index, 1);
-    renderReviewPhotos();
-  };
-  
-  // Submit review form
-  reviewForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const rating = parseInt((document.getElementById('reviewRating') as HTMLInputElement).value);
-    
-    if (rating === 0) {
-      alert('Selecciona una calificación');
-      return;
-    }
-    
-    if (uploading > 0) {
-      alert('Espera a que terminen de subir las fotos.');
-      return;
-    }
+  function renderModeration() {
+    $('allReviews').innerHTML = reviews.slice(0, 60).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
+    $('allPhotos').innerHTML = photos.slice(0, 60).map((f) => `<li>
+      <a href="${safeUrl(f.url)}" target="_blank" rel="noopener"><img src="${safeUrl(f.url)}" alt="Foto de ${esc(f.userName || 'visitante')}" loading="lazy"></a>
+      <p>${esc(placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} votos · ${esc(f.userName || 'Visitante')}</p>
+      <button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="photos/${esc(f.id)}">Borrar</button>
+    </li>`).join('') || '<li class="ad-empty">Todavía no hay fotos de turistas.</li>';
+  }
 
-    if (reviewPhotos.length < 2) {
-      alert('Agrega al menos 2 fotos de tu visita');
+  // Borrar pide un segundo toque en el mismo botón (sin ventanas del navegador).
+  document.addEventListener('click', async (e) => {
+    const t = e.target as HTMLElement;
+    const openBiz = t.closest('[data-open-biz]') as HTMLElement | null;
+    if (openBiz) { selBiz = openBiz.dataset.openBiz!; bizFilter = 'pending'; setTimeout(() => { renderBizList(); renderBizDetail(); }, 0); }
+    const del = t.closest('[data-del]') as HTMLButtonElement | null;
+    if (!del) return;
+    if (!del.classList.contains('is-confirm')) {
+      del.classList.add('is-confirm'); del.textContent = '¿Seguro? Borrar';
+      setTimeout(() => { if (del.isConnected) { del.classList.remove('is-confirm'); del.textContent = 'Borrar'; } }, 4000);
       return;
     }
-    
-    const reviewData = {
-      placeId: (document.getElementById('reviewPlace') as HTMLSelectElement).value,
-      userId: currentUser.uid,
-      // Las reseñas son públicas: guardamos el nombre visible, no el correo.
-      userName: currentUser.displayName || 'Usuario',
-      rating,
-      comment: (document.getElementById('reviewComment') as HTMLTextAreaElement).value,
-      photos: reviewPhotos,
-      visitDate: (document.getElementById('reviewVisitDate') as HTMLInputElement).value,
-      createdAt: serverTimestamp()
-    };
-    
+    const [col, id] = del.dataset.del!.split('/');
+    del.disabled = true; del.textContent = 'Borrando…';
     try {
-      await addDoc(collection(db, 'reviews'), reviewData);
-      
-      // Suma una visita al lugar (las reglas solo permiten +1)
+      await deleteDoc(doc(db, col, id));
+      if (col === 'reviews') reviews = reviews.filter((x) => x.id !== id);
+      if (col === 'photos') photos = photos.filter((x) => x.id !== id);
+      if (col === 'seasonalBadges') seasonal = seasonal.filter((x) => x.id !== id);
+      renderAll();
+    } catch (err) { console.error(err); del.disabled = false; del.textContent = 'No se pudo borrar'; }
+  });
+
+  // ---------- Negocios ----------
+  document.querySelectorAll('[data-bizfilter]').forEach((b) => b.addEventListener('click', () => {
+    bizFilter = (b as HTMLElement).dataset.bizfilter!; selBiz = null; renderBizList(); renderBizDetail();
+  }));
+  const bizState = (b: any) => b.status === 'pending' ? 'pending' : b.status === 'rejected' ? 'rejected' : 'active';
+  function renderBizList() {
+    document.querySelectorAll('[data-bizfilter]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.bizfilter === bizFilter)));
+    const list = businesses.filter((b) => bizState(b) === bizFilter);
+    if (!selBiz && list[0]) selBiz = list[0].id;
+    $('bizList').innerHTML = list.map((b) => `<li><button type="button" class="ad-item${b.id === selBiz ? ' is-active' : ''}" data-biz="${esc(b.id)}">
+      ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
+      <span class="ad-item-main"><span class="ad-item-title">${esc(b.name)}</span>
+      <span class="ad-item-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</span></span>
+    </button></li>`).join('') || `<li class="ad-empty">${bizFilter === 'pending' ? 'No hay negocios esperando aprobación.' : 'No hay negocios aquí.'}</li>`;
+    $('bizList').querySelectorAll('[data-biz]').forEach((el: HTMLElement) => el.addEventListener('click', () => { selBiz = el.dataset.biz!; renderBizList(); renderBizDetail(); }));
+    renderBizDetail();
+  }
+  let miniMap: any = null;
+  function renderBizDetail() {
+    const b = businesses.find((x) => x.id === selBiz && bizState(x) === bizFilter);
+    if (!b) { $('bizDetail').innerHTML = '<p class="ad-muted">Elegí un negocio de la lista.</p>'; return; }
+    const wa = String(b.whatsapp || b.phone || '').replace(/\D/g, '');
+    const waUrl = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}.`)}` : '';
+    const st = bizState(b);
+    $('bizDetail').innerHTML = `
+      <div class="ad-biz-top">
+        ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="ad-biz-photo" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="">` : '<span class="ad-biz-photo"></span>'}
+        <div style="flex:1;min-width:220px">
+          <h2 class="ad-h1" style="font-size:26px">${esc(b.name)}</h2>
+          <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''} · plan ${esc(b.plan || 'basico')}</p>
+          ${b.description ? `<p class="ad-row-text" style="margin-top:8px">${esc(b.description)}</p>` : ''}
+          <p class="ad-row-meta" style="margin-top:6px">${[b.schedule, b.address, b.phone && `Tel. ${b.phone}`, b.whatsapp && `WhatsApp ${b.whatsapp}`, b.email].filter(Boolean).map((x) => esc(x)).join(' · ')}</p>
+          <p class="ad-row-meta">Dueño: ${esc(b.ownerName || '')} · ${(b.photos || []).length} fotos${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
+        </div>
+      </div>
+      <div class="ad-two">
+        <div><p class="ad-field-label">Ubicación que marcó</p><div id="bizMiniMap" class="ad-minimap" role="region" aria-label="Ubicación del negocio"></div></div>
+        <div>
+          <p class="ad-field-label">Antes de aprobar</p>
+          <label class="ad-check"><input type="checkbox">El punto está en el lugar correcto</label>
+          <label class="ad-check"><input type="checkbox">Las fotos son del negocio</label>
+          <label class="ad-check"><input type="checkbox">Contestó por WhatsApp</label>
+          ${waUrl ? `<a class="ad-btn ad-btn-outline ad-btn-sm" href="${waUrl}" target="_blank" rel="noopener">Escribirle por WhatsApp</a>` : ''}
+        </div>
+      </div>
+      <p id="bizStatus" class="ad-status" role="status"></p>
+      <div class="ad-actions">
+        ${st !== 'active' ? '<button type="button" class="ad-btn ad-btn-primary" data-setstatus="active">Aprobar y publicar</button>' : ''}
+        ${st === 'active' ? '<button type="button" class="ad-btn ad-btn-outline" data-setstatus="pending">Quitar del mapa (volver a revisión)</button>' : ''}
+        ${st !== 'rejected' ? '<button type="button" class="ad-btn ad-btn-danger" data-setstatus="rejected">Rechazar</button>' : ''}
+      </div>`;
+    $('bizDetail').querySelectorAll('[data-setstatus]').forEach((btn: HTMLButtonElement) => btn.addEventListener('click', async () => {
+      const status = btn.dataset.setstatus!;
+      btn.disabled = true;
       try {
-        await updateDoc(doc(db, 'places', reviewData.placeId), { visitCount: increment(1) });
-      } catch (err) {
-        console.error('No se pudo sumar la visita:', err);
-      }
-      
-      alert('¡Reseña publicada!');
-      reviewForm.reset();
-      reviewPhotos = [];
-      renderReviewPhotos();
-      starBtns.forEach(b => b.classList.remove('bg-amber-100', 'border-amber-400'));
-      await loadMyReviews();
-    } catch (err) {
-      console.error('Error:', err);
-      alert('Error al publicar');
+        await updateDoc(doc(db, 'businesses', b.id), { status, reviewedAt: serverTimestamp(), reviewedBy: user.uid });
+        b.status = status;
+        $('bizStatus').textContent = status === 'active' ? 'Aprobado: ya sale en el mapa.' : status === 'rejected' ? 'Rechazado.' : 'Vuelve a revisión.';
+        selBiz = null; renderAll();
+      } catch (err) { console.error(err); btn.disabled = false; $('bizStatus').textContent = 'No se pudo guardar. Revisá tu conexión.'; $('bizStatus').classList.add('is-error'); }
+    }));
+    if (miniMap) { miniMap.remove(); miniMap = null; }
+    if (typeof L !== 'undefined' && Number.isFinite(Number(b.lat))) {
+      miniMap = L.map('bizMiniMap', { zoomControl: false, attributionControl: false }).setView([Number(b.lat), Number(b.lng)], 15);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
+      L.marker([Number(b.lat), Number(b.lng)], { icon: L.divIcon({ className: '', html: '<div style="width:20px;height:20px;border-radius:10px;background:#C2581F;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) }).addTo(miniMap);
+    }
+  }
+
+  // ---------- Lugares ----------
+  document.querySelectorAll('[data-placefilter]').forEach((b) => b.addEventListener('click', () => {
+    placeFilter = (b as HTMLElement).dataset.placefilter!; renderPlaceList();
+  }));
+  $('placeSearch').addEventListener('input', renderPlaceList);
+  function filteredPlaces() {
+    const q = normalize($('placeSearch').value);
+    return (placeFilter === 'problems' ? problemPlaces() : places)
+      .filter((p) => !q || [p.name, p.municipality, p.department].some((v) => normalize(v).includes(q)));
+  }
+  const firstPlaceOfFilter = () => filteredPlaces()[0]?.id || null;
+  function renderPlaceList() {
+    document.querySelectorAll('[data-placefilter]').forEach((b) => {
+      const f = (b as HTMLElement).dataset.placefilter;
+      b.setAttribute('aria-pressed', String(f === placeFilter));
+      b.textContent = f === 'all' ? `Todos · ${places.length}` : `Con problemas · ${problemPlaces().length}`;
+    });
+    $('placesTotal').textContent = `${places.length} lugares en el mapa`;
+    $('placeList').innerHTML = filteredPlaces().map((p) => {
+      const is = issuesOf(p);
+      return `<li><button type="button" class="ad-item${p.id === selPlace ? ' is-active' : ''}" data-place="${esc(p.id)}">
+        ${safeUrl(p.photos?.[0]) ? `<img class="ad-thumb" src="${safeUrl(p.photos[0])}" alt="">` : '<span class="ad-thumb"></span>'}
+        <span class="ad-item-main"><span class="ad-item-title">${esc(p.name)}</span>
+        ${is.length ? `<span class="ad-tags">${is.slice(0, 2).map((x) => `<span class="ad-tag">${esc(x)}</span>`).join('')}</span>` : `<span class="ad-item-meta">${esc(CAT[p.category] || '')} · ${esc(p.department || '')}</span>`}</span>
+      </button></li>`;
+    }).join('') || '<li class="ad-empty">Ningún lugar coincide.</li>';
+    $('placeList').querySelectorAll('[data-place]').forEach((el: HTMLElement) => el.addEventListener('click', () => openPlace(el.dataset.place!)));
+  }
+
+  let picker: any = null, pickerMarker: any = null;
+  function initPicker() {
+    if (picker || typeof L === 'undefined') { picker?.invalidateSize(); return; }
+    picker = L.map('pickerMap').setView([13.79, -88.9], 8);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(picker);
+    picker.on('click', (e: any) => { setPoint(e.latlng.lat, e.latlng.lng, false); });
+    ['pLat', 'pLng'].forEach((id) => $(id).addEventListener('change', () => {
+      const la = parseFloat($('pLat').value), ln = parseFloat($('pLng').value);
+      if (Number.isFinite(la) && Number.isFinite(ln)) setPoint(la, ln, true);
+    }));
+  }
+  function setPoint(lat: number, lng: number, pan: boolean) {
+    $('pLat').value = lat.toFixed(5); $('pLng').value = lng.toFixed(5);
+    if (!picker) return;
+    if (!pickerMarker) {
+      pickerMarker = L.marker([lat, lng], { draggable: true, icon: L.divIcon({ className: '', html: '<div style="width:22px;height:22px;border-radius:11px;background:#0E7C7B;border:4px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>', iconSize: [22, 22], iconAnchor: [11, 11] }) }).addTo(picker);
+      pickerMarker.on('dragend', () => { const ll = pickerMarker.getLatLng(); setPoint(ll.lat, ll.lng, false); });
+    } else pickerMarker.setLatLng([lat, lng]);
+    if (pan) picker.setView([lat, lng], Math.max(picker.getZoom(), 14));
+  }
+
+  function renderPlacePhotos() {
+    $('pPhotos').innerHTML = placePhotos.map((u, i) => `<div class="ph"><img src="${safeUrl(u)}" alt="Foto ${i + 1}">
+      ${/unsplash\.com|pexels\.com|pixabay\.com/.test(u) ? '<span class="stock">Foto de stock</span>' : ''}
+      <button type="button" data-rmphoto="${i}" aria-label="Quitar foto ${i + 1}">×</button></div>`).join('');
+  }
+  $('pPhotos').addEventListener('click', (e: Event) => {
+    const b = (e.target as HTMLElement).closest('[data-rmphoto]') as HTMLElement | null;
+    if (b) { placePhotos.splice(Number(b.dataset.rmphoto), 1); renderPlacePhotos(); }
+  });
+  $('pPhotoInput').addEventListener('change', async (e: Event) => {
+    const input = e.target as HTMLInputElement;
+    const files = Array.from(input.files || []); input.value = '';
+    for (const f of files) {
+      uploading++; status('Subiendo foto…');
+      try { placePhotos.push(await uploadImage(f, 'places', user.uid)); renderPlacePhotos(); status(''); }
+      catch (err: any) { status(err?.message || 'No se pudo subir la foto.', true); }
+      finally { uploading--; }
     }
   });
-  
-  // Load my reviews
-  async function loadMyReviews() {
-    try {
-      // Sin orderBy en la consulta: así no hace falta un índice compuesto.
-      const snapshot = await getDocs(
-        query(collection(db, 'reviews'), where('userId', '==', currentUser.uid))
-      );
-      const reviewDocs = [...snapshot.docs].sort(
-        (a, b) => (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0)
-      );
+  function status(msg: string, error = false) { $('placeStatus').textContent = msg; $('placeStatus').classList.toggle('is-error', error); }
 
-      const reviewsEl = document.getElementById('myReviews');
-      const noReviewsEl = document.getElementById('noReviews');
-
-      if (snapshot.empty) {
-        reviewsEl.innerHTML = '';
-        noReviewsEl.classList.remove('hidden');
-        return;
-      }
-      
-      noReviewsEl.classList.add('hidden');
-      
-      // Get places for names
-      const placesSnap = await getDocs(collection(db, 'places'));
-      const placesMap: Record<string, string> = {};
-      placesSnap.docs.forEach(d => placesMap[d.id] = d.data().name);
-      
-      reviewsEl.innerHTML = reviewDocs.map(doc => {
-        const data = doc.data();
-        const rating = Math.max(0, Math.min(5, Math.round(num(data.rating))));
-        return `
-          <div class="border border-gray-200 rounded-xl p-4">
-            <div class="flex items-start justify-between">
-              <div>
-                <h3 class="font-bold text-gray-800">${esc(placesMap[data.placeId] || 'Lugar eliminado')}</h3>
-                <p class="text-sm text-gray-500">Visitado: ${esc(data.visitDate)}</p>
-              </div>
-              <div class="flex items-center gap-1">
-                ${'⭐'.repeat(rating)}${'☆'.repeat(5 - rating)}
-              </div>
-            </div>
-            <p class="text-gray-600 mt-2">${esc(data.comment)}</p>
-            <div class="flex gap-2 mt-3">
-              ${(data.photos || []).map((photo: string) => safeUrl(photo)).filter(Boolean).map((photo: string) => `<img src="${photo}" alt="" class="w-20 h-16 object-cover rounded-lg">`).join('')}
-            </div>
-            <button onclick="deleteReview(${jsArg(doc.id)})" class="mt-3 text-red-500 text-sm hover:underline">🗑️ Eliminar</button>
-          </div>
-        `;
-      }).join('');
-    } catch (err) {
-      console.error('Error loading reviews:', err);
-    }
+  function openPlace(id: string | null) {
+    selPlace = id;
+    const p = places.find((x) => x.id === id);
+    ($('placeForm') as HTMLFormElement).reset();
+    $('placeFormTitle').textContent = p ? p.name : 'Agregar lugar';
+    $('placeOnMap').hidden = !p; if (p) $('placeOnMap').href = `/#${encodeURIComponent(p.id)}`;
+    $('deletePlaceBtn').hidden = !p;
+    $('deletePlaceBtn').classList.remove('is-confirm'); $('deletePlaceBtn').textContent = 'Quitar del mapa';
+    $('placeIssues').innerHTML = p ? issuesOf(p).map((x) => `<li>${esc(x)}</li>`).join('') : '';
+    $('pName').value = p?.name ?? ''; $('pCategory').value = p?.category ?? 'playa';
+    $('pMunicipality').value = p?.municipality ?? ''; $('pDepartment').value = p?.department ?? '';
+    $('pSchedule').value = p?.schedule ?? ''; $('pPrice').value = p?.price ?? '';
+    $('pWebsite').value = p?.website ?? ''; $('pRecs').value = (p?.recommendations || []).join(', ');
+    $('pDesc').value = p?.description ?? '';
+    placePhotos = [...(p?.photos || [])]; renderPlacePhotos(); status('');
+    if (pickerMarker) { pickerMarker.remove(); pickerMarker = null; }
+    if (p && Number.isFinite(p.lat)) setPoint(p.lat, p.lng, true); else { $('pLat').value = ''; $('pLng').value = ''; picker?.setView([13.79, -88.9], 8); }
+    renderPlaceList();
   }
-  
-  (window as any).deleteReview = async function(reviewId: string) {
-    if (!confirm('¿Eliminar esta reseña?')) return;
-    
+  $('newPlaceBtn').addEventListener('click', () => { openPlace(null); $('pName').focus(); });
+
+  let saveNext = false;
+  $('saveNextBtn').addEventListener('click', () => { saveNext = true; });
+  $('saveBtn').addEventListener('click', () => { saveNext = false; });
+  $('placeForm').addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    if (uploading) return status('Esperá a que termine de subir la foto.', true);
+    const lat = parseFloat($('pLat').value), lng = parseFloat($('pLng').value);
+    if (!(lat > 13 && lat < 14.6 && lng > -90.3 && lng < -87.5)) return status('El punto queda fuera de El Salvador. Marcalo en el mapa.', true);
+    const name = $('pName').value.trim();
+    if (!name) return status('Falta el nombre.', true);
+    const fields = {
+      name, category: $('pCategory').value, municipality: $('pMunicipality').value.trim(), department: $('pDepartment').value.trim(),
+      lat, lng, schedule: $('pSchedule').value.trim(), price: $('pPrice').value.trim(), website: $('pWebsite').value.trim(),
+      recommendations: $('pRecs').value.split(',').map((s: string) => s.trim()).filter(Boolean),
+      description: $('pDesc').value.trim(), photos: placePhotos,
+    };
+    status('Guardando…');
     try {
-      await deleteDoc(doc(db, 'reviews', reviewId));
-      await loadMyReviews();
-      alert('Reseña eliminada');
-    } catch (err) {
-      console.error('Error:', err);
-      alert('Error al eliminar');
-    }
-  };
+      if (selPlace) {
+        await updateDoc(doc(db, 'places', selPlace), { ...fields, updatedAt: serverTimestamp() });
+        Object.assign(places.find((x) => x.id === selPlace), fields);
+      } else {
+        const ref = await addDoc(collection(db, 'places'), { ...fields, visitCount: 0, createdAt: serverTimestamp(), createdBy: user.uid });
+        places.push({ id: ref.id, ...fields });
+        selPlace = ref.id;
+      }
+      renderAll();
+      if (saveNext) {
+        const list = filteredPlaces();
+        const i = list.findIndex((x) => x.id === selPlace);
+        openPlace(list[i + 1]?.id || list[0]?.id || null);
+        status('Guardado. Seguimos con el próximo.');
+      } else { openPlace(selPlace); status('Cambios guardados.'); }
+    } catch (err) { console.error(err); status('No se pudo guardar. Revisá tu conexión.', true); }
+  });
+
+  $('deletePlaceBtn').addEventListener('click', async () => {
+    const btn = $('deletePlaceBtn');
+    if (!selPlace) return;
+    if (!btn.classList.contains('is-confirm')) { btn.classList.add('is-confirm'); btn.textContent = '¿Seguro? No se puede deshacer'; return; }
+    try {
+      await deleteDoc(doc(db, 'places', selPlace));
+      places = places.filter((x) => x.id !== selPlace);
+      renderAll(); openPlace(firstPlaceOfFilter()); status('Lugar quitado del mapa.');
+    } catch (err) { console.error(err); status('No se pudo quitar.', true); }
+  });
+
+  // ---------- Insignias de temporada ----------
+  function renderSeason() {
+    $('sPlace').innerHTML = places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    const today = new Date().toLocaleDateString('en-CA');
+    $('seasonList').innerHTML = seasonal.map((s) => {
+      const st = s.end < today ? 'Terminó' : s.start > today ? 'Próxima' : 'Activa';
+      return `<li class="ad-row"><div class="ad-row-main">
+        <p class="ad-row-title">${esc(s.name)} <span class="ad-tag${st === 'Activa' ? ' ad-tag-ok' : ''}">${st}</span></p>
+        <p class="ad-row-text">${esc(placeName(s.placeId))} · del ${esc(s.start)} al ${esc(s.end)}</p>
+        ${s.description ? `<p class="ad-row-meta">${esc(s.description)}</p>` : ''}
+      </div><button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="seasonalBadges/${esc(s.id)}">Borrar</button></li>`;
+    }).join('') || '<li class="ad-empty">Todavía no hay insignias de temporada.</li>';
+  }
+  $('seasonForm').addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    const st = (m: string, err = false) => { $('seasonStatus').textContent = m; $('seasonStatus').classList.toggle('is-error', err); };
+    const data = { name: $('sName').value.trim(), description: $('sDesc').value.trim(), placeId: $('sPlace').value, start: $('sStart').value, end: $('sEnd').value };
+    if (!data.name || !data.placeId || !data.start || !data.end) return st('Completá nombre, lugar y fechas.', true);
+    if (data.end < data.start) return st('La fecha final va después de la inicial.', true);
+    try {
+      const ref = await addDoc(collection(db, 'seasonalBadges'), { ...data, createdAt: serverTimestamp() });
+      seasonal.unshift({ id: ref.id, ...data });
+      ($('seasonForm') as HTMLFormElement).reset();
+      renderSeason(); st('Insignia creada. Ya sale en el perfil de los turistas.');
+    } catch (err) { console.error(err); st('No se pudo crear. Revisá tu conexión.', true); }
+  });
 </script>
