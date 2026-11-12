@@ -255,6 +255,8 @@ const categories = [
   .ad-tag { font-size: 12px; font-weight: 800; color: #8A3A10; background: #F6D9C8; padding: 2px 8px; border-radius: 10px; }
   .ad-tag-ok { color: var(--rama); background: var(--plumaje); }
   .ad-issues { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .ad-issues li.is-notice { background: var(--neblina); color: var(--muted); }
+  .ad-tag.is-notice { background: var(--neblina); color: var(--muted); }
   .ad-issues li { padding: 10px 12px; border-radius: 12px; background: #F6D9C8; color: #6E2E0C; font-size: 14px; font-weight: 700; }
   .ad-picker { height: 260px; border-radius: 12px; overflow: hidden; }
   .ad-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -427,8 +429,10 @@ const categories = [
     if (/various|variou/i.test(p.municipality || '') || /\.[a-z]/.test(p.description || '')) out.push('Datos con errores de texto');
     return out;
   }
+  // Sin foto o sin horario fijo son avisos, no problemas: las fotos las suben los turistas y no todo lugar tiene horario.
+  const NOTICES = ['No tiene foto', 'Sin horario'];
   // "No tiene foto" se muestra como aviso, pero no cuenta como problema: las fotos las suben los turistas.
-  const problemPlaces = () => places.filter((p) => issuesOf(p).some((i) => i !== 'No tiene foto'));
+  const problemPlaces = () => places.filter((p) => issuesOf(p).some((i) => !NOTICES.includes(i)));
 
   function renderAll() {
     const pendingBiz = businesses.filter((b) => b.status === 'pending');
@@ -663,11 +667,12 @@ const categories = [
     });
     $('placesTotal').textContent = `${places.length} lugares en el mapa`;
     $('placeList').innerHTML = filteredPlaces().map((p) => {
-      const is = issuesOf(p);
+      // Primero los problemas reales; los avisos (sin foto, sin horario) van en gris.
+      const is = issuesOf(p).sort((a, b) => Number(NOTICES.includes(a)) - Number(NOTICES.includes(b)));
       return `<li><button type="button" class="ad-item${p.id === selPlace ? ' is-active' : ''}" data-place="${esc(p.id)}">
         ${safeUrl(p.photos?.[0]) ? `<img class="ad-thumb" src="${safeUrl(p.photos[0])}" alt="">` : '<span class="ad-thumb"></span>'}
         <span class="ad-item-main"><span class="ad-item-title">${esc(p.name)}</span>
-        ${is.length ? `<span class="ad-tags">${is.slice(0, 2).map((x) => `<span class="ad-tag">${esc(x)}</span>`).join('')}</span>` : `<span class="ad-item-meta">${esc(CAT[p.category] || '')} · ${esc(p.department || '')}</span>`}</span>
+        ${is.length ? `<span class="ad-tags">${is.slice(0, 2).map((x) => `<span class="ad-tag${NOTICES.includes(x) ? ' is-notice' : ''}">${esc(x)}</span>`).join('')}</span>` : `<span class="ad-item-meta">${esc(CAT[p.category] || '')} · ${esc(p.department || '')}</span>`}</span>
       </button></li>`;
     }).join('') || '<li class="ad-empty">Ningún lugar coincide.</li>';
     $('placeList').querySelectorAll('[data-place]').forEach((el: HTMLElement) => el.addEventListener('click', () => openPlace(el.dataset.place!)));
@@ -723,7 +728,7 @@ const categories = [
     $('placeOnMap').hidden = !p; if (p) $('placeOnMap').href = `/#${encodeURIComponent(p.id)}`;
     $('deletePlaceBtn').hidden = !p;
     $('deletePlaceBtn').classList.remove('is-confirm'); $('deletePlaceBtn').textContent = 'Quitar del mapa';
-    $('placeIssues').innerHTML = p ? issuesOf(p).map((x) => `<li>${esc(x)}</li>`).join('') : '';
+    $('placeIssues').innerHTML = p ? issuesOf(p).map((x) => `<li${NOTICES.includes(x) ? ' class="is-notice"' : ''}>${esc(x)}</li>`).join('') : '';
     $('pName').value = p?.name ?? ''; $('pCategory').value = p?.category ?? 'playa';
     $('pMunicipality').value = p?.municipality ?? ''; $('pDepartment').value = p?.department ?? '';
     $('pSchedule').value = p?.schedule ?? ''; $('pPrice').value = p?.price ?? '';

@@ -1029,8 +1029,8 @@
   "category": "lago",
   "municipality": "San Miguel Tepezontes",
   "department": "La Paz",
-  "lat": 13.644,
-  "lng": -89.02,
+  "lat": 13.64093,
+  "lng": -89.02716,
   "description": "Playita escondida de agua turquesa en la orilla sur del Lago de Ilopango. Se llega por la calle al lago desde San Miguel Tepezontes, mejor en carro alto o caminando unos 4 km. El agua es honda: nadá con cuidado.",
   "schedule": "",
   "price": "Gratis",
@@ -1039,7 +1039,7 @@
    "Llevá comida y agua",
    "Bajá tu basura"
   ],
-  "coordSource": "manual"
+  "coordSource": "manual-revisado"
  },
  {
   "id": "puerto-san-juan",
