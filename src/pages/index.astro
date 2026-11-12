@@ -687,7 +687,7 @@ const categories = [
   let detailFromList = false;
 
   // ---------- Mapa ----------
-  const map = L.map('map', { zoomControl: false, attributionControl: true, zoomSnap: 0.25 }).setView([13.75, -88.9], 9);
+  const map = L.map('map', { zoomControl: false, attributionControl: true, zoomSnap: 0.25 }).setView([13.70, -89.20], 11);
   // Teselas de OpenStreetMap (gratis, sin clave).
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -1903,15 +1903,7 @@ const categories = [
   }
   $('locateBtn')?.addEventListener('click', locate);
 
-  // Encuadra todo el país dejando libre lo que tapan el buscador, las categorías y la hoja.
   const SV_BOUNDS: [[number, number], [number, number]] = [[13.15, -90.13], [14.45, -87.68]];
-  function fitAll() {
-    const mobile = isMobile();
-    map.fitBounds(L.latLngBounds(SV_BOUNDS), {
-      paddingTopLeft: [mobile ? 20 : 40, mobile ? 130 : 90],
-      paddingBottomRight: [mobile ? 20 : 90, mobile ? PEEK + 24 : 90],
-    });
-  }
 
   // ---------- Carga por zona, como un mapa de calles ----------
   // Lejos (todo el país) se piden solo los lugares más visitados. Al acercarse, se piden los de la
@@ -1987,7 +1979,8 @@ const categories = [
     const b = map.getBounds().pad(0.25);
     const bands = bandsFor(b.getSouth(), b.getNorth());
     if (map.getZoom() >= BIZ_MIN_ZOOM - 1) loadBusinesses(bands);
-    if (map.getZoom() < ZONE_ZOOM || loadedAll) return;
+    if (loadedAll) return;
+    if (map.getZoom() < ZONE_ZOOM) { loadTop(); return; }
     const todo = bands.filter((k) => !loadedBands.has(k));
     if (!todo.length) return;
     todo.forEach((k) => loadedBands.add(k));
@@ -2034,14 +2027,36 @@ const categories = [
     } catch { return false; }
   }
 
-  async function load() {
+  // Lejos (todo el país) se ven solo los más visitados; se piden una vez y solo si alguien se aleja.
+  let topLoaded = false;
+  async function loadTop() {
+    if (topLoaded || loadedAll) return;
+    topLoaded = true;
     try {
       const snap = await getDocs(query(collection(db, 'places'), orderBy('visitCount', 'desc'), limit(TOP_LIMIT)));
-      if (snap.empty) throw new Error('Sin lugares');
       const fresh = addPlaces(snap.docs.map(asPlace));
-      applyFilters();
-      $('placesList').removeAttribute('aria-busy');
-      hideMapLoading();
+      if (fresh.length) { refreshAfterLoad(); await loadExtras(fresh); refreshAfterLoad(); }
+    } catch (err) { console.error(err); topLoaded = false; }
+  }
+
+  // Vista inicial: cerca de la persona si ya dio permiso de ubicación; si no, San Salvador y alrededores.
+  // Así al abrir solo se pide esa zona, no todo el país.
+  const START: [number, number] = [13.70, -89.20];
+  const START_ZOOM = 11;
+  async function startView() {
+    try {
+      const perm = await (navigator as any).permissions?.query({ name: 'geolocation' });
+      if (perm?.state === 'granted') {
+        const pos = await new Promise<GeolocationPosition>((ok, ko) => navigator.geolocation.getCurrentPosition(ok, ko, { timeout: 4000, maximumAge: 600000 }));
+        const here: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+        if (L.latLngBounds(SV_BOUNDS).contains(here)) { map.setView(here, 12); return; }
+      }
+    } catch { /* sin permiso o sin señal: se usa la vista de siempre */ }
+    map.setView(START, isMobile() ? START_ZOOM - 0.5 : START_ZOOM);
+  }
+
+  async function load() {
+    try {
       // Abrir lugar o negocio cuando cambia el enlace (#id o #b-id) sin recargar.
       window.addEventListener('hashchange', async () => {
         const h = decodeURIComponent(location.hash.slice(1));
@@ -2049,21 +2064,23 @@ const categories = [
         else if (h && h !== selectedId && await ensurePlace(h)) selectPlace(h, { count: false });
       });
       const fromHash = decodeURIComponent(location.hash.slice(1));
+      let opened = false;
       if (fromHash.startsWith('b-')) {
         // Negocio por enlace: se pide directo y se abre.
         const d = await getDoc(doc(db, 'businesses', fromHash.slice(2))).catch(() => null);
         if (d?.exists()) {
           const b = { id: d.id, ...d.data() } as Business;
-          if (b.status !== 'pending' && b.status !== 'rejected') { allBusinesses.push({ ...b, lat: Number(b.lat), lng: Number(b.lng) }); renderBizMarkers(); selectBusiness(b.id); }
-        } else fitAll();
+          if (b.status !== 'pending' && b.status !== 'rejected') { allBusinesses.push({ ...b, lat: Number(b.lat), lng: Number(b.lng) }); renderBizMarkers(); selectBusiness(b.id); opened = true; }
+        }
       } else if (fromHash && await ensurePlace(fromHash)) {
         selectPlace(fromHash, { count: false });
-      } else {
-        fitAll();
+        opened = true;
       }
-      await loadExtras(fresh);
-      refreshAfterLoad();
-      loadZone();
+      if (!opened) await startView();
+      await loadZone();
+      applyFilters();
+      $('placesList').removeAttribute('aria-busy');
+      hideMapLoading();
     } catch (err) {
       console.error('Error cargando lugares:', err);
       $('placesList').innerHTML = ''; $('placesList').removeAttribute('aria-busy');
