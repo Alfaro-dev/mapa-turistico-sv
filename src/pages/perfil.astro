@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import GozMark from '../components/GozMark.astro';
+import GozLoader from '../components/GozLoader.astro';
 ---
 
 <Layout title="Mi perfil · Goz">
@@ -18,7 +19,7 @@ import GozMark from '../components/GozMark.astro';
       <button type="button" id="pfLoginBtn" class="pf-btn pf-btn-primary">Entrar con Google</button>
     </section>
 
-    <p id="pfLoading" class="pf-lead">Cargando tu perfil…</p>
+    <GozLoader id="pfLoading" text="Cargando el perfil…" />
 
     <div id="pfBody" hidden>
       <section class="pf-hero">
@@ -173,6 +174,7 @@ import GozMark from '../components/GozMark.astro';
   // /perfil?u=UID muestra el perfil público de otra persona (sus fotos, reseñas e insignias), sin pedir cuenta.
   const viewUid = new URLSearchParams(location.search).get('u') || '';
   let rendered = false;
+  const loadFail = (id: string, msg: string) => { $(id).classList.add('is-stopped'); $(id).querySelector('.gl-text').textContent = msg; };
 
   async function loadAndRender(uid: string, user: any | null) {
     $('pfLoading').hidden = false;
@@ -188,7 +190,7 @@ import GozMark from '../components/GozMark.astro';
       rendered = true;
     } catch (err) {
       console.error(err);
-      $('pfLoading').textContent = 'No se pudo cargar este perfil. Revisá tu conexión y recargá la página.';
+      loadFail('pfLoading', 'No se pudo cargar este perfil. Revisá tu conexión y recargá la página.');
     }
   }
 

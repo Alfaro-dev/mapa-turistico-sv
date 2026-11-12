@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import GozMark from '../components/GozMark.astro';
+import GozLoader from '../components/GozLoader.astro';
 ---
 
 <Layout title="Insignias · Goz">
@@ -23,7 +24,7 @@ import GozMark from '../components/GozMark.astro';
       <button type="button" id="inLoginBtn" class="in-btn">Entrar con Google</button>
     </section>
 
-    <p id="inLoading" class="in-muted">Cargando…</p>
+    <GozLoader id="inLoading" text="Contando tus insignias…" />
 
     <section id="secEarned" class="in-card" hidden aria-labelledby="hEarned">
       <h2 id="hEarned" class="in-h2">Ganadas</h2>
@@ -98,7 +99,7 @@ import GozMark from '../components/GozMark.astro';
       $('inLoading').hidden = true;
     } catch (err) {
       console.error(err);
-      $('inLoading').textContent = 'No se pudieron cargar tus insignias. Revisá tu conexión y recargá la página.';
+      $('inLoading').classList.add('is-stopped'); $('inLoading').querySelector('.gl-text').textContent = 'No se pudieron cargar las insignias. Revisá tu conexión y recargá la página.';
     }
   });
 </script>

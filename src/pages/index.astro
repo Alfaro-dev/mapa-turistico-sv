@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import GozMark from '../components/GozMark.astro';
+import GozLoader from '../components/GozLoader.astro';
 
 const categories = [
   { id: 'all', label: 'Todo' },
@@ -22,6 +23,7 @@ const categories = [
 
   <!-- El mapa ocupa toda la pantalla; todo lo demás flota encima. -->
   <main id="map" role="region" aria-label="Mapa de lugares turísticos"></main>
+  <div id="mapLoading" class="map-loading"><GozLoader id="mapLoader" text="Buscando lugares…" size={58} /></div>
 
   <div class="searchbox" role="search">
     <a href="/" class="search-mark" aria-label="Goz, inicio"><GozMark size={18} simple id="search" /></a>
@@ -101,7 +103,11 @@ const categories = [
         </div>
         <p id="emptyState" class="empty" hidden>Ningún lugar coincide. Probá con otra palabra o tocá “Todo”.</p>
         <p id="errorState" class="empty" hidden>No se pudieron cargar los lugares. Revisá tu conexión y recargá la página.</p>
-        <ul id="placesList" class="place-list"></ul>
+        <ul id="placesList" class="place-list" aria-busy="true">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <li class="sk-row" aria-hidden="true"><span class="sk sk-thumb"></span><span class="sk-lines"><span class="sk" style={`width:${[70, 55, 80, 60, 75, 50][i]}%`}></span><span class="sk sk-sub"></span></span></li>
+          ))}
+        </ul>
       </section>
       <section id="detailView" hidden aria-live="polite"></section>
     </div>
@@ -376,6 +382,16 @@ const categories = [
   .btn-outline { background: transparent; color: var(--link); border-color: var(--link); }
 
   .place-list { list-style: none; margin: 0; padding: 0; }
+  .sk-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+  .sk-thumb { width: 56px; height: 56px; border-radius: 12px; flex: none; }
+  .sk-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .sk-lines .sk { height: 14px; }
+  .sk-lines .sk-sub { width: 40%; height: 11px; }
+  .map-loading { position: fixed; inset: 0; z-index: 900; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: opacity .35s ease; }
+  .map-loading .goz-loader { background: var(--surface); border-radius: 28px; padding: 22px 30px 18px; box-shadow: 0 10px 30px rgba(20,48,47,0.16); }
+  .map-loading.is-done { opacity: 0; }
+  .map-loading.is-error .goz-loader { display: none; }
+  @media (max-width: 767px) { .map-loading { bottom: 120px; } }
   .place-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px; margin: 0 -8px; border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; border-radius: 12px; box-sizing: content-box; }
   .place-row:hover { background: var(--neblina); }
   .place-thumb { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex-shrink: 0; background: var(--photo); }
@@ -1843,6 +1859,8 @@ const categories = [
         (reviewsByPlace[r.placeId] ||= []).push(r);
       });
       applyFilters();
+      $('placesList').removeAttribute('aria-busy');
+      hideMapLoading();
       // Abrir lugar o negocio cuando cambia el enlace (#id o #b-id) sin recargar.
       window.addEventListener('hashchange', () => {
         const h = decodeURIComponent(location.hash.slice(1));
@@ -1857,6 +1875,8 @@ const categories = [
       }
     } catch (err) {
       console.error('Error cargando lugares:', err);
+      $('placesList').innerHTML = ''; $('placesList').removeAttribute('aria-busy');
+      hideMapLoading();
       $('resultCount').textContent = '';
       $('peekTitle').textContent = 'No se pudieron cargar los lugares';
       $('errorState').hidden = false;
@@ -1864,6 +1884,11 @@ const categories = [
     }
   }
 
+  function hideMapLoading() {
+    const el = $('mapLoading');
+    el.classList.add('is-done');
+    setTimeout(() => el.remove(), 400);
+  }
   if (isMobile()) { $('searchInput').placeholder = 'Buscar en El Salvador'; setSheet('peek'); }
   window.addEventListener('resize', () => {
     map.invalidateSize();

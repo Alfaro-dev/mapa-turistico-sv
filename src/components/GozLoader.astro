@@ -1,0 +1,11 @@
+---
+// Pantalla de carga: Goz meneando la cola como péndulo, igual que el torogoz de verdad.
+interface Props { id: string; text: string; size?: number; class?: string }
+const { id, text, size = 64, class: cls = '' } = Astro.props;
+const h = Math.round(size * 170 / 124);
+const body = `<defs><clipPath id="clipL${id}"><path d="M60 112 C52 98 24 78 24 48 A36 36 0 1 1 96 48 C96 78 68 98 60 112 Z"></path></clipPath></defs><ellipse class="gl-shadow" cx="60" cy="166" rx="22" ry="3.5" fill="#14302F" opacity=".14"></ellipse><g class="gl-body"><g class="gl-tail"><path d="M58 108 L50 150" stroke="#14302F" stroke-width="3" stroke-linecap="round"></path><path d="M62 108 L72 150" stroke="#14302F" stroke-width="3" stroke-linecap="round"></path><ellipse cx="49" cy="157" rx="7.5" ry="10" fill="#0E7C7B"></ellipse><ellipse cx="73" cy="157" rx="7.5" ry="10" fill="#C2581F"></ellipse></g><path d="M60 112 C52 98 24 78 24 48 A36 36 0 1 1 96 48 C96 78 68 98 60 112 Z" fill="#0E7C7B"></path><rect x="0" y="62" width="120" height="60" fill="#C2581F" clip-path="url(#clipL${id})"></rect><path d="M30 38 L92 36 L92 52 L32 54 Z" fill="#14302F" clip-path="url(#clipL${id})"></path><path d="M93 38 L118 45 L93 51 Z" fill="#14302F"></path><circle cx="72" cy="44" r="5" fill="#F2C14E"></circle><circle class="gl-pupil" cx="73.5" cy="44" r="2.2" fill="#14302F"></circle></g>`;
+---
+<div id={id} class:list={['goz-loader', cls]} role="status" aria-live="polite">
+  <svg viewBox="-2 0 124 172" width={size} height={h} aria-hidden="true" set:html={body}></svg>
+  <p class="gl-text">{text}</p>
+</div>

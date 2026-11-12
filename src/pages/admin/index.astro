@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import GozMark from '../../components/GozMark.astro';
+import GozLoader from '../../components/GozLoader.astro';
 
 const sections = [
   { id: 'resumen', label: 'Resumen' },
@@ -43,7 +44,7 @@ const categories = [
         <p id="gateText" class="ad-lead">Entrá con la cuenta de Google de administrador de Goz.</p>
         <button type="button" id="loginBtn" class="ad-btn ad-btn-primary">Entrar con Google</button>
       </section>
-      <p id="loading" class="ad-lead">Cargando…</p>
+      <GozLoader id="loading" text="Cargando el panel…" />
 
       <!-- Resumen -->
       <section id="sec-resumen" class="ad-sec" hidden>
