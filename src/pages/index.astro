@@ -293,6 +293,8 @@ const categories = [
   .place-rating { margin-left: auto; font-size: 14px; color: var(--ink-2); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 
   .back-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 4px; margin: 0 0 8px -4px; border: 0; background: transparent; color: var(--link); font-size: 15px; font-weight: 700; cursor: pointer; }
+  .photo-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; border: 2px dashed #C9DCD9; color: var(--turquesa, #0E7C7B); font: inherit; font-size: 14px; font-weight: 700; text-align: center; cursor: pointer; }
+  .photo-empty:hover { border-color: #0E7C7B; }
   .detail-photo { width: 100%; height: 196px; border-radius: 16px; object-fit: cover; background: var(--photo); display: block; }
   .detail-title { margin: 16px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1.08; color: var(--ink); }
   .detail-title:focus { outline: none; }
@@ -794,7 +796,7 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a la lista
       </button>` : ''}
-      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}">${cover.photo ? `<figcaption class="cover-credit">Portada de ${esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : '<div class="detail-photo" aria-hidden="true"></div>'}
+      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}">${cover.photo ? `<figcaption class="cover-credit">Portada de ${esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<button type="button" class="detail-photo photo-empty" data-first-photo><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><span>Todavía no hay fotos. Subí la primera y puede ser la portada.</span></button>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r
@@ -870,10 +872,10 @@ const categories = [
     $('detailView').querySelectorAll('[data-review]').forEach((b: HTMLElement) => b.addEventListener('click', () => openReview(b.dataset.review!)));
     $('detailView').querySelectorAll('[data-biz]').forEach((b: HTMLElement) => b.addEventListener('click', () => selectBusiness(b.dataset.biz!, p.id)));
     $('detailView').querySelectorAll('[data-vote]').forEach((b: HTMLElement) => b.addEventListener('click', () => votePhoto(b.dataset.vote!)));
-    $('detailView').querySelector('[data-addphoto]')?.addEventListener('click', async () => {
+    $('detailView').querySelectorAll('[data-addphoto], [data-first-photo]').forEach((b) => b.addEventListener('click', async () => {
       if (!currentUser && !(await login())) return;
       $('placePhotoInput').click();
-    });
+    }));
     $('placePhotoInput')?.addEventListener('change', (e: Event) => uploadPlacePhoto(p, e.target as HTMLInputElement));
     $('detailView').querySelectorAll('.near-row').forEach((b: HTMLElement) => b.addEventListener('click', () => selectPlace(b.dataset.id!)));
     if (!isMobile()) ($('detailTitle') as HTMLElement).focus({ preventScroll: true });
@@ -1343,6 +1345,12 @@ const categories = [
         (reviewsByPlace[r.placeId] ||= []).push(r);
       });
       applyFilters();
+      // Abrir lugar o negocio cuando cambia el enlace (#id o #b-id) sin recargar.
+      window.addEventListener('hashchange', () => {
+        const h = decodeURIComponent(location.hash.slice(1));
+        if (h.startsWith('b-')) { if (h.slice(2) !== selectedBizId) selectBusiness(h.slice(2)); }
+        else if (h && h !== selectedId && allPlaces.some((p) => p.id === h)) selectPlace(h, { count: false });
+      });
       const fromHash = decodeURIComponent(location.hash.slice(1));
       if (fromHash && allPlaces.some((p) => p.id === fromHash)) {
         selectPlace(fromHash, { count: false });
