@@ -202,6 +202,13 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ---------- Insignias de temporada ----------
+    // Las crea el admin (lugar y fechas); se ganan con una reseña verificada en esas fechas.
+    match /seasonalBadges/{badgeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // ---------- Todo lo demás: cerrado ----------
     match /{document=**} {
       allow read, write: if false;
