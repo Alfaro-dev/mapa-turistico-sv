@@ -881,9 +881,13 @@ const categories = [
 
   // ---------- Insignias de temporada ----------
   function renderSeason() {
-    $('sPlace').innerHTML = places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    const keep = $('sPlace').value;
+    $('sPlace').innerHTML = '<option value="">Elegí un lugar</option>' + places.map((p) => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    $('sPlace').value = keep;
     const today = new Date().toLocaleDateString('en-CA');
-    $('seasonList').innerHTML = seasonal.map((s) => {
+    // Primero las activas, luego las próximas y al final las que ya terminaron.
+    const rank = (s: any) => (s.end < today ? 2 : s.start > today ? 1 : 0);
+    $('seasonList').innerHTML = [...seasonal].sort((a, b) => rank(a) - rank(b) || String(a.start).localeCompare(String(b.start))).map((s) => {
       const st = s.end < today ? 'Terminó' : s.start > today ? 'Próxima' : 'Activa';
       return `<li class="ad-row"><div class="ad-row-main">
         <p class="ad-row-title">${esc(s.name)} <span class="ad-tag${st === 'Activa' ? ' ad-tag-ok' : ''}">${st}</span></p>
