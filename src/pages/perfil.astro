@@ -39,9 +39,14 @@ import GozMark from '../components/GozMark.astro';
       <section class="pf-section" aria-labelledby="hBadges">
         <div class="pf-section-head">
           <h2 id="hBadges" class="pf-h2">Insignias</h2>
-          <p id="badgeCount" class="pf-muted"></p>
+          <a href="/insignias" class="pf-link">Ver todas las insignias</a>
         </div>
-        <ul id="badges" class="pf-badges"></ul>
+        <p id="badgeCount" class="pf-muted"></p>
+        <ul id="badges" class="bd-grid"></ul>
+        <div id="badgesEmpty" class="pf-empty" hidden>
+          <p>Escribí tu primera reseña y ganás <strong>Primer paso</strong>.</p>
+          <a href="/" class="pf-btn pf-btn-primary">Ir al mapa</a>
+        </div>
       </section>
 
       <section class="pf-section" aria-labelledby="hGallery">
@@ -52,14 +57,20 @@ import GozMark from '../components/GozMark.astro';
             <button type="button" id="viewMap" aria-pressed="false">Mapa</button>
           </div>
         </div>
-        <p id="galleryEmpty" class="pf-muted" hidden>Todavía no has subido fotos. Abrí un lugar en el mapa y tocá “Subir foto”.</p>
+        <div id="galleryEmpty" class="pf-empty" hidden>
+          <p>Todavía no subiste fotos.</p>
+          <a href="/" class="pf-btn pf-btn-outline">Ir al mapa</a>
+        </div>
         <ul id="gallery" class="pf-grid"></ul>
         <div id="galleryMap" class="pf-map" hidden role="region" aria-label="Mapa de tus fotos y lugares visitados"></div>
       </section>
 
       <section class="pf-section" aria-labelledby="hReviews">
         <h2 id="hReviews" class="pf-h2">Mis reseñas</h2>
-        <p id="reviewsEmpty" class="pf-muted" hidden>Todavía no has escrito reseñas. ¿Y vos, ya fuiste?</p>
+        <div id="reviewsEmpty" class="pf-empty" hidden>
+          <p>Todavía no escribiste reseñas.</p>
+          <a href="/" class="pf-btn pf-btn-outline">Ir al mapa</a>
+        </div>
         <ul id="myReviews" class="pf-reviews"></ul>
       </section>
 
@@ -93,18 +104,14 @@ import GozMark from '../components/GozMark.astro';
   .pf-stats dd { margin: 2px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; color: var(--ink); font-variant-numeric: tabular-nums; }
   .pf-section { background: var(--surface); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
   .pf-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-  .pf-badges { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-  .pf-badge { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 14px 10px; border-radius: 16px; background: var(--neblina); }
-  .pf-badge-icon { width: 64px; height: 64px; border-radius: 32px; display: flex; align-items: center; justify-content: center; background: #E1EAE8; color: #8FA5A2; }
-  .pf-badge.is-earned .pf-badge-icon { background: var(--plumaje); color: var(--rama); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--plumaje); }
-  .pf-badge.is-seasonal .pf-badge-icon { background: #F6E3D6; color: var(--canela); }
-  .pf-badge.is-seasonal.is-earned .pf-badge-icon { background: var(--canela); color: #FFFFFF; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--canela); }
-  .pf-badge-name { font-size: 14px; font-weight: 800; color: var(--ink); line-height: 1.2; }
-  .pf-badge-desc { font-size: 12px; color: var(--muted); line-height: 1.3; }
-  .pf-badge-tag { font-size: 11px; font-weight: 800; color: #8A3A10; background: #F6D9C8; padding: 2px 8px; border-radius: 10px; }
-  .pf-progress { width: 100%; height: 6px; border-radius: 3px; background: #DCE6E4; overflow: hidden; }
-  .pf-progress span { display: block; height: 100%; background: var(--turquesa); border-radius: 3px; }
-  .pf-progress-label { font-size: 12px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #pfBody:not([hidden]) { display: flex; flex-direction: column; gap: 24px; }
+  .pf-link { color: var(--link); font-size: 15px; font-weight: 800; text-decoration: none; }
+  .pf-link:hover { text-decoration: underline; }
+  .pf-empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px; border-radius: 14px; background: var(--neblina); }
+  .pf-empty[hidden] { display: none; }
+  .pf-empty p { margin: 0; font-size: 15px; color: var(--ink-2); }
+  a.pf-btn { display: inline-flex; align-items: center; text-decoration: none; }
+  .pf-btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
   .pf-toggle { display: inline-flex; padding: 3px; border-radius: 22px; background: var(--neblina); }
   .pf-toggle button { height: 38px; padding: 0 16px; border: 0; border-radius: 19px; background: transparent; color: var(--ink); font-size: 14px; font-weight: 800; cursor: pointer; }
   .pf-toggle button[aria-pressed="true"] { background: var(--rama); color: #FFFFFF; }
@@ -129,17 +136,19 @@ import GozMark from '../components/GozMark.astro';
   @media (max-width: 640px) {
     .pf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pf-h1 { font-size: 26px; }
-    .pf-badges, .pf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pf-map { height: 360px; }
   }
 </style>
 
 <script>
-  import { collection, getDocs, query, where } from 'firebase/firestore';
   import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-  import { db, auth, googleProvider } from '../lib/firebase';
+  import { auth, googleProvider } from '../lib/firebase';
   import { esc, safeUrl, num } from '../lib/escape';
-  import { computeBadges, badgeIcon, type SeasonalBadge } from '../lib/badges';
+  import { type SeasonalBadge } from '../lib/badges';
+  import { loadUserData, userBadges, seasonalTag } from '../lib/userData';
+  import { badgeCard } from '../lib/badgeCard';
+  import '../styles/badges.css';
 
   // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
   document.addEventListener('error', (e) => {
@@ -154,8 +163,6 @@ import GozMark from '../components/GozMark.astro';
 
   declare const L: any;
   const $ = (id: string) => document.getElementById(id) as any;
-  const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-  const fmtDay = (iso: string) => { const [y, m, d] = iso.split('-').map(Number); return `${d} de ${MESES[m - 1]}${y !== new Date().getFullYear() ? ` de ${y}` : ''}`; };
 
   let places: any[] = [];
   let photos: any[] = [];
@@ -171,19 +178,9 @@ import GozMark from '../components/GozMark.astro';
     $('pfBody').hidden = true;
     if (!user) return;
     try {
-      const [pSnap, rSnap, fSnap, sSnap] = await Promise.all([
-        getDocs(collection(db, 'places')),
-        getDocs(query(collection(db, 'reviews'), where('userId', '==', user.uid))),
-        getDocs(query(collection(db, 'photos'), where('userId', '==', user.uid))),
-        getDocs(collection(db, 'seasonalBadges')).catch(() => null),
-      ]);
-      places = pSnap.docs.map((d) => ({ id: d.id, ...d.data(), lat: Number(d.data().lat), lng: Number(d.data().lng) }));
-      reviews = rSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        .sort((a: any, b: any) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-      photos = fSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        .sort((a: any, b: any) => num(b.votes) - num(a.votes));
-      const seasonal = (sSnap?.docs || []).map((d) => ({ id: d.id, ...d.data() } as SeasonalBadge));
-      render(user, seasonal);
+      const data = await loadUserData(user.uid);
+      ({ places, reviews, photos } = data);
+      render(user, data.seasonal);
     } catch (err) {
       console.error(err);
       $('pfLoading').textContent = 'No se pudo cargar tu perfil. Revisá tu conexión y recargá la página.';
@@ -204,22 +201,17 @@ import GozMark from '../components/GozMark.astro';
     $('stPhotos').textContent = photos.length;
     $('stVotes').textContent = photos.reduce((s, p) => s + num(p.votes), 0);
 
-    // Insignias: las de temporada vencidas solo se muestran si se ganaron.
-    const today = new Date().toLocaleDateString('en-CA');
-    const badges = computeBadges(reviews, photos.length, places, seasonal)
-      .filter((b) => !b.seasonal || b.earned || (seasonal.find((s) => `s_${s.id}` === b.id)?.end ?? '') >= today);
-    $('badgeCount').textContent = `${badges.filter((b) => b.earned).length} de ${badges.length} ganadas`;
-    $('badges').innerHTML = badges.map((b) => {
-      const s = b.seasonal ? seasonal.find((x) => `s_${x.id}` === b.id) : null;
-      const pct = Math.min(100, Math.round((b.count / b.required) * 100));
-      return `<li class="pf-badge${b.earned ? ' is-earned' : ''}${b.seasonal ? ' is-seasonal' : ''}">
-        <span class="pf-badge-icon">${badgeIcon(b.icon)}</span>
-        <span class="pf-badge-name">${esc(b.name)}</span>
-        <span class="pf-badge-desc">${esc(b.description)}</span>
-        ${s ? `<span class="pf-badge-tag">${b.earned ? 'De temporada' : `Hasta el ${esc(fmtDay(s.end))}`}</span>` : ''}
-        ${b.earned ? '' : `<span class="pf-progress" aria-hidden="true"><span style="width:${pct}%"></span></span><span class="pf-progress-label">${Math.min(b.count, b.required)} de ${b.required}</span>`}
-      </li>`;
-    }).join('');
+    // Insignias: aquí solo las ganadas y las que ya llevan avance (más las de temporada activas).
+    // Todas las demás están en /insignias.
+    const all = userBadges({ places, reviews, photos, seasonal });
+    const mine = all.filter((b) => b.earned || b.count > 0 || b.seasonal)
+      .sort((a, b) => Number(b.earned) - Number(a.earned) || (b.count / b.required) - (a.count / a.required));
+    const earned = all.filter((b) => b.earned).length;
+    $('badgeCount').textContent = earned ? `Ganaste ${earned} de ${all.length}.` : '';
+    $('badgeCount').hidden = !earned;
+    $('badges').innerHTML = mine.map((b) => badgeCard(b, seasonalTag(b, seasonal))).join('');
+    $('badges').hidden = !mine.length;
+    $('badgesEmpty').hidden = mine.length > 0;
 
     // Galería en cuadrícula.
     const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';

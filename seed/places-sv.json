@@ -26,7 +26,7 @@
   "lat": 13.70127,
   "lng": -89.22445,
   "description": "Símbolo de la capital: la imagen del Divino Salvador del Mundo sobre una esfera, en la Plaza de las Américas. Punto de reunión para celebraciones y fiestas agostinas.",
-  "schedule": "Abierto todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Fiestas de agosto",
@@ -88,7 +88,7 @@
  {
   "id": "puerta-del-diablo",
   "name": "Puerta del Diablo",
-  "category": "aventura",
+  "category": "mirador",
   "municipality": "Panchimalco",
   "department": "San Salvador",
   "lat": 13.62512,
@@ -106,36 +106,19 @@
  {
   "id": "panchimalco",
   "name": "Panchimalco",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Panchimalco",
   "department": "San Salvador",
   "lat": 13.6136,
   "lng": -89.1797,
   "description": "Pueblo de raíz nahua con una iglesia colonial blanca y la Casa de la Cultura. En mayo celebra el Festival de las Flores y las Palmas.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Festival de las Flores y las Palmas",
    "Iglesia colonial"
   ],
   "coordSource": "manual-revisado"
- },
- {
-  "id": "lago-de-ilopango",
-  "name": "Lago de Ilopango",
-  "category": "lago",
-  "municipality": "Ilopango",
-  "department": "San Salvador",
-  "lat": 13.6694,
-  "lng": -89.0491,
-  "description": "El lago más grande del país, formado en una caldera volcánica, con islotes llamados Cerros Quemados. Se puede pasear en lancha y comer frente al agua en Apulo.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
-  "recommendations": [
-   "Paseo en lancha",
-   "Comer en Apulo"
-  ],
-  "coordSource": "osm"
  },
  {
   "id": "parque-el-boqueron",
@@ -181,7 +164,7 @@
   "lat": 13.49483,
   "lng": -89.38286,
   "description": "Playa surfera famosa por su roca en forma de cerdo, con hostales, restaurantes y vida nocturna. Las olas son buenas para aprender y los atardeceres llenan la playa.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Clases de surf",
@@ -199,7 +182,7 @@
   "lat": 13.49779,
   "lng": -89.44074,
   "description": "Playa de arena oscura y ambiente tranquilo, conocida como Bitcoin Beach. Tiene buena ola para surf y hospedajes pequeños frente al mar.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Surf",
@@ -216,7 +199,7 @@
   "lat": 13.49362,
   "lng": -89.3888,
   "description": "Ola larga y suave, de las mejores para aprender surf, justo al lado de El Tunco. Playa de piedras y arena con varios hoteles.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Surf para principiantes",
@@ -233,7 +216,7 @@
   "lat": 13.48582,
   "lng": -89.3183,
   "description": "Puerto pesquero con muelle, mercado de mariscos y un malecón renovado con restaurantes frente al mar. Desde el muelle se ven llegar las lanchas con la pesca del día.",
-  "schedule": "Todos los días",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Mariscos frescos",
@@ -251,7 +234,7 @@
   "lat": 13.49022,
   "lng": -89.36664,
   "description": "Playa amplia y popular entre familias salvadoreñas, con ranchos y comedores frente al mar, a pocos minutos del Puerto de La Libertad.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Ranchos frente al mar",
@@ -302,7 +285,7 @@
   "lat": 13.86333,
   "lng": -89.54733,
   "description": "Lago de cráter de agua azul turquesa rodeado de cerros, con la Isla Teopán en el centro. Se puede nadar, pasear en lancha y comer en los restaurantes de la orilla.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Acceso por restaurantes y hoteles",
   "recommendations": [
    "Paseo en lancha",
@@ -390,7 +373,7 @@
   "lat": 13.99495,
   "lng": -89.55557,
   "description": "Catedral neogótica blanca frente al parque Libertad, junto al Teatro de Santa Ana y el Palacio Municipal. Uno de los conjuntos de arquitectura más bonitos del país.",
-  "schedule": "Todos los días",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Teatro de Santa Ana",
@@ -425,7 +408,7 @@
   "lat": 14.26759,
   "lng": -89.52381,
   "description": "Lago compartido con Guatemala, rodeado de volcancitos, con islas y petrograbados prehispánicos en sus orillas. Se recorre en lancha con pescadores de la zona.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Paseo en lancha con costo",
   "recommendations": [
    "Petrograbados",
@@ -436,14 +419,14 @@
  {
   "id": "concepcion-de-ataco",
   "name": "Concepción de Ataco",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Ataco",
   "department": "Ahuachapán",
   "lat": 13.87037,
   "lng": -89.8509,
   "description": "Pueblo de la Ruta de las Flores con calles empedradas, murales de colores, talleres de textiles y cafés de altura. De noche el centro se llena de comida típica.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Murales",
    "Café de la zona",
@@ -454,14 +437,14 @@
  {
   "id": "juayua",
   "name": "Juayúa",
-  "category": "gastronomía",
+  "category": "pueblo",
   "municipality": "Juayúa",
   "department": "Sonsonate",
   "lat": 13.84323,
   "lng": -89.74647,
   "description": "Pueblo de la Ruta de las Flores famoso por su feria gastronómica de fines de semana y el Cristo Negro de su iglesia. Cerca están los Chorros de la Calera.",
   "schedule": "Feria sábados y domingos",
-  "price": "Gratis",
+  "price": "",
   "recommendations": [
    "Feria gastronómica",
    "Chorros de la Calera"
@@ -471,14 +454,14 @@
  {
   "id": "apaneca",
   "name": "Apaneca",
-  "category": "aventura",
+  "category": "pueblo",
   "municipality": "Apaneca",
   "department": "Ahuachapán",
   "lat": 13.85885,
   "lng": -89.80398,
   "description": "El pueblo más alto de la Ruta de las Flores, entre cafetales y clima fresco. Tiene canopy, laberinto de cipreses y la Laguna Verde cerca.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Canopy",
    "Laguna Verde",
@@ -489,14 +472,14 @@
  {
   "id": "nahuizalco",
   "name": "Nahuizalco",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Nahuizalco",
   "department": "Sonsonate",
   "lat": 13.77922,
   "lng": -89.73729,
   "description": "Pueblo nahua de la Ruta de las Flores conocido por sus artesanías de mimbre y tule y por su mercado nocturno alumbrado con candelas.",
   "schedule": "Mercado nocturno por la tarde y noche",
-  "price": "Gratis",
+  "price": "",
   "recommendations": [
    "Mercado nocturno",
    "Artesanías de tule"
@@ -506,14 +489,14 @@
  {
   "id": "salcoatitan",
   "name": "Salcoatitán",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Salcoatitán",
   "department": "Sonsonate",
   "lat": 13.83356,
   "lng": -89.76129,
   "description": "Pueblo pequeño de la Ruta de las Flores con una iglesia colonial, murales y una feria de comida los fines de semana, entre Nahuizalco y Juayúa.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Iglesia colonial",
    "Feria de fin de semana"
@@ -529,7 +512,7 @@
   "lat": 13.83572,
   "lng": -89.73132,
   "description": "Cascadas que brotan de la roca y forman pozas de agua fría, a una caminata corta desde Juayúa. Conviene ir con guía local o con la policía de turismo.",
-  "schedule": "De día",
+  "schedule": "",
   "price": "Entrada con costo bajo",
   "recommendations": [
    "Con guía local",
@@ -546,8 +529,8 @@
   "lat": 13.9296,
   "lng": -89.80508,
   "description": "Fumarolas y pozas de lodo hirviente por la actividad geotérmica de la zona. Se ven desde miradores y hay balnearios de aguas termales cerca.",
-  "schedule": "De día",
-  "price": "Varía según el lugar",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "No te salgas del camino",
    "Aguas termales"
@@ -563,7 +546,7 @@
   "lat": 13.68965,
   "lng": -90.00099,
   "description": "Playa y estero con manglares protegidos, tortugas marinas y aves. Se recorre en lancha por los canales y hay hospedajes pequeños frente al mar.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Paseo en lancha con costo",
   "recommendations": [
    "Tour de manglar",
@@ -598,7 +581,7 @@
   "lat": 13.52525,
   "lng": -89.80563,
   "description": "El único arrecife de coral del Pacífico salvadoreño, área natural protegida. Buena para buceo y snorkel en temporada seca, con comedores de mariscos.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Snorkel",
@@ -610,14 +593,14 @@
  {
   "id": "suchitoto",
   "name": "Suchitoto",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Suchitoto",
   "department": "Cuscatlán",
   "lat": 13.93672,
   "lng": -89.02593,
   "description": "Ciudad colonial de calles empedradas, casas de colores y la iglesia de Santa Lucía, con vista al embalse Suchitlán. Centro de talleres de añil, galerías y festivales culturales.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Taller de añil",
    "Mirador al lago",
@@ -634,7 +617,7 @@
   "lat": 13.93726,
   "lng": -89.01315,
   "description": "Cascada sobre columnas de roca hexagonal, a pocos minutos del centro de Suchitoto. Lleva más agua en la temporada de lluvias.",
-  "schedule": "De día",
+  "schedule": "",
   "price": "Gratis o con aporte voluntario",
   "recommendations": [
    "Época de lluvias",
@@ -644,14 +627,14 @@
  },
  {
   "id": "cerro-de-las-pavas",
-  "name": "Cerro de las Pavas",
-  "category": "cultura",
+  "name": "Mirador Cerro de las Pavas",
+  "category": "mirador",
   "municipality": "Cojutepeque",
   "department": "Cuscatlán",
   "lat": 13.71337,
   "lng": -88.93713,
   "description": "Santuario de la Virgen de Fátima en lo alto de Cojutepeque, con vista al Lago de Ilopango. Cojutepeque es famoso por sus chorizos y sus dulces típicos.",
-  "schedule": "Todos los días",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Chorizos de Cojute",
@@ -662,14 +645,14 @@
  {
   "id": "ilobasco",
   "name": "Ilobasco",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Ilobasco",
   "department": "Cabañas",
   "lat": 13.84301,
   "lng": -88.84892,
   "description": "Capital salvadoreña de la cerámica, famosa por las sorpresas: figuras diminutas escondidas en cascarones de barro. Hay talleres abiertos en la calle principal.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Sorpresas de barro",
    "Talleres de cerámica"
@@ -696,14 +679,14 @@
  {
   "id": "la-palma",
   "name": "La Palma",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "La Palma",
   "department": "Chalatenango",
   "lat": 14.31732,
   "lng": -89.17048,
   "description": "Pueblo de clima fresco famoso por las artesanías de colores inspiradas en el pintor Fernando Llort. Sus paredes y talleres están llenos de ese estilo.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Artesanías de Llort",
    "Clima fresco"
@@ -725,23 +708,6 @@
    "Abrigo",
    "Camping",
    "Amanecer"
-  ],
-  "coordSource": "osm"
- },
- {
-  "id": "embalse-cerron-grande",
-  "name": "Embalse Cerrón Grande",
-  "category": "lago",
-  "municipality": "Chalatenango",
-  "department": "Chalatenango",
-  "lat": 14.01316,
-  "lng": -89.03579,
-  "description": "El cuerpo de agua más grande del país, formado por la represa sobre el río Lempa. Sitio Ramsar con miles de aves acuáticas; se recorre en lancha.",
-  "schedule": "Todo el día",
-  "price": "Paseo en lancha con costo",
-  "recommendations": [
-   "Aves",
-   "Paseo en lancha"
   ],
   "coordSource": "osm"
  },
@@ -771,7 +737,7 @@
   "lat": 13.33878,
   "lng": -88.99518,
   "description": "Franja de playa de arena clara entre el mar y el estero de Jaltepeque, con hoteles, ranchos y aguas más tranquilas que las de La Libertad. Cerca del aeropuerto.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Estero de Jaltepeque",
@@ -788,7 +754,7 @@
   "lat": 13.31672,
   "lng": -88.92246,
   "description": "Estero con manglares e islas detrás de la Costa del Sol, donde termina el río Lempa. Se recorre en lancha para ver aves y comer mariscos en las islas.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Paseo en lancha con costo",
   "recommendations": [
    "Tour en lancha",
@@ -806,7 +772,7 @@
   "lat": 13.35098,
   "lng": -89.02489,
   "description": "Playa larga y tranquila en la zona de la Costa del Sol, con ranchos y hoteles frente al mar, lejos del ambiente surfero de La Libertad.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Descanso",
@@ -823,7 +789,7 @@
   "lat": 13.24127,
   "lng": -88.55737,
   "description": "Reserva de biósfera con el manglar más grande del país, islas y la tortuga carey. Se sale en lancha desde Puerto El Triunfo hacia islas como Espíritu Santo.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Paseo en lancha con costo",
   "recommendations": [
    "Salí desde Puerto El Triunfo",
@@ -841,7 +807,7 @@
   "lat": 13.17099,
   "lng": -88.29413,
   "description": "Una de las playas más largas del país, de arena clara y aguas tranquilas, con anidación de tortugas y comedores de mariscos.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Tortugas",
@@ -858,7 +824,7 @@
   "lat": 13.49305,
   "lng": -88.49381,
   "description": "Laguna verde esmeralda dentro del cráter del volcán Tecapa, a poca distancia del pueblo de Alegría, conocido por sus viveros de flores y su clima fresco.",
-  "schedule": "De día",
+  "schedule": "",
   "price": "Entrada con costo bajo",
   "recommendations": [
    "Pueblo de Alegría",
@@ -893,7 +859,7 @@
   "lat": 13.33216,
   "lng": -88.25077,
   "description": "Laguna con humedales protegidos, sitio Ramsar famoso por las aves migratorias. Se recorre en lancha con pescadores de la zona.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Paseo en lancha con costo",
   "recommendations": [
    "Aves migratorias",
@@ -910,7 +876,7 @@
   "lat": 13.17433,
   "lng": -88.11013,
   "description": "Playa de arena clara y oleaje moderado en el oriente, con hoteles y comedores. Cerca están playas de surf como Las Flores y Punta Mango.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Surf en Las Flores",
@@ -962,7 +928,7 @@
   "lat": 13.89864,
   "lng": -88.11502,
   "description": "Lugar de memoria por la masacre de 1981. Un monumento y un jardín recuerdan a las víctimas; guías de la comunidad cuentan lo que pasó.",
-  "schedule": "Todos los días",
+  "schedule": "",
   "price": "Aporte voluntario",
   "recommendations": [
    "Visita con respeto",
@@ -973,14 +939,14 @@
  {
   "id": "cacaopera",
   "name": "Cacaopera",
-  "category": "cultura",
+  "category": "pueblo",
   "municipality": "Cacaopera",
   "department": "Morazán",
   "lat": 13.77219,
   "lng": -88.07854,
   "description": "Pueblo de raíz indígena kakawira con un museo comunitario de su cultura y la Danza de los Emplumados en sus fiestas.",
-  "schedule": "Todo el día",
-  "price": "Gratis",
+  "schedule": "",
+  "price": "",
   "recommendations": [
    "Museo kakawira",
    "Fiestas patronales"
@@ -1013,7 +979,7 @@
   "lat": 13.18366,
   "lng": -87.91727,
   "description": "Playa de aguas mansas en la entrada del Golfo de Fonseca, con vista a las islas y comedores de mariscos. Desde aquí salen lanchas a Meanguera.",
-  "schedule": "Todo el día",
+  "schedule": "",
   "price": "Gratis",
   "recommendations": [
    "Agua tranquila",
@@ -1025,17 +991,88 @@
  {
   "id": "volcan-de-conchagua",
   "name": "Mirador del Volcán de Conchagua",
-  "category": "montaña",
+  "category": "mirador",
   "municipality": "Conchagua",
   "department": "La Unión",
   "lat": 13.28029,
   "lng": -87.82925,
   "description": "Volcán con mirador hacia el Golfo de Fonseca y sus islas, desde donde se ven tres países. Ideal al amanecer.",
-  "schedule": "De día",
+  "schedule": "",
   "price": "Entrada con costo bajo",
   "recommendations": [
    "Amanecer",
    "Vista a tres países"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "parque-apulo",
+  "name": "Parque Recreativo Apulo",
+  "category": "lago",
+  "municipality": "Ilopango",
+  "department": "San Salvador",
+  "lat": 13.70151,
+  "lng": -89.07631,
+  "description": "Parque familiar a la orilla del Lago de Ilopango, con malecón, piscinas, restaurantes y lanchas que llevan a los Cerros Quemados. Es la puerta de entrada más fácil al lago desde la capital.",
+  "schedule": "",
+  "price": "Entrada con costo",
+  "recommendations": [
+   "Paseo en lancha",
+   "Atardecer en el malecón",
+   "Mariscos"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "poza-verde",
+  "name": "Poza Verde",
+  "category": "lago",
+  "municipality": "San Miguel Tepezontes",
+  "department": "La Paz",
+  "lat": 13.644,
+  "lng": -89.02,
+  "description": "Playita escondida de agua turquesa en la orilla sur del Lago de Ilopango. Se llega por la calle al lago desde San Miguel Tepezontes, mejor en carro alto o caminando unos 4 km. El agua es honda: nadá con cuidado.",
+  "schedule": "",
+  "price": "Gratis",
+  "recommendations": [
+   "Carro alto o 4x4",
+   "Llevá comida y agua",
+   "Bajá tu basura"
+  ],
+  "coordSource": "manual"
+ },
+ {
+  "id": "puerto-san-juan",
+  "name": "Puerto San Juan y Lago Suchitlán",
+  "category": "lago",
+  "municipality": "Suchitoto",
+  "department": "Cuscatlán",
+  "lat": 13.94596,
+  "lng": -89.01617,
+  "description": "Muelle a la orilla del lago Suchitlán, el embalse del Cerrón Grande, a pocos minutos del centro de Suchitoto. De aquí salen las lanchas a la Isla de los Pájaros y hay restaurantes con vista al agua.",
+  "schedule": "",
+  "price": "Gratis; lanchas con costo",
+  "recommendations": [
+   "Isla de los Pájaros",
+   "Atardecer",
+   "Aves"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "laguna-verde-apaneca",
+  "name": "Laguna Verde de Apaneca",
+  "category": "lago",
+  "municipality": "Apaneca",
+  "department": "Ahuachapán",
+  "lat": 13.89144,
+  "lng": -89.78692,
+  "description": "Laguna de cráter rodeada de bosque y cafetales, en lo alto de la Ruta de las Flores. Caminata corta y clima fresco, a pocos minutos de Apaneca.",
+  "schedule": "",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Abrigo",
+   "Caminata corta"
   ],
   "coordSource": "osm"
  }

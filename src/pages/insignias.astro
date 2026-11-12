@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GozMark from '../components/GozMark.astro';
+---
+
+<Layout title="Insignias · Goz">
+  <header class="in-top">
+    <a href="/perfil" class="in-back">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+      <span>Mi perfil</span>
+    </a>
+    <a href="/" class="in-home" aria-label="Ir al mapa"><span class="in-mark"><GozMark size={18} simple id="insignias" /></span></a>
+  </header>
+
+  <main class="in">
+    <div class="in-head">
+      <h1 class="in-h1">Insignias</h1>
+      <p class="in-lead">Se ganan contando tus visitas: reseñas, fotos y lugares nuevos. Las de temporada duran solo unos días.</p>
+    </div>
+
+    <section id="inLogin" class="in-card" hidden>
+      <p class="in-lead">Entrá con Google para ver cuáles llevás.</p>
+      <button type="button" id="inLoginBtn" class="in-btn">Entrar con Google</button>
+    </section>
+
+    <p id="inLoading" class="in-muted">Cargando…</p>
+
+    <section id="secEarned" class="in-card" hidden aria-labelledby="hEarned">
+      <h2 id="hEarned" class="in-h2">Ganadas</h2>
+      <ul id="listEarned" class="bd-grid"></ul>
+    </section>
+    <section id="secProgress" class="in-card" hidden aria-labelledby="hProgress">
+      <h2 id="hProgress" class="in-h2">En camino</h2>
+      <ul id="listProgress" class="bd-grid"></ul>
+    </section>
+    <section id="secLocked" class="in-card" hidden aria-labelledby="hLocked">
+      <h2 id="hLocked" class="in-h2">Por ganar</h2>
+      <ul id="listLocked" class="bd-grid"></ul>
+    </section>
+  </main>
+</Layout>
+
+<style is:global>
+  html, body { height: auto; min-height: 100%; background: var(--neblina); }
+  .in-top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-left)); }
+  .in-back { display: inline-flex; align-items: center; gap: 6px; height: 44px; color: var(--ink); font-weight: 800; text-decoration: none; }
+  .in-mark { width: 34px; height: 34px; border-radius: 17px; background: var(--plumaje); display: flex; align-items: center; justify-content: center; }
+  .in { max-width: 980px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-left)) 56px; display: flex; flex-direction: column; gap: 20px; }
+  .in-head { display: flex; flex-direction: column; gap: 6px; }
+  .in-h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 1.1; color: var(--ink); }
+  .in-h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--ink); }
+  .in-lead { margin: 0; max-width: 62ch; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+  .in-muted { margin: 0; font-size: 14px; color: var(--muted); }
+  .in-card { background: var(--surface); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .in-card[hidden] { display: none; }
+  .in-btn { align-self: flex-start; height: 46px; padding: 0 22px; border: 0; border-radius: 23px; background: var(--primary); color: #FFFFFF; font-size: 15px; font-weight: 800; cursor: pointer; }
+  @media (max-width: 640px) { .in-h1 { font-size: 26px; } }
+</style>
+
+<script>
+  import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+  import { auth, googleProvider } from '../lib/firebase';
+  import { loadUserData, userBadges, seasonalTag } from '../lib/userData';
+  import { badgeCard } from '../lib/badgeCard';
+  import '../styles/badges.css';
+
+  const $ = (id: string) => document.getElementById(id) as any;
+  $('inLoginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
+
+  onAuthStateChanged(auth, async (user) => {
+    $('inLogin').hidden = !!user;
+    $('inLoading').hidden = !user;
+    if (!user) return;
+    try {
+      const data = await loadUserData(user.uid);
+      const all = userBadges(data);
+      const groups: [string, string, typeof all][] = [
+        ['secEarned', 'listEarned', all.filter((b) => b.earned)],
+        ['secProgress', 'listProgress', all.filter((b) => !b.earned && b.count > 0)
+          .sort((a, b) => b.count / b.required - a.count / a.required)],
+        ['secLocked', 'listLocked', all.filter((b) => !b.earned && b.count === 0)],
+      ];
+      groups.forEach(([sec, list, items]) => {
+        $(list).innerHTML = items.map((b) => badgeCard(b, seasonalTag(b, data.seasonal))).join('');
+        $(sec).hidden = !items.length;
+      });
+      $('inLoading').hidden = true;
+    } catch (err) {
+      console.error(err);
+      $('inLoading').textContent = 'No se pudieron cargar tus insignias. Revisá tu conexión y recargá la página.';
+    }
+  });
+</script>

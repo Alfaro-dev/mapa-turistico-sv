@@ -10,8 +10,8 @@ const sections = [
   { id: 'temporada', label: 'Insignias de temporada' },
 ];
 const categories = [
-  ['playa', 'Playa'], ['montaña', 'Volcán o montaña'], ['lago', 'Lago'], ['histórico', 'Sitio histórico'],
-  ['cultura', 'Cultura'], ['río', 'Río'], ['aventura', 'Aventura'], ['gastronomía', 'Comida'], ['other', 'Otro'],
+  ['playa', 'Playa'], ['montaña', 'Volcán o montaña'], ['lago', 'Lago o laguna'], ['mirador', 'Mirador'], ['pueblo', 'Pueblo'],
+  ['histórico', 'Sitio histórico'], ['cultura', 'Cultura'], ['río', 'Río o cascada'], ['aventura', 'Aventura'], ['gastronomía', 'Comida'], ['other', 'Otro'],
 ];
 ---
 
@@ -51,9 +51,9 @@ const categories = [
         <h2 class="ad-h2">Para hacer hoy</h2>
         <div class="ad-todo">
           <a href="#negocios" class="ad-todo-card" data-hot><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
-          <a href="#resenas" class="ad-todo-card" data-hot><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
-          <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes vencidos o por vencer (7 días)</span><span class="ad-todo-go">Ver pagos</span></a>
-          <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares con problemas</span><span class="ad-todo-go">Corregir</span></a>
+          <a href="#resenas" class="ad-todo-card" data-hot><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas nuevas esta semana</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes por vencer</span><span class="ad-todo-go">Ver pagos</span></a>
+          <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares por corregir</span><span class="ad-todo-go">Corregir</span></a>
         </div>
         <h2 class="ad-h2">En Goz hoy</h2>
         <dl class="ad-stats">
@@ -64,13 +64,12 @@ const categories = [
         </dl>
         <div class="ad-two">
           <section class="ad-card">
-            <div class="ad-card-head"><h2 class="ad-h2">Reseñas nuevas</h2><a href="#resenas">Ver todas</a></div>
-            <p class="ad-muted">Ya están publicadas. Borrá las que rompan las reglas de la comunidad.</p>
+            <div class="ad-card-head"><h2 class="ad-h2">Últimas reseñas</h2><a href="#resenas">Ver todas</a></div>
             <ul id="sumReviews" class="ad-rows"></ul>
           </section>
           <section class="ad-card">
-            <div class="ad-card-head"><h2 class="ad-h2">Negocios por aprobar</h2><a href="#negocios">Ver todos</a></div>
-            <p class="ad-muted">No salen en el mapa hasta que los apruebes.</p>
+            <div class="ad-card-head"><h2 class="ad-h2">Esperando aprobación</h2><a href="#negocios">Ver todos</a></div>
+            <p class="ad-muted">No salen en el mapa hasta que los aprobés.</p>
             <ul id="sumBiz" class="ad-rows"></ul>
           </section>
         </div>
@@ -223,8 +222,8 @@ const categories = [
   .ad-todo-card { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 16px; background: var(--surface); border: 2px solid var(--line); color: var(--ink); text-decoration: none; }
   .ad-todo-card.is-hot { border-color: var(--plumaje); }
   .ad-num { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
-  .ad-todo-label { font-size: 15px; font-weight: 800; }
-  .ad-todo-go { font-size: 14px; font-weight: 800; color: var(--turquesa); }
+  .ad-todo-label { flex: 1 1 auto; font-size: 15px; font-weight: 800; line-height: 1.3; }
+  .ad-todo-go { margin-top: 4px; font-size: 14px; font-weight: 800; color: var(--turquesa); }
   .ad-stats { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
   .ad-stats div { background: var(--surface); border-radius: 16px; padding: 16px 18px; }
   .ad-stats dt { font-size: 14px; font-weight: 700; color: var(--muted); }
@@ -455,7 +454,7 @@ const categories = [
     $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
       <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
-      <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">No hay negocios esperando.</li>';
+      <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente.</li>';
     renderBizList(); renderModeration(); renderPlaceList(); renderSeason();
   }
 
@@ -574,7 +573,7 @@ const categories = [
       </div>
       ${st === 'active' ? `<section class="ad-plan">
         <p class="ad-field-label">Plan y pagos</p>
-        <p class="ad-muted">Ahora: ${esc(planLabel(b))}. Registrá el pago cuando lo recibas; al vencer, deja de salir como Destacado.</p>
+        <p class="ad-muted">Ahora: ${esc(planLabel(b))}. Registrá el pago cuando lo recibás; al vencer, deja de salir como Destacado.</p>
         <div class="ad-grid2">
           <div class="ad-field"><label for="planSel">Plan</label><select id="planSel">${Object.entries(PLANS).map(([k, v]) => `<option value="${k}"${(b.plan || 'basico') === k ? ' selected' : ''}>${v.label} · ${v.price}</option>`).join('')}</select></div>
           <div class="ad-field"><label for="planUntil">Pagado hasta</label><input id="planUntil" type="date" value="${esc(b.planUntil || '')}"></div>

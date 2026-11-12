@@ -7,6 +7,8 @@ const categories = [
   { id: 'montaña', label: 'Volcanes' },
   { id: 'playa', label: 'Playas' },
   { id: 'lago', label: 'Lagos' },
+  { id: 'mirador', label: 'Miradores' },
+  { id: 'pueblo', label: 'Pueblos' },
   { id: 'histórico', label: 'Historia' },
   { id: 'cultura', label: 'Cultura' },
   { id: 'río', label: 'Ríos' },
@@ -97,7 +99,7 @@ const categories = [
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
           </button>
         </div>
-        <p id="emptyState" class="empty" hidden>Ningún lugar coincide. Probá con otra palabra o elegí “Todo”.</p>
+        <p id="emptyState" class="empty" hidden>Ningún lugar coincide. Probá con otra palabra o tocá “Todo”.</p>
         <p id="errorState" class="empty" hidden>No se pudieron cargar los lugares. Revisá tu conexión y recargá la página.</p>
         <ul id="placesList" class="place-list"></ul>
       </section>
@@ -300,8 +302,11 @@ const categories = [
   .place-rating { margin-left: auto; font-size: 14px; color: var(--ink-2); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 
   .back-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 4px; margin: 0 0 8px -4px; border: 0; background: transparent; color: var(--link); font-size: 15px; font-weight: 700; cursor: pointer; }
-  .photo-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 16px; border: 2px dashed #C9DCD9; color: var(--turquesa, #0E7C7B); font: inherit; font-size: 14px; font-weight: 700; text-align: center; cursor: pointer; }
-  .photo-empty:hover { border-color: #0E7C7B; }
+  .detail-photo.photo-empty { display: flex; align-items: center; justify-content: center; height: 120px; color: #8FB3AF; }
+  .thumb-icon { display: flex; align-items: center; justify-content: center; color: #7FA5A1; }
+  .empty-card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 8px; padding: 14px 16px; border-radius: 14px; background: var(--neblina); }
+  .empty-card p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+  .near-list { list-style: none; margin: 0; padding: 0; }
   .detail-photo { width: 100%; height: 196px; border-radius: 16px; object-fit: cover; background: var(--photo); display: block; }
   .detail-title { margin: 16px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1.08; color: var(--ink); }
   .detail-title:focus { outline: none; }
@@ -362,9 +367,10 @@ const categories = [
   .review-text { margin: 6px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
   .review-photos { display: flex; gap: 6px; margin-top: 8px; }
   .review-photos img { width: 72px; height: 54px; object-fit: cover; border-radius: 6px; }
-  .near-row { width: 100%; display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 15px; cursor: pointer; text-align: left; }
-  .near-row span:first-child { font-weight: 700; }
-  .near-row span:last-child { color: var(--muted); white-space: nowrap; }
+  .near-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px 0; border: 0; background: transparent; color: var(--ink); font-size: 15px; cursor: pointer; text-align: left; }
+  .near-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .near-name { font-weight: 800; }
+  .near-km { color: var(--muted); white-space: nowrap; font-size: 14px; }
 
   /* Marcadores */
   .pin-wrap { background: none; border: 0; }
@@ -449,8 +455,27 @@ const categories = [
 
   const CATEGORY_NAMES: Record<string, string> = {
     playa: 'Playa', montaña: 'Volcán o montaña', histórico: 'Sitio histórico', gastronomía: 'Comida',
-    cultura: 'Cultura', aventura: 'Aventura', río: 'Río', lago: 'Lago', other: 'Lugar',
+    cultura: 'Cultura', aventura: 'Aventura', río: 'Río o cascada', lago: 'Lago', mirador: 'Mirador', pueblo: 'Pueblo', other: 'Lugar',
   };
+  // Ícono por categoría: se usa cuando el lugar todavía no tiene foto.
+  const CAT_ICON: Record<string, string> = {
+    montaña: '<path d="M3 20l6-11 3 4 2-3 7 10z"></path>',
+    playa: '<path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 20c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"></path><circle cx="17" cy="6" r="2.5"></circle>',
+    lago: '<path d="M3 16c3-5 15-5 18 0-3 4-15 4-18 0z"></path><path d="M6 9l3-4 3 4M12 9l3-4 3 4"></path>',
+    mirador: '<circle cx="7" cy="14" r="3.5"></circle><circle cx="17" cy="14" r="3.5"></circle><path d="M10.5 14h3M5 10.5L7 5h3M19 10.5L17 5h-3"></path>',
+    pueblo: '<path d="M3 21h18M5 21V10l5-4 5 4v11M15 21v-7h4v7M9 21v-4h2v4"></path>',
+    histórico: '<path d="M3 21h18M5 21V11M9 21V11M15 21V11M19 21V11M3 11l9-6 9 6z"></path>',
+    cultura: '<path d="M12 3a9 9 0 100 18c1.1 0 1.5-.8 1.5-1.5 0-.9-.6-1.3-.6-2.1 0-.9.7-1.4 1.6-1.4H17a4 4 0 004-4c0-5-4-9-9-9z"></path><circle cx="7.5" cy="11" r="1"></circle><circle cx="10" cy="7" r="1"></circle><circle cx="15" cy="7.5" r="1"></circle>',
+    río: '<path d="M12 3c3 4 6 7.5 6 11a6 6 0 01-12 0c0-3.5 3-7 6-11z"></path>',
+    aventura: '<path d="M7 8a5 5 0 0110 0v12H7z"></path><path d="M9 4.5V3h6v1.5M7 13h10"></path>',
+    gastronomía: '<path d="M7 3v8M5 3v5a2 2 0 004 0V3M7 11v10M16 3c-1.7 0-3 2-3 5s1.3 4 3 4v9"></path>',
+    other: '<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle>',
+  };
+  const catIcon = (c: string, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c] || CAT_ICON.other}</svg>`;
+  // Horario o precio que no dicen nada concreto no se muestran.
+  const VAGUE = /^(todo el d[ií]a|de d[ií]a|abierto todo el d[ií]a|todos los d[ií]as|abierto|consult[aá].*|var[ií]a.*|n\/a|-)$/i;
+  const specific = (v?: string) => !!v && !VAGUE.test(v.trim());
+  const priceText = (v: string) => /^gratis$/i.test(v) ? 'Entrada gratis' : /^con costo$/i.test(v) ? 'Entrada con costo' : v;
 
   const $ = (id: string) => document.getElementById(id) as any;
   const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
@@ -721,7 +746,7 @@ const categories = [
       const r = ratingOf(p.id);
       const extra = userPos ? fmtKm(distanceKm(userPos, [p.lat, p.lng])) : (r ? `${starSvg}${r.avg.toFixed(1)}` : '');
       return `<li><button type="button" class="place-row" data-id="${esc(p.id)}">
-        ${photo ? `<img class="place-thumb" src="${photo}" alt="" loading="lazy">` : '<span class="place-thumb" aria-hidden="true"></span>'}
+        ${photo ? `<img class="place-thumb" src="${photo}" alt="" loading="lazy">` : `<span class="place-thumb thumb-icon" aria-hidden="true">${catIcon(p.category)}</span>`}
         <span style="min-width:0">
           <p class="place-name">${esc(p.name)}</p>
           <p class="place-meta">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
@@ -817,12 +842,12 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a la lista
       </button>` : ''}
-      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}">${cover.photo ? `<figcaption class="cover-credit">Portada de ${esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<button type="button" class="detail-photo photo-empty" data-first-photo><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><span>Todavía no hay fotos. Subí la primera y puede ser la portada.</span></button>`}
+      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}">${cover.photo ? `<figcaption class="cover-credit">Portada de ${esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty" aria-hidden="true">${catIcon(p.category, 40)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r
         ? `<p class="rating-line">${starSvg}<span><strong>${r.avg.toFixed(1)}</strong> de 5, ${r.count} ${r.count === 1 ? 'reseña' : 'reseñas'}</span></p>`
-        : '<p class="rating-line is-empty">¿Y vos, ya fuiste? Nadie ha contado su visita todavía.</p>'}
+        : '<p class="rating-line is-empty">Sin reseñas todavía</p>'}
       <div class="detail-actions">
         <a class="btn btn-primary" href="${directions}" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8z"></path></svg>
@@ -831,17 +856,17 @@ const categories = [
       </div>
       ${p.description ? `<p class="detail-desc">${esc(p.description)}</p>` : ''}
       <ul class="detail-facts">
-        ${p.schedule ? `<li>${icoClock}<span>${esc(p.schedule)}</span></li>` : ''}
-        ${p.price ? `<li>${icoTicket}<span>Entrada: ${esc(p.price)}</span></li>` : ''}
+        ${specific(p.schedule) ? `<li>${icoClock}<span>${esc(p.schedule!)}</span></li>` : ''}
+        ${specific(p.price) ? `<li>${icoTicket}<span>${esc(priceText(p.price!.trim()))}</span></li>` : ''}
         ${safeUrl(p.website) ? `<li>${icoLink}<a href="${safeUrl(p.website)}" target="_blank" rel="noopener" style="color:var(--link)">Sitio web</a></li>` : ''}
       </ul>
       ${p.recommendations?.length ? `<div class="tags">${p.recommendations.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
 
       <div class="section-head">
         <h3 class="section-title">Fotos de quienes fueron</h3>
-        <button type="button" class="btn btn-outline btn-sm" data-addphoto="${esc(p.id)}">Subir foto</button>
+        ${community.length ? `<button type="button" class="btn btn-outline btn-sm" data-addphoto="${esc(p.id)}">Subir foto</button>` : ''}
       </div>
-      <p class="section-help">La foto con más votos pasa a ser la portada del lugar. Un voto por persona.</p>
+      ${community.length ? '<p class="section-help">Votá por tu favorita: la más votada queda de portada.</p>' : ''}
       <input type="file" id="placePhotoInput" accept="image/*" class="sr-only" aria-label="Elegir foto para subir">
       <p id="photoStatus" class="field-help" aria-live="polite"></p>
       ${community.length ? `<div class="photo-grid">${community.map((ph, i) => {
@@ -854,7 +879,10 @@ const categories = [
             ${num(ph.votes)}
           </button>
         </div>`;
-      }).join('')}</div>` : '<p class="empty" style="margin-top:4px">Todavía nadie ha subido fotos. La primera que suba alguien puede ser la portada.</p>'}
+      }).join('')}</div>` : `<div class="empty-card">
+        <p>Nadie ha subido fotos de aquí todavía.</p>
+        <button type="button" class="btn btn-primary btn-sm" data-addphoto="${esc(p.id)}">Subí la primera</button>
+      </div>`}
       ${photos.length > 1 ? `<div class="gallery">${photos.slice(1, 7).map((u) => `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
 
       ${(() => {
@@ -882,9 +910,16 @@ const categories = [
           ${rv.comment ? `<p class="review-text">${esc(rv.comment)}</p>` : ''}
           ${rp.length ? `<div class="review-photos">${rp.map((u) => `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
         </div>`;
-      }).join('') : `<p class="empty" style="margin-top:4px">Todavía no hay reseñas de este lugar.</p><button type="button" class="btn btn-outline" data-review="${esc(p.id)}">Escribir la primera reseña</button>`}
+      }).join('') : `<div class="empty-card">
+        <p>Contá cómo te fue y ayudale a quien va por primera vez.</p>
+        <button type="button" class="btn btn-primary btn-sm" data-review="${esc(p.id)}">Escribí la primera reseña</button>
+      </div>`}
 
-      ${near.length ? `<h3 class="section-title">Cerca de aquí</h3>${near.map(({ x, d }) => `<button type="button" class="near-row" data-id="${esc(x.id)}"><span>${esc(x.name)}</span><span>${fmtKm(d)}</span></button>`).join('')}` : ''}
+      ${near.length ? `<h3 class="section-title">Cerca de aquí</h3><ul class="near-list">${near.map(({ x, d }) => { const ph = coverOf(x).url; return `<li><button type="button" class="near-row" data-id="${esc(x.id)}">
+          ${ph ? `<img class="place-thumb" src="${ph}" alt="" loading="lazy">` : `<span class="place-thumb thumb-icon" aria-hidden="true">${catIcon(x.category)}</span>`}
+          <span class="near-text"><span class="near-name">${esc(x.name)}</span><span class="place-meta">${esc(CATEGORY_NAMES[x.category] || 'Lugar')}</span></span>
+          <span class="near-km">${fmtKm(d)}</span>
+        </button></li>`; }).join('')}</ul>` : ''}
     `;
     $('listView').hidden = true;
     $('detailView').hidden = false;
@@ -979,7 +1014,7 @@ const categories = [
     document.querySelectorAll('#reviewForm [aria-invalid]').forEach((x) => x.removeAttribute('aria-invalid'));
     ($('reviewDate') as HTMLInputElement).value = new Date().toLocaleDateString('en-CA');
     ($('reviewDate') as HTMLInputElement).max = new Date().toLocaleDateString('en-CA');
-    $('verifyStatus').textContent = 'Opcional. Usa tu ubicación una sola vez y no la guarda.';
+    $('verifyStatus').textContent = 'Opcional: confirmamos que estás ahí y no guardamos tu ubicación.';
     $('verifyStatus').classList.remove('is-ok');
     $('reviewError').hidden = true;
     $('reviewLoginError').hidden = true;
@@ -1276,7 +1311,7 @@ const categories = [
       console.error('No se pudo votar:', err);
       votedPhotos.add(photoId);
       const sp = allPlaces.find((x) => x.id === ph.placeId);
-      if (sp && selectedId === sp.id) { renderDetail(sp); $('photoStatus').textContent = 'No se pudo contar tu voto. Puede que ya hayas votado por esta foto.'; }
+      if (sp && selectedId === sp.id) { renderDetail(sp); $('photoStatus').textContent = 'No se pudo contar tu voto. Puede que ya hayás votado por esta foto.'; }
     }
   }
 
