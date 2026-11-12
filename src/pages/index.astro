@@ -202,7 +202,17 @@ const categories = [
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg>
       </button>
     </div>
-    <p id="lbCap" class="lb-cap"></p>
+    <div class="lb-foot">
+      <a id="lbWho" class="lb-who" hidden>
+        <span id="lbAvatar" class="lb-avatar" aria-hidden="true"></span>
+        <span class="lb-who-txt"><small>Foto de</small><strong id="lbName"></strong></span>
+      </a>
+      <p id="lbCap" class="lb-cap"></p>
+      <button type="button" id="lbVote" class="lb-vote" hidden aria-pressed="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z"></path></svg>
+        <span id="lbVoteTxt"></span>
+      </button>
+    </div>
   </dialog>
 </Layout>
 
@@ -433,12 +443,34 @@ const categories = [
   .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); }
   .lb-prev { left: 16px; }
   .lb-next { right: 16px; }
-  .lb-cap { margin: 0; padding: 12px 22px calc(18px + env(safe-area-inset-bottom)); text-align: center; font-size: 15px; color: rgba(255,255,255,0.85); min-height: 22px; }
+  .lb-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 22px calc(18px + env(safe-area-inset-bottom)); min-height: 76px; }
+  .lb-cap { margin: 0; flex: 1; text-align: center; font-size: 15px; color: rgba(255,255,255,0.85); }
+  .lb-cap:empty { display: none; }
+  .lb-who { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 4px 14px 4px 4px; border-radius: 26px; color: #FFFFFF; text-decoration: none; }
+  .lb-who[hidden] { display: none; }
+  .lb-who:hover { background: rgba(255,255,255,0.1); }
+  .lb-who:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+  .lb-who:focus-visible { outline: 3px solid var(--plumaje); outline-offset: 2px; }
+  .lb-avatar { flex: none; width: 40px; height: 40px; border-radius: 20px; background: var(--plumaje); color: var(--rama); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; overflow: hidden; }
+  .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .lb-who-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+  .lb-who-txt small { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .lb-who-txt strong { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lb-vote { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; border: 2px solid rgba(255,255,255,0.35); border-radius: 24px; background: transparent; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; margin-left: auto; }
+  .lb-vote[hidden] { display: none; }
+  .lb-vote svg { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linejoin: round; }
+  .lb-vote:hover { border-color: #FFFFFF; }
+  .lb-vote:focus-visible { outline: 3px solid var(--plumaje); outline-offset: 2px; }
+  .lb-vote.is-voted { background: var(--plumaje); border-color: var(--plumaje); color: var(--rama); cursor: default; }
+  .lb-vote.is-voted svg { fill: currentColor; }
+  .lb-vote:disabled:not(.is-voted) { opacity: .6; }
   @media (max-width: 767px) {
     .lb-stage { padding: 0 8px; }
     .lb-nav { width: 40px; height: 40px; background: rgba(20,48,47,0.55); }
     .lb-prev { left: 10px; }
     .lb-next { right: 10px; }
+    .lb-foot { padding-left: 12px; padding-right: 12px; gap: 10px; }
+    .lb-vote { padding: 0 16px; }
   }
   @media (prefers-reduced-motion: reduce) { .lb-img { transition: none; } }
   .photo-cell a, .review-photos a, .gallery a { cursor: zoom-in; }
@@ -951,20 +983,49 @@ const categories = [
   const icoLink = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1M14 10a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"></path></svg>';
 
   // ---------- Visor de fotos ----------
-  interface LbItem { url: string; cap: string }
+  // photoId: foto de la comunidad (se puede votar). userId: se muestra quién la subió con enlace a su perfil.
+  interface LbItem { url: string; cap?: string; photoId?: string; userId?: string; userName?: string; userPhoto?: string }
   let lbItems: LbItem[] = [];
   let lbIndex = 0;
   const lb = $('lightbox') as HTMLDialogElement;
+  const lbPhoto = (it: LbItem) => (it.photoId ? Object.values(photosByPlace).flat().find((x) => x.id === it.photoId) : undefined);
   function lbShow(i: number) {
     if (!lbItems.length) return;
     lbIndex = Math.max(0, Math.min(lbItems.length - 1, i));
     const it = lbItems[lbIndex];
     const img = $('lbImg') as HTMLImageElement;
-    img.classList.add('is-loading');
-    img.onload = () => img.classList.remove('is-loading');
-    img.src = it.url; img.alt = it.cap || 'Foto';
+    if (img.getAttribute('src') !== it.url) {
+      img.classList.add('is-loading');
+      img.onload = () => img.classList.remove('is-loading');
+      img.src = it.url;
+    }
+    img.alt = it.userName ? `Foto de ${it.userName}` : (it.cap || 'Foto');
     $('lbCount').textContent = lbItems.length > 1 ? `${lbIndex + 1} de ${lbItems.length}` : '';
-    $('lbCap').textContent = it.cap || '';
+    // Quién la subió: enlace a su perfil.
+    const who = $('lbWho') as HTMLAnchorElement;
+    who.hidden = !it.userId;
+    if (it.userId) {
+      const name = it.userName || 'Visitante';
+      who.href = `/perfil?u=${encodeURIComponent(it.userId)}`;
+      who.setAttribute('aria-label', `Foto de ${name}. Ver su perfil`);
+      $('lbName').textContent = name;
+      const pic = safeUrl(it.userPhoto || '');
+      $('lbAvatar').innerHTML = pic ? `<img src="${pic}" alt="" referrerpolicy="no-referrer">` : esc(name.charAt(0).toUpperCase());
+    }
+    $('lbCap').textContent = it.userId ? '' : (it.cap || '');
+    // Votar: solo las fotos de la comunidad.
+    const ph = lbPhoto(it);
+    const vote = $('lbVote') as HTMLButtonElement;
+    vote.hidden = !ph;
+    if (ph) {
+      const voted = votedPhotos.has(ph.id);
+      const n = num(ph.votes);
+      vote.classList.toggle('is-voted', voted);
+      vote.setAttribute('aria-pressed', String(voted));
+      vote.disabled = voted;
+      $('lbVoteTxt').textContent = voted ? `Votaste · ${n}` : (n ? `Votar · ${n}` : 'Votar');
+      vote.setAttribute('aria-label', voted ? `Ya votaste por esta foto. ${n} ${n === 1 ? 'voto' : 'votos'}` : `Votar por esta foto. ${n} ${n === 1 ? 'voto' : 'votos'}`);
+    }
     ($('lbPrev') as HTMLButtonElement).disabled = lbIndex === 0;
     ($('lbNext') as HTMLButtonElement).disabled = lbIndex === lbItems.length - 1;
     $('lbPrev').hidden = $('lbNext').hidden = lbItems.length < 2;
@@ -978,6 +1039,14 @@ const categories = [
     lbShow(i);
     ($('lbClose') as HTMLElement).focus({ preventScroll: true });
   }
+  $('lbVote').addEventListener('click', async () => {
+    const it = lbItems[lbIndex];
+    if (!it?.photoId) return;
+    const vote = $('lbVote') as HTMLButtonElement;
+    vote.disabled = true;
+    await votePhoto(it.photoId);
+    if (lb.open) lbShow(lbIndex);
+  });
   $('lbClose').addEventListener('click', () => lb.close());
   $('lbPrev').addEventListener('click', () => lbShow(lbIndex - 1));
   $('lbNext').addEventListener('click', () => lbShow(lbIndex + 1));
@@ -996,7 +1065,7 @@ const categories = [
   });
   // Cualquier foto de la ficha abre el visor en vez de descargarse.
   const communityItems = (placeId: string): LbItem[] => (photosByPlace[placeId] || []).map((ph) => ({
-    url: safeUrl(ph.url), cap: `Foto de ${ph.userName || 'un visitante'} · ${num(ph.votes)} ${num(ph.votes) === 1 ? 'voto' : 'votos'}`,
+    url: safeUrl(ph.url), photoId: ph.id, userId: ph.userId, userName: ph.userName, userPhoto: ph.userPhoto,
   }));
   $('detailView').addEventListener('click', (e: Event) => {
     const t = e.target as HTMLElement;
@@ -1005,8 +1074,12 @@ const categories = [
       e.preventDefault();
       const i = Number(a.dataset.i) || 0;
       if (a.dataset.lb === 'ph' && selectedId) return openLightbox(communityItems(selectedId), i);
-      const group = a.closest('[data-lb-group]');
-      const items = [...(group?.querySelectorAll('a[data-lb]') || [a])].map((x) => ({ url: (x as HTMLAnchorElement).href, cap: (x as HTMLElement).dataset.cap || '' }));
+      const group = a.closest('[data-lb-group]') as HTMLElement | null;
+      const g = group?.dataset || {};
+      const items = [...(group?.querySelectorAll('a[data-lb]') || [a])].map((x) => ({
+        url: (x as HTMLAnchorElement).href, cap: (x as HTMLElement).dataset.cap || '',
+        userId: g.uid || undefined, userName: g.uname || undefined, userPhoto: g.upic || undefined,
+      }));
       return openLightbox(items, i);
     }
     if (t.matches('[data-lb-cover]') && selectedId) {
@@ -1058,7 +1131,7 @@ const categories = [
       </div>
       <p class="review-date">${rv.verified ? `<span class="verified">${icoCheck} Visita verificada</span>${rv.visitDate ? ' · ' : ''}` : ''}${rv.visitDate ? `Fue el ${esc(fmtDate(rv.visitDate))}` : ''}</p>
       ${rv.comment ? `<p class="review-text">${esc(rv.comment)}</p>` : ''}
-      ${rp.length ? `<div class="review-photos" data-lb-group>${rp.map((u, k) => `<a href="${u}" data-lb="grp" data-i="${k}" data-cap="Foto de ${esc(rv.userName || 'un visitante')}"><img src="${u}" alt="Foto de ${esc(rv.userName || 'un visitante')}" loading="lazy"></a>`).join('')}</div>` : ''}
+      ${rp.length ? `<div class="review-photos" data-lb-group data-uid="${esc(rv.userId || '')}" data-uname="${esc(rv.userName || 'Visitante')}" data-upic="${esc(safeUrl(rv.userPhoto || ''))}">${rp.map((u, k) => `<a href="${u}" data-lb="grp" data-i="${k}" data-cap="Foto de ${esc(rv.userName || 'un visitante')}"><img src="${u}" alt="Foto de ${esc(rv.userName || 'un visitante')}" loading="lazy"></a>`).join('')}</div>` : ''}
     </div>`;
   }
   // Promedio grande y cuántas reseñas hay de cada estrella.

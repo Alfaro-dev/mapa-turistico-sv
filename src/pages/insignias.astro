@@ -15,7 +15,7 @@ import GozMark from '../components/GozMark.astro';
   <main class="in">
     <div class="in-head">
       <h1 class="in-h1">Insignias</h1>
-      <p class="in-lead">Se ganan contando tus visitas: reseñas, fotos y lugares nuevos. Las de temporada duran solo unos días.</p>
+      <p id="inLead" class="in-lead">Se ganan contando tus visitas: reseñas, fotos y lugares nuevos. Las de temporada duran solo unos días.</p>
     </div>
 
     <section id="inLogin" class="in-card" hidden>
@@ -67,12 +67,23 @@ import GozMark from '../components/GozMark.astro';
   const $ = (id: string) => document.getElementById(id) as any;
   $('inLoginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
 
+  // /insignias?u=UID muestra las de otra persona.
+  const viewUid = new URLSearchParams(location.search).get('u') || '';
+  if (viewUid) {
+    const back = document.querySelector('.in-back') as HTMLAnchorElement;
+    back.href = `/perfil?u=${encodeURIComponent(viewUid)}`;
+    back.querySelector('span')!.textContent = 'Volver al perfil';
+  }
+  let shown = '';
   onAuthStateChanged(auth, async (user) => {
-    $('inLogin').hidden = !!user;
-    $('inLoading').hidden = !user;
-    if (!user) return;
+    const uid = viewUid || user?.uid || '';
+    $('inLogin').hidden = !!uid;
+    $('inLoading').hidden = !uid;
+    if (!uid || uid === shown) return;
+    shown = uid;
+    if (viewUid && user?.uid !== viewUid) $('inLead').textContent = 'Las que ya ganó, las que lleva en camino y las que le faltan.';
     try {
-      const data = await loadUserData(user.uid);
+      const data = await loadUserData(uid);
       const all = userBadges(data);
       const groups: [string, string, typeof all][] = [
         ['secEarned', 'listEarned', all.filter((b) => b.earned)],

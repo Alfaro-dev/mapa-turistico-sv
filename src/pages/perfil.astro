@@ -25,7 +25,7 @@ import GozMark from '../components/GozMark.astro';
         <span id="pfAvatar" class="pf-avatar" aria-hidden="true"></span>
         <div class="pf-who">
           <h1 id="pfName" class="pf-h1"></h1>
-          <p class="pf-sub">El Salvador, un país chiquito, pero no te lo acabás.</p>
+          <p id="pfSub" class="pf-sub">El Salvador, un país chiquito, pero no te lo acabás.</p>
         </div>
       </section>
 
@@ -39,7 +39,7 @@ import GozMark from '../components/GozMark.astro';
       <section class="pf-section" aria-labelledby="hBadges">
         <div class="pf-section-head">
           <h2 id="hBadges" class="pf-h2">Insignias</h2>
-          <a href="/insignias" class="pf-link">Ver todas las insignias</a>
+          <a href="/insignias" id="badgesAll" class="pf-link">Ver todas las insignias</a>
         </div>
         <p id="badgeCount" class="pf-muted"></p>
         <ul id="badges" class="bd-grid"></ul>
@@ -51,23 +51,23 @@ import GozMark from '../components/GozMark.astro';
 
       <section class="pf-section" aria-labelledby="hGallery">
         <div class="pf-section-head">
-          <h2 id="hGallery" class="pf-h2">Mi galería</h2>
+          <h2 id="hGallery" class="pf-h2">Galería</h2>
           <div class="pf-toggle" role="group" aria-label="Ver la galería como">
             <button type="button" id="viewGrid" aria-pressed="true">Cuadrícula</button>
             <button type="button" id="viewMap" aria-pressed="false">Mapa</button>
           </div>
         </div>
         <div id="galleryEmpty" class="pf-empty" hidden>
-          <p>Todavía no subiste fotos. Aparecen aquí cuando subís una desde un lugar.</p>
+          <p id="galleryEmptyTxt">Todavía no subiste fotos. Aparecen aquí cuando subís una desde un lugar.</p>
         </div>
         <ul id="gallery" class="pf-grid"></ul>
         <div id="galleryMap" class="pf-map" hidden role="region" aria-label="Mapa de tus fotos y lugares visitados"></div>
       </section>
 
       <section class="pf-section" aria-labelledby="hReviews">
-        <h2 id="hReviews" class="pf-h2">Mis reseñas</h2>
+        <h2 id="hReviews" class="pf-h2">Reseñas</h2>
         <div id="reviewsEmpty" class="pf-empty" hidden>
-          <p>Todavía no escribiste reseñas.</p>
+          <p id="reviewsEmptyTxt">Todavía no escribiste reseñas.</p>
         </div>
         <ul id="myReviews" class="pf-reviews"></ul>
       </section>
@@ -170,25 +170,53 @@ import GozMark from '../components/GozMark.astro';
   $('pfLoginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
   $('pfLogout').addEventListener('click', async () => { await signOut(auth); location.href = '/'; });
 
+  // /perfil?u=UID muestra el perfil público de otra persona (sus fotos, reseñas e insignias), sin pedir cuenta.
+  const viewUid = new URLSearchParams(location.search).get('u') || '';
+  let rendered = false;
+
+  async function loadAndRender(uid: string, user: any | null) {
+    $('pfLoading').hidden = false;
+    $('pfLogin').hidden = true;
+    $('pfBody').hidden = true;
+    try {
+      const data = await loadUserData(uid);
+      ({ places, reviews, photos } = data);
+      // De otra persona: el nombre y la foto salen de lo que publicó.
+      const src: any = photos[0] || reviews[0] || {};
+      const who = user || { displayName: src.userName || 'Visitante', photoURL: src.userPhoto || '' };
+      render(who, data.seasonal, !user);
+      rendered = true;
+    } catch (err) {
+      console.error(err);
+      $('pfLoading').textContent = 'No se pudo cargar este perfil. Revisá tu conexión y recargá la página.';
+    }
+  }
+
   onAuthStateChanged(auth, async (user) => {
-    $('pfLoading').hidden = !!user ? false : true;
+    if (viewUid && (!user || user.uid !== viewUid)) {
+      if (!rendered) loadAndRender(viewUid, null);
+      return;
+    }
+    rendered = false;
+    $('pfLoading').hidden = !user;
     $('pfLogin').hidden = !!user;
     $('pfBody').hidden = true;
     if (!user) return;
-    try {
-      const data = await loadUserData(user.uid);
-      ({ places, reviews, photos } = data);
-      render(user, data.seasonal);
-    } catch (err) {
-      console.error(err);
-      $('pfLoading').textContent = 'No se pudo cargar tu perfil. Revisá tu conexión y recargá la página.';
-    }
+    loadAndRender(user.uid, user);
   });
 
-  function render(user: any, seasonal: SeasonalBadge[]) {
+  function render(user: any, seasonal: SeasonalBadge[], isPublic = false) {
     $('pfLoading').hidden = true;
     $('pfBody').hidden = false;
     const name = user.displayName || 'Visitante';
+    document.title = isPublic ? `${name} · Goz` : 'Mi perfil · Goz';
+    $('pfLogout').hidden = isPublic;
+    $('badgesAll').href = isPublic ? `/insignias?u=${encodeURIComponent(viewUid)}` : '/insignias';
+    $('pfSub').textContent = isPublic ? 'Turista en Goz' : 'El Salvador, un país chiquito, pero no te lo acabás.';
+    $('galleryEmptyTxt').textContent = isPublic ? 'Todavía no ha subido fotos.' : 'Todavía no subiste fotos. Aparecen aquí cuando subís una desde un lugar.';
+    $('reviewsEmptyTxt').textContent = isPublic ? 'Todavía no ha escrito reseñas.' : 'Todavía no escribiste reseñas.';
+    $('badgesEmpty').querySelector('p').innerHTML = isPublic ? 'Todavía no ha ganado insignias.' : 'Escribí tu primera reseña y ganás <strong>Primer paso</strong>.';
+    ($('badgesEmpty').querySelector('a') as HTMLElement).hidden = isPublic;
     $('pfName').textContent = name;
     const pic = user.photoURL ? safeUrl(user.photoURL) : '';
     $('pfAvatar').innerHTML = pic ? `<img src="${pic}" alt="" referrerpolicy="no-referrer">` : esc(name.charAt(0).toUpperCase());
@@ -205,7 +233,7 @@ import GozMark from '../components/GozMark.astro';
     const mine = all.filter((b) => b.earned || b.count > 0 || b.seasonal)
       .sort((a, b) => Number(b.earned) - Number(a.earned) || (b.count / b.required) - (a.count / a.required));
     const earned = all.filter((b) => b.earned).length;
-    $('badgeCount').textContent = earned ? `Ganaste ${earned} de ${all.length}.` : '';
+    $('badgeCount').textContent = earned ? `${isPublic ? 'Ganó' : 'Ganaste'} ${earned} de ${all.length}.` : '';
     $('badgeCount').hidden = !earned;
     $('badges').innerHTML = mine.map((b) => badgeCard(b, seasonalTag(b, seasonal))).join('');
     $('badges').hidden = !mine.length;
@@ -215,7 +243,7 @@ import GozMark from '../components/GozMark.astro';
     const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';
     $('galleryEmpty').hidden = photos.length > 0;
     $('gallery').innerHTML = photos.map((ph) => `<li>
-      <a href="/#${encodeURIComponent(ph.placeId)}"><img src="${safeUrl(ph.url)}" alt="Tu foto en ${esc(placeName(ph.placeId) || ph.placeName || 'un lugar')}" loading="lazy"></a>
+      <a href="/#${encodeURIComponent(ph.placeId)}"><img src="${safeUrl(ph.url)}" alt="Foto en ${esc(placeName(ph.placeId) || ph.placeName || 'un lugar')}" loading="lazy"></a>
       <span class="pf-grid-meta"><span>${esc(placeName(ph.placeId) || ph.placeName || '')}</span><span class="pf-votes" aria-label="${num(ph.votes)} ${num(ph.votes) === 1 ? 'voto' : 'votos'}"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.6C12 6.1 13.6 5 15.6 5 19 5 21.1 8.4 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>${num(ph.votes)}</span></span>
     </li>`).join('');
 
