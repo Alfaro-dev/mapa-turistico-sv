@@ -50,8 +50,8 @@ const categories = [
         <div class="ad-head"><div><h1 class="ad-h1">Resumen</h1><p class="ad-muted" id="today"></p></div></div>
         <h2 class="ad-h2">Para hacer hoy</h2>
         <div class="ad-todo">
-          <a href="#negocios" class="ad-todo-card is-hot"><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
-          <a href="#resenas" class="ad-todo-card is-hot"><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#negocios" class="ad-todo-card" data-hot><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#resenas" class="ad-todo-card" data-hot><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes vencidos o por vencer (7 días)</span><span class="ad-todo-go">Ver pagos</span></a>
           <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares con problemas</span><span class="ad-todo-go">Corregir</span></a>
         </div>
@@ -428,7 +428,8 @@ const categories = [
     if (/various|variou/i.test(p.municipality || '') || /\.[a-z]/.test(p.description || '')) out.push('Datos con errores de texto');
     return out;
   }
-  const problemPlaces = () => places.filter((p) => issuesOf(p).length);
+  // "No tiene foto" se muestra como aviso, pero no cuenta como problema: las fotos las suben los turistas.
+  const problemPlaces = () => places.filter((p) => issuesOf(p).some((i) => i !== 'No tiene foto'));
 
   function renderAll() {
     const pendingBiz = businesses.filter((b) => b.status === 'pending');
@@ -442,6 +443,8 @@ const categories = [
     $('today').textContent = new Date().toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
     $('tdBiz').textContent = pendingBiz.length; $('tdReviews').textContent = newReviews.length;
     $('tdPlans').textContent = businesses.filter((b) => isPaidPlan(b) && planDays(b) <= 7).length; $('tdPlaces').textContent = probs.length;
+    // Solo se resalta lo que tiene algo pendiente.
+    document.querySelectorAll('.ad-todo-card').forEach((c) => c.classList.toggle('is-hot', Number(c.querySelector('.ad-num')?.textContent) > 0));
     const active = businesses.filter((b) => b.status !== 'pending' && b.status !== 'rejected');
     $('stPlaces').textContent = places.length; $('stBiz').textContent = active.length;
     const dest = active.filter((b) => b.plan === 'destacado' || (b.featured && b.plan !== 'pro')).length;
