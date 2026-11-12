@@ -1024,6 +1024,8 @@ const categories = [
       const data: Review & Record<string, any> = {
         placeId: reviewPlace.id,
         placeName: reviewPlace.name,
+        placeLat: reviewPlace.lat,
+        placeLng: reviewPlace.lng,
         userId: currentUser.uid,
         // Las reseñas son públicas: se guarda el nombre y la foto de perfil, nunca el correo.
         userName: currentUser.displayName || 'Visitante',
