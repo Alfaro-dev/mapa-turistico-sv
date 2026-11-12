@@ -59,7 +59,7 @@ export function computeBadges(
     { id: 'first_checkin', name: 'Primer paso', description: 'Tu primera reseña', icon: 'bandera', count: reviews.length, required: 1 },
     { id: 'volcano_conqueror', name: 'Conquistador de volcanes', description: 'Reseña en 3 volcanes distintos', icon: 'volcan', count: distinct('montaña'), required: 3 },
     { id: 'salt_life', name: 'Vida de sal', description: 'Reseña en 5 playas distintas', icon: 'ola', count: distinct('playa'), required: 5 },
-    { id: 'mountain_chill', name: 'Chill de montaña', description: 'Reseña en 3 lagos distintos', icon: 'lago', count: distinct('lago'), required: 3 },
+    { id: 'mountain_chill', name: 'Chill de laguna', description: 'Reseña en 3 lagos distintos', icon: 'lago', count: distinct('lago'), required: 3 },
     { id: 'pupusa_lover', name: 'Amante de pupusas', description: 'Reseña en 5 lugares de comida distintos', icon: 'pupusa', count: distinct('gastronomía'), required: 5 },
     { id: 'local_foodie', name: 'Foodie local', description: '10 reseñas de comida', icon: 'comida', count: reviews.filter((r) => catOf[r.placeId] === 'gastronomía').length, required: 10 },
     { id: 'early_bird', name: 'Madrugador', description: '5 reseñas antes de las 7 a. m.', icon: 'sol', count: byHour((h) => h < 7), required: 5 },
