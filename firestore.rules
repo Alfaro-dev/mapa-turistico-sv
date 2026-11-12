@@ -173,18 +173,30 @@ service cloud.firestore {
 
     match /coupons/{couponId} {
       allow read: if true;
-      allow create: if ownsBusiness(request.resource.data.businessId);
+      allow create: if ownsBusiness(request.resource.data.businessId)
+        && request.resource.data.get('usedCount', 0) == 0;
       allow update: if (ownsBusiness(resource.data.businessId)
-                        && request.resource.data.businessId == resource.data.businessId)
-        // Al canjear, cualquier usuario con sesión suma 1 uso.
-        || (signedIn() && onlyChanges(['usedCount']) && bumpedByOne('usedCount'));
+                        && request.resource.data.businessId == resource.data.businessId
+                        && request.resource.data.get('usedCount', 0) == resource.data.get('usedCount', 0))
+        // Al canjear: +1, solo si en la misma escritura se crea el canje {cupón}_{usuario}
+        // y no se pasa del máximo (0 = sin límite).
+        || (signedIn()
+            && onlyChanges(['usedCount'])
+            && bumpedByOne('usedCount')
+            && (resource.data.get('maxUses', 0) == 0 || request.resource.data.usedCount <= resource.data.maxUses)
+            && !exists(/databases/$(database)/documents/couponRedemptions/$(couponId + '_' + request.auth.uid))
+            && existsAfter(/databases/$(database)/documents/couponRedemptions/$(couponId + '_' + request.auth.uid)));
       allow delete: if ownsBusiness(resource.data.businessId) || isAdmin();
     }
 
     match /couponRedemptions/{redemptionId} {
       // Lo leen usuarios con sesión: el usuario ve sus canjes y el negocio los de sus cupones.
       allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && redemptionId == request.resource.data.couponId + '_' + request.auth.uid
+        && getAfter(/databases/$(database)/documents/coupons/$(request.resource.data.couponId)).data.get('usedCount', 0)
+           == get(/databases/$(database)/documents/coupons/$(request.resource.data.couponId)).data.get('usedCount', 0) + 1;
       allow update: if false;
       allow delete: if isAdmin();
     }

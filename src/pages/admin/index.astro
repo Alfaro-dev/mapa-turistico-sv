@@ -52,7 +52,7 @@ const categories = [
         <div class="ad-todo">
           <a href="#negocios" class="ad-todo-card is-hot"><span class="ad-num" id="tdBiz">0</span><span class="ad-todo-label">Negocios por aprobar</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#resenas" class="ad-todo-card is-hot"><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
-          <a href="#resenas" class="ad-todo-card"><span class="ad-num" id="tdPhotos">0</span><span class="ad-todo-label">Fotos de los últimos 7 días</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes vencidos o por vencer (7 días)</span><span class="ad-todo-go">Ver pagos</span></a>
           <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares con problemas</span><span class="ad-todo-go">Corregir</span></a>
         </div>
         <h2 class="ad-h2">En Goz hoy</h2>
@@ -82,6 +82,7 @@ const categories = [
         <div class="ad-filters" role="group" aria-label="Filtrar negocios">
           <button type="button" class="ad-filter" data-bizfilter="pending" aria-pressed="true">Por aprobar</button>
           <button type="button" class="ad-filter" data-bizfilter="active" aria-pressed="false">Activos</button>
+          <button type="button" class="ad-filter" data-bizfilter="paid" aria-pressed="false">Planes pagados</button>
           <button type="button" class="ad-filter" data-bizfilter="rejected" aria-pressed="false">Rechazados</button>
         </div>
         <div class="ad-split">
@@ -279,6 +280,7 @@ const categories = [
   .ad-photos li { display: flex; flex-direction: column; gap: 4px; }
   .ad-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--photo); }
   .ad-photos p { margin: 0; font-size: 12px; color: var(--muted); }
+  .ad-plan { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: var(--neblina); }
   .ad-minimap { height: 180px; border-radius: 12px; overflow: hidden; }
   .ad-biz-top { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
   .ad-biz-photo { width: 180px; height: 120px; border-radius: 14px; object-fit: cover; background: var(--photo); }
@@ -399,7 +401,7 @@ const categories = [
 
     $('today').textContent = new Date().toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
     $('tdBiz').textContent = pendingBiz.length; $('tdReviews').textContent = newReviews.length;
-    $('tdPhotos').textContent = newPhotos.length; $('tdPlaces').textContent = probs.length;
+    $('tdPlans').textContent = businesses.filter((b) => isPaidPlan(b) && planDays(b) <= 7).length; $('tdPlaces').textContent = probs.length;
     const active = businesses.filter((b) => b.status !== 'pending' && b.status !== 'rejected');
     $('stPlaces').textContent = places.length; $('stBiz').textContent = active.length;
     const dest = active.filter((b) => b.plan === 'destacado' || (b.featured && b.plan !== 'pro')).length;
@@ -438,6 +440,7 @@ const categories = [
   // Borrar pide un segundo toque en el mismo botón (sin ventanas del navegador).
   document.addEventListener('click', async (e) => {
     const t = e.target as HTMLElement;
+    if (t.closest('[data-plans-link]')) { bizFilter = 'paid'; selBiz = null; setTimeout(() => renderBizList(), 0); }
     const openBiz = t.closest('[data-open-biz]') as HTMLElement | null;
     if (openBiz) { selBiz = openBiz.dataset.openBiz!; bizFilter = 'pending'; setTimeout(() => { renderBizList(); renderBizDetail(); }, 0); }
     const del = t.closest('[data-del]') as HTMLButtonElement | null;
@@ -463,21 +466,43 @@ const categories = [
     bizFilter = (b as HTMLElement).dataset.bizfilter!; selBiz = null; renderBizList(); renderBizDetail();
   }));
   const bizState = (b: any) => b.status === 'pending' ? 'pending' : b.status === 'rejected' ? 'rejected' : 'active';
+  // ---------- Planes ----------
+  const PLANS: Record<string, { label: string; price: string }> = {
+    basico: { label: 'Básico', price: 'Gratis' },
+    destacado: { label: 'Destacado', price: '$9.99 al mes' },
+    pro: { label: 'Pro', price: '$24.99 al mes' },
+  };
+  const isPaidPlan = (b: any) => bizState(b) === 'active' && (b.plan === 'destacado' || b.plan === 'pro');
+  const todayIso = () => new Date().toLocaleDateString('en-CA');
+  // Días que faltan para que venza el plan (negativo = vencido; sin fecha = muchos).
+  const planDays = (b: any) => b.planUntil ? Math.round((Date.parse(b.planUntil) - Date.parse(todayIso())) / 864e5) : 9999;
+  const planLabel = (b: any) => {
+    if (!isPaidPlan(b)) return 'Básico';
+    const d = planDays(b);
+    return `${PLANS[b.plan].label} · ${d < 0 ? `vencido hace ${-d} días` : d === 9999 ? 'sin fecha' : d === 0 ? 'vence hoy' : `vence en ${d} días`}`;
+  };
+  const inFilter = (b: any) => bizFilter === 'paid' ? isPaidPlan(b) : bizState(b) === bizFilter;
+  function addPeriod(fromIso: string, months: number) {
+    const base = fromIso && fromIso > todayIso() ? new Date(fromIso + 'T12:00:00') : new Date();
+    base.setMonth(base.getMonth() + months);
+    return base.toLocaleDateString('en-CA');
+  }
   function renderBizList() {
     document.querySelectorAll('[data-bizfilter]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.bizfilter === bizFilter)));
-    const list = businesses.filter((b) => bizState(b) === bizFilter);
+    const list = businesses.filter(inFilter).sort((a, b2) => bizFilter === 'paid' ? planDays(a) - planDays(b2) : 0);
     if (!selBiz && list[0]) selBiz = list[0].id;
     $('bizList').innerHTML = list.map((b) => `<li><button type="button" class="ad-item${b.id === selBiz ? ' is-active' : ''}" data-biz="${esc(b.id)}">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
       <span class="ad-item-main"><span class="ad-item-title">${esc(b.name)}</span>
-      <span class="ad-item-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</span></span>
+      <span class="ad-item-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''}${ago(b.createdAt) ? ` · ${ago(b.createdAt)}` : ''}</span>
+      ${bizFilter !== 'pending' ? `<span class="ad-tags"><span class="ad-tag${isPaidPlan(b) && planDays(b) > 7 ? ' ad-tag-ok' : ''}">${esc(planLabel(b))}</span></span>` : ''}</span>
     </button></li>`).join('') || `<li class="ad-empty">${bizFilter === 'pending' ? 'No hay negocios esperando aprobación.' : 'No hay negocios aquí.'}</li>`;
     $('bizList').querySelectorAll('[data-biz]').forEach((el: HTMLElement) => el.addEventListener('click', () => { selBiz = el.dataset.biz!; renderBizList(); renderBizDetail(); }));
     renderBizDetail();
   }
   let miniMap: any = null;
   function renderBizDetail() {
-    const b = businesses.find((x) => x.id === selBiz && bizState(x) === bizFilter);
+    const b = businesses.find((x) => x.id === selBiz && inFilter(x));
     if (!b) { $('bizDetail').innerHTML = '<p class="ad-muted">Elegí un negocio de la lista.</p>'; return; }
     const wa = String(b.whatsapp || b.phone || '').replace(/\D/g, '');
     const waUrl = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}.`)}` : '';
@@ -495,7 +520,7 @@ const categories = [
       </div>
       <div class="ad-two">
         <div><p class="ad-field-label">Ubicación que marcó</p><div id="bizMiniMap" class="ad-minimap" role="region" aria-label="Ubicación del negocio"></div></div>
-        <div>
+        <div${st === 'active' ? ' hidden' : ''}>
           <p class="ad-field-label">Antes de aprobar</p>
           <label class="ad-check"><input type="checkbox">El punto está en el lugar correcto</label>
           <label class="ad-check"><input type="checkbox">Las fotos son del negocio</label>
@@ -503,6 +528,19 @@ const categories = [
           ${waUrl ? `<a class="ad-btn ad-btn-outline ad-btn-sm" href="${waUrl}" target="_blank" rel="noopener">Escribirle por WhatsApp</a>` : ''}
         </div>
       </div>
+      ${st === 'active' ? `<section class="ad-plan">
+        <p class="ad-field-label">Plan y pagos</p>
+        <p class="ad-muted">Ahora: ${esc(planLabel(b))}. Registrá el pago cuando lo recibas; al vencer, deja de salir como Destacado.</p>
+        <div class="ad-grid2">
+          <div class="ad-field"><label for="planSel">Plan</label><select id="planSel">${Object.entries(PLANS).map(([k, v]) => `<option value="${k}"${(b.plan || 'basico') === k ? ' selected' : ''}>${v.label} · ${v.price}</option>`).join('')}</select></div>
+          <div class="ad-field"><label for="planUntil">Pagado hasta</label><input id="planUntil" type="date" value="${esc(b.planUntil || '')}"></div>
+        </div>
+        <div class="ad-actions" style="border-top:0;padding-top:0">
+          <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-addmonths="1">Pagó 1 mes</button>
+          <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-addmonths="12">Pagó 1 año</button>
+          <button type="button" class="ad-btn ad-btn-primary ad-btn-sm" id="savePlan">Guardar plan</button>
+        </div>
+      </section>` : ''}
       <p id="bizStatus" class="ad-status" role="status"></p>
       <div class="ad-actions">
         ${st !== 'active' ? '<button type="button" class="ad-btn ad-btn-primary" data-setstatus="active">Aprobar y publicar</button>' : ''}
@@ -519,6 +557,21 @@ const categories = [
         selBiz = null; renderAll();
       } catch (err) { console.error(err); btn.disabled = false; $('bizStatus').textContent = 'No se pudo guardar. Revisá tu conexión.'; $('bizStatus').classList.add('is-error'); }
     }));
+    $('bizDetail').querySelectorAll('[data-addmonths]').forEach((btn: HTMLButtonElement) => btn.addEventListener('click', () => {
+      $('planUntil').value = addPeriod($('planUntil').value || b.planUntil || '', Number(btn.dataset.addmonths));
+      if ($('planSel').value === 'basico') $('planSel').value = 'destacado';
+    }));
+    $('savePlan')?.addEventListener('click', async () => {
+      const plan = $('planSel').value;
+      const planUntil = plan === 'basico' ? '' : $('planUntil').value;
+      if (plan !== 'basico' && !planUntil) { $('bizStatus').textContent = 'Poné hasta qué fecha está pagado.'; $('bizStatus').classList.add('is-error'); return; }
+      try {
+        await updateDoc(doc(db, 'businesses', b.id), { plan, planUntil, featured: plan !== 'basico', planUpdatedAt: serverTimestamp() });
+        Object.assign(b, { plan, planUntil, featured: plan !== 'basico' });
+        renderAll();
+        $('bizStatus').textContent = plan === 'basico' ? 'Plan Básico guardado.' : `Plan ${PLANS[plan].label} pagado hasta el ${planUntil}.`;
+      } catch (err) { console.error(err); $('bizStatus').textContent = 'No se pudo guardar el plan.'; $('bizStatus').classList.add('is-error'); }
+    });
     if (miniMap) { miniMap.remove(); miniMap = null; }
     if (typeof L !== 'undefined' && Number.isFinite(Number(b.lat))) {
       miniMap = L.map('bizMiniMap', { zoomControl: false, attributionControl: false }).setView([Number(b.lat), Number(b.lng)], 15);

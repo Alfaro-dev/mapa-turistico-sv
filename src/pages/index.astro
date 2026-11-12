@@ -320,6 +320,15 @@ const categories = [
   .biz-thumb { display: flex; align-items: center; justify-content: center; color: var(--canela); background: #F6E3D6; }
   .biz-promo { font-size: 13px; font-weight: 700; color: #8A3A10; }
   .tag-featured { display: inline-block; vertical-align: middle; margin-left: 4px; padding: 2px 8px; border-radius: 10px; background: var(--plumaje); color: var(--rama); font-size: 11px; font-weight: 800; }
+  .coupons { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .coupon { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 14px; border-radius: 14px; border: 2px dashed var(--canela); background: #FFF8F2; }
+  .coupon-main { flex: 1 1 200px; min-width: 0; }
+  .coupon-off { display: inline-block; padding: 2px 10px; border-radius: 10px; background: var(--canela); color: #FFFFFF; font-size: 13px; font-weight: 800; }
+  .coupon-title { margin: 6px 0 0; font-size: 16px; font-weight: 800; color: var(--ink); }
+  .coupon-desc { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .coupon-code { margin: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: var(--ink); }
+  .coupon-code strong { font-family: var(--font-display); font-size: 22px; letter-spacing: 1px; color: var(--canela); }
+  .coupon-code span { font-size: 12px; color: var(--muted); }
   .promo-banner { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: #FDF1D3; color: var(--rama); font-size: 14px; }
   .cover { margin: 0; position: relative; }
   .cover-credit { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 12px; background: rgba(20,48,47,0.78); color: #FFFFFF; font-size: 12px; font-weight: 800; }
@@ -462,7 +471,7 @@ const categories = [
   interface Business {
     id: string; name: string; category: string; lat: number; lng: number; placeId?: string; placeName?: string;
     description?: string; address?: string; phone?: string; whatsapp?: string; menu?: string; schedule?: string;
-    coverUrl?: string; photos?: string[]; promoToday?: string; featured?: boolean; plan?: string; status?: string;
+    coverUrl?: string; photos?: string[]; promoToday?: string; featured?: boolean; plan?: string; planUntil?: string; status?: string;
   }
   const BIZ_NAMES: Record<string, string> = { hotel: 'Hospedaje', restaurante: 'Restaurante', cafeteria: 'Cafetería', tienda: 'Tienda', otro: 'Negocio' };
   const BIZ_ICON: Record<string, string> = {
@@ -473,7 +482,21 @@ const categories = [
     otro: '<path d="M4 10l2-5h12l2 5M5 10v9h14v-9M4 10h16"></path>',
   };
   const bizIcon = (c: string, size = 16) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${BIZ_ICON[c] || BIZ_ICON.otro}</svg>`;
-  const isFeatured = (b: Business) => !!b.featured || b.plan === 'destacado' || b.plan === 'pro';
+  // Destacado o Pro, con el plan pagado al día (planUntil = AAAA-MM-DD; sin fecha = sin vencimiento).
+  const isFeatured = (b: Business) => {
+    const paid = !b.planUntil || b.planUntil >= new Date().toLocaleDateString('en-CA');
+    return paid && (!!b.featured || b.plan === 'destacado' || b.plan === 'pro');
+  };
+  interface Coupon { id: string; businessId: string; title: string; description?: string; discount?: string; code?: string; validFrom?: string; validUntil?: string; maxUses?: number; usedCount?: number; active?: boolean; }
+  let couponsByBiz: Record<string, Coupon[]> = {};
+  let myRedemptions = new Set<string>();
+  const couponOk = (c: Coupon) => {
+    const now = Date.now();
+    return c.active !== false
+      && (!c.validFrom || Date.parse(c.validFrom) <= now)
+      && (!c.validUntil || Date.parse(c.validUntil) >= now)
+      && (!num(c.maxUses) || num(c.usedCount) < num(c.maxUses));
+  };
   let allBusinesses: Business[] = [];
   let selectedBizId: string | null = null;
   let bizFromPlace: string | null = null;
@@ -895,11 +918,17 @@ const categories = [
     if (user) {
       try { $('adminLink').hidden = !(await getDoc(doc(db, 'admins', user.uid))).exists(); } catch { /* no es admin */ }
       try {
+        myRedemptions = new Set();
+        const rs = await getDocs(query(collection(db, 'couponRedemptions'), where('userId', '==', user.uid)));
+        rs.docs.forEach((d) => myRedemptions.add(d.data().couponId));
+      } catch { /* sin canjes */ }
+      try {
         const vs = await getDocs(query(collection(db, 'photoVotes'), where('userId', '==', user.uid)));
         vs.docs.forEach((d) => votedPhotos.add(d.data().photoId));
       } catch { /* sin votos */ }
     }
     if (selectedId) { const sp = allPlaces.find((x) => x.id === selectedId); if (sp) renderDetail(sp); }
+    if (selectedBizId) { const sb = allBusinesses.find((x) => x.id === selectedBizId); if (sb) renderBusinessDetail(sb); }
     if (dialog.open && reviewPlace) showReviewStep();
   });
 
@@ -1119,14 +1148,50 @@ const categories = [
         ${phone ? `<li>${icoPhone}<a href="tel:${esc(phone)}" style="color:var(--link)">${esc(b.phone || '')}</a></li>` : ''}
         ${safeUrl(b.menu) ? `<li>${icoLink}<a href="${safeUrl(b.menu)}" target="_blank" rel="noopener" style="color:var(--link)">Ver el menú</a></li>` : ''}
       </ul>
+      ${(couponsByBiz[b.id] || []).filter(couponOk).length ? `<h3 class="section-title">Cupones</h3>
+        <ul class="coupons">${(couponsByBiz[b.id] || []).filter(couponOk).map((c) => {
+          const mine = myRedemptions.has(c.id);
+          return `<li class="coupon">
+            <div class="coupon-main">
+              ${c.discount ? `<span class="coupon-off">${esc(c.discount)}</span>` : ''}
+              <p class="coupon-title">${esc(c.title)}</p>
+              ${c.description ? `<p class="coupon-desc">${esc(c.description)}</p>` : ''}
+              ${c.validUntil ? `<p class="coupon-desc">Válido hasta el ${esc(fmtDate(String(c.validUntil).slice(0, 10)))}</p>` : ''}
+            </div>
+            ${mine
+              ? `<p class="coupon-code">Tu código: <strong>${esc(c.code || '')}</strong><span>Mostralo al pagar en el negocio.</span></p>`
+              : `<button type="button" class="btn btn-primary btn-sm" data-coupon="${esc(c.id)}">Obtener cupón</button>`}
+          </li>`;
+        }).join('')}</ul><p id="couponStatus" class="field-help" aria-live="polite"></p>` : ''}
       ${photos.length > 1 ? `<div class="gallery">${photos.slice(1, 7).map((u) => `<a href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
     `;
     $('listView').hidden = true;
     $('detailView').hidden = false;
     $('panelBody').scrollTop = 0;
     $('backBtn')?.addEventListener('click', () => { if (from) selectPlace(from.id, { count: false }); });
+    $('detailView').querySelectorAll('[data-coupon]').forEach((btn: HTMLButtonElement) => btn.addEventListener('click', () => redeemCoupon(b, btn.dataset.coupon!, btn)));
     $('waBtn')?.addEventListener('click', () => bumpBiz(b.id, 'clickCount'));
     if (!isMobile()) ($('detailTitle') as HTMLElement).focus({ preventScroll: true });
+  }
+
+  // Un cupón por persona: el canje es couponRedemptions/{cupón}_{usuario} y va junto con el +1.
+  async function redeemCoupon(b: Business, couponId: string, btn: HTMLButtonElement) {
+    if (!currentUser && !(await login())) return;
+    if (myRedemptions.has(couponId)) { renderBusinessDetail(b); return; }
+    btn.disabled = true; btn.textContent = 'Un momento…';
+    try {
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'couponRedemptions', `${couponId}_${currentUser.uid}`), { couponId, businessId: b.id, userId: currentUser.uid, userName: currentUser.displayName || 'Visitante', redeemedAt: new Date().toISOString() });
+      batch.update(doc(db, 'coupons', couponId), { usedCount: increment(1) });
+      await batch.commit();
+      myRedemptions.add(couponId);
+      const c = (couponsByBiz[b.id] || []).find((x) => x.id === couponId); if (c) c.usedCount = num(c.usedCount) + 1;
+      renderBusinessDetail(b);
+    } catch (err) {
+      console.error('No se pudo obtener el cupón:', err);
+      btn.disabled = false; btn.textContent = 'Obtener cupón';
+      if ($('couponStatus')) $('couponStatus').textContent = 'No se pudo obtener el cupón. Puede que ya se hayan acabado o que ya lo tengás.';
+    }
   }
 
   // ---------- Fotos y votos ----------
@@ -1252,6 +1317,11 @@ const categories = [
           .map((b) => ({ ...b, lat: Number(b.lat), lng: Number(b.lng) }))
           .filter((b) => b.status !== 'pending' && b.status !== 'rejected');
         renderBizMarkers(); updateBizLayer();
+        getDocs(collection(db, 'coupons')).then((cs) => {
+          couponsByBiz = {};
+          cs.docs.forEach((d) => { const c = { id: d.id, ...d.data() } as Coupon; (couponsByBiz[c.businessId] ||= []).push(c); });
+          if (selectedBizId) { const sb = allBusinesses.find((x) => x.id === selectedBizId); if (sb) renderBusinessDetail(sb); }
+        }).catch(() => { /* sin cupones */ });
         const h = decodeURIComponent(location.hash.slice(1));
         if (h.startsWith('b-')) selectBusiness(h.slice(2));
         else if (selectedId) { const sp = allPlaces.find((x) => x.id === selectedId); if (sp) renderDetail(sp); }
