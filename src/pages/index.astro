@@ -162,8 +162,8 @@ const categories = [
         </label>
       </div>
 
-      <p id="reviewError" class="form-error" hidden></p>
       <div class="review-actions">
+        <p id="reviewError" class="form-error" role="alert" hidden></p>
         <button type="submit" id="reviewSubmit" class="btn btn-primary">Publicar reseña</button>
         <p class="field-help">Se publica con tu nombre: <strong id="reviewAs"></strong></p>
       </div>
@@ -251,6 +251,7 @@ const categories = [
   .photo-add { align-self: flex-start; cursor: pointer; }
   .review-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
   .review-actions .btn { align-self: stretch; }
+  .review-actions .form-error { align-self: stretch; margin-bottom: 6px; }
   .verified { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 800; color: var(--turquesa); }
   .review-avatar { width: 28px; height: 28px; border-radius: 14px; object-fit: cover; background: var(--neblina); flex-shrink: 0; }
   .review-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
