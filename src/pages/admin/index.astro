@@ -69,7 +69,6 @@ const categories = [
           </section>
           <section class="ad-card">
             <div class="ad-card-head"><h2 class="ad-h2">Esperando aprobación</h2><a href="#negocios">Ver todos</a></div>
-            <p class="ad-muted">No salen en el mapa hasta que los aprobés.</p>
             <ul id="sumBiz" class="ad-rows"></ul>
           </section>
         </div>
@@ -458,7 +457,7 @@ const categories = [
     $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
       <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
-      <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente.</li>';
+      <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente. Los negocios nuevos no salen en el mapa hasta que los aprobés.</li>';
     renderBizList(); renderModeration(); renderPlaceList(); renderSeason();
   }
 
@@ -650,7 +649,7 @@ const categories = [
 
   // ---------- Lugares ----------
   document.querySelectorAll('[data-placefilter]').forEach((b) => b.addEventListener('click', () => {
-    placeFilter = (b as HTMLElement).dataset.placefilter!; renderPlaceList();
+    placeFilter = (b as HTMLElement).dataset.placefilter!; placeFilterChosen = true; renderPlaceList();
   }));
   $('placeSearch').addEventListener('input', renderPlaceList);
   function filteredPlaces() {
@@ -659,7 +658,10 @@ const categories = [
       .filter((p) => !q || [p.name, p.municipality, p.department].some((v) => normalize(v).includes(q)));
   }
   const firstPlaceOfFilter = () => filteredPlaces()[0]?.id || null;
+  let placeFilterChosen = false;
   function renderPlaceList() {
+    // Si no hay nada por corregir, se muestran todos (una lista vacía no ayuda).
+    if (!placeFilterChosen && placeFilter === 'problems' && !problemPlaces().length) placeFilter = 'all';
     document.querySelectorAll('[data-placefilter]').forEach((b) => {
       const f = (b as HTMLElement).dataset.placefilter;
       b.setAttribute('aria-pressed', String(f === placeFilter));
@@ -674,7 +676,7 @@ const categories = [
         <span class="ad-item-main"><span class="ad-item-title">${esc(p.name)}</span>
         ${is.length ? `<span class="ad-tags">${is.slice(0, 2).map((x) => `<span class="ad-tag${NOTICES.includes(x) ? ' is-notice' : ''}">${esc(x)}</span>`).join('')}</span>` : `<span class="ad-item-meta">${esc(CAT[p.category] || '')} · ${esc(p.department || '')}</span>`}</span>
       </button></li>`;
-    }).join('') || '<li class="ad-empty">Ningún lugar coincide.</li>';
+    }).join('') || `<li class="ad-empty">${placeFilter === 'problems' && !$('placeSearch').value ? 'Todo en orden: no hay lugares por corregir.' : 'Ningún lugar coincide con la búsqueda.'}</li>`;
     $('placeList').querySelectorAll('[data-place]').forEach((el: HTMLElement) => el.addEventListener('click', () => openPlace(el.dataset.place!)));
   }
 
