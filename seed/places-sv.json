@@ -118,7 +118,7 @@
    "Festival de las Flores y las Palmas",
    "Iglesia colonial"
   ],
-  "coordSource": "manual"
+  "coordSource": "manual-revisado"
  },
  {
   "id": "lago-de-ilopango",
@@ -274,7 +274,7 @@
    "Combinar con San Andrés",
    "Guía en el lugar"
   ],
-  "coordSource": "manual"
+  "coordSource": "manual-revisado"
  },
  {
   "id": "sitio-arqueologico-san-andres",
@@ -362,7 +362,7 @@
    "Miradores",
    "Aves"
   ],
-  "coordSource": "manual"
+  "coordSource": "manual-revisado"
  },
  {
   "id": "tazumal",
@@ -941,8 +941,8 @@
   "category": "río",
   "municipality": "Arambala",
   "department": "Morazán",
-  "lat": 13.93,
-  "lng": -88.11,
+  "lat": 13.93104,
+  "lng": -88.10047,
   "description": "Río de aguas cristalinas entre pinares, con pozas y pequeñas cascadas. Área protegida con camping manejada por la comunidad.",
   "schedule": "De día; camping con aviso",
   "price": "Entrada con costo bajo",
@@ -951,7 +951,7 @@
    "Camping",
    "Agua fría"
   ],
-  "coordSource": "manual"
+  "coordSource": "manual-revisado"
  },
  {
   "id": "el-mozote",
