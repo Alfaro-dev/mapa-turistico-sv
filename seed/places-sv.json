@@ -1,0 +1,1042 @@
+[
+ {
+  "id": "centro-historico-san-salvador",
+  "name": "Centro Histórico de San Salvador",
+  "category": "histórico",
+  "municipality": "San Salvador",
+  "department": "San Salvador",
+  "lat": 13.69762,
+  "lng": -89.19117,
+  "description": "El corazón de la capital: la Catedral Metropolitana con la tumba de San Óscar Romero, el Palacio Nacional y el Teatro Nacional, alrededor de plazas renovadas. Se recorre a pie en una mañana.",
+  "schedule": "Plazas abiertas todo el día; Palacio y Teatro con horario de visita",
+  "price": "Plazas gratis",
+  "recommendations": [
+   "Andá de mañana",
+   "Entrá a la Catedral",
+   "Teatro Nacional"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "monumento-salvador-del-mundo",
+  "name": "Monumento al Divino Salvador del Mundo",
+  "category": "histórico",
+  "municipality": "San Salvador",
+  "department": "San Salvador",
+  "lat": 13.70127,
+  "lng": -89.22445,
+  "description": "Símbolo de la capital: la imagen del Divino Salvador del Mundo sobre una esfera, en la Plaza de las Américas. Punto de reunión para celebraciones y fiestas agostinas.",
+  "schedule": "Abierto todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Fiestas de agosto",
+   "Fotos de noche"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "muna",
+  "name": "Museo Nacional de Antropología (MUNA)",
+  "category": "cultura",
+  "municipality": "San Salvador",
+  "department": "San Salvador",
+  "lat": 13.68701,
+  "lng": -89.23849,
+  "description": "Museo con piezas arqueológicas prehispánicas y salas sobre la historia, el trabajo y las tradiciones de El Salvador. Buena introducción antes de visitar los sitios arqueológicos.",
+  "schedule": "Martes a domingo",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Antes de ir a Tazumal",
+   "Salas de historia"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "marte",
+  "name": "Museo de Arte de El Salvador (MARTE)",
+  "category": "cultura",
+  "municipality": "San Salvador",
+  "department": "San Salvador",
+  "lat": 13.69277,
+  "lng": -89.24207,
+  "description": "Museo de arte salvadoreño, del siglo XIX a lo contemporáneo, con exposiciones temporales. A la entrada está la escultura Monumento a la Revolución, conocida como el Chulón.",
+  "schedule": "Martes a domingo",
+  "price": "Entrada con costo",
+  "recommendations": [
+   "Exposiciones temporales",
+   "Cafetería"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "museo-palabra-imagen",
+  "name": "Museo de la Palabra y la Imagen",
+  "category": "cultura",
+  "municipality": "San Salvador",
+  "department": "San Salvador",
+  "lat": 13.7091,
+  "lng": -89.20486,
+  "description": "Museo dedicado a la memoria histórica y cultural de El Salvador, con archivos, fotografías y salas sobre el conflicto armado y la radio Venceremos.",
+  "schedule": "Consultá el horario antes de ir",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Memoria histórica",
+   "Visita guiada"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "puerta-del-diablo",
+  "name": "Puerta del Diablo",
+  "category": "aventura",
+  "municipality": "Panchimalco",
+  "department": "San Salvador",
+  "lat": 13.62512,
+  "lng": -89.1901,
+  "description": "Dos enormes peñascos partidos en el Cerro Chulo, con mirador hacia el Lago de Ilopango, el Volcán de San Vicente y el mar. Hay gradas y senderos cortos para subir.",
+  "schedule": "Todos los días, de día",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Zapatos cerrados",
+   "Atardecer",
+   "Pupusas en Los Planes"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "panchimalco",
+  "name": "Panchimalco",
+  "category": "cultura",
+  "municipality": "Panchimalco",
+  "department": "San Salvador",
+  "lat": 13.6136,
+  "lng": -89.1797,
+  "description": "Pueblo de raíz nahua con una iglesia colonial blanca y la Casa de la Cultura. En mayo celebra el Festival de las Flores y las Palmas.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Festival de las Flores y las Palmas",
+   "Iglesia colonial"
+  ],
+  "coordSource": "manual"
+ },
+ {
+  "id": "lago-de-ilopango",
+  "name": "Lago de Ilopango",
+  "category": "lago",
+  "municipality": "Ilopango",
+  "department": "San Salvador",
+  "lat": 13.6694,
+  "lng": -89.0491,
+  "description": "El lago más grande del país, formado en una caldera volcánica, con islotes llamados Cerros Quemados. Se puede pasear en lancha y comer frente al agua en Apulo.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Paseo en lancha",
+   "Comer en Apulo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "parque-el-boqueron",
+  "name": "Parque Nacional El Boquerón",
+  "category": "montaña",
+  "municipality": "Santa Tecla",
+  "department": "La Libertad",
+  "lat": 13.73497,
+  "lng": -89.2795,
+  "description": "El cráter del Volcán de San Salvador, de unos 5 km de circunferencia y 550 m de profundidad. Senderos cortos, miradores y clima fresco a menos de una hora de la capital.",
+  "schedule": "Todos los días, 8 a. m. a 5 p. m.",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Llevá abrigo",
+   "Andá temprano",
+   "Cafés en El Picacho"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "parque-walter-deininger",
+  "name": "Parque Walter Thilo Deininger",
+  "category": "aventura",
+  "municipality": "La Libertad",
+  "department": "La Libertad",
+  "lat": 13.50421,
+  "lng": -89.27119,
+  "description": "Bosque protegido cerca de la playa, con senderos entre árboles y miradores al mar. Buena opción para caminar antes de bajar a la costa.",
+  "schedule": "Todos los días, de día",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Senderismo",
+   "Repelente"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-tunco",
+  "name": "Playa El Tunco",
+  "category": "playa",
+  "municipality": "Tamanique",
+  "department": "La Libertad",
+  "lat": 13.49483,
+  "lng": -89.38286,
+  "description": "Playa surfera famosa por su roca en forma de cerdo, con hostales, restaurantes y vida nocturna. Las olas son buenas para aprender y los atardeceres llenan la playa.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Clases de surf",
+   "Atardecer",
+   "Efectivo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-zonte",
+  "name": "Playa El Zonte",
+  "category": "playa",
+  "municipality": "Chiltiupán",
+  "department": "La Libertad",
+  "lat": 13.49779,
+  "lng": -89.44074,
+  "description": "Playa de arena oscura y ambiente tranquilo, conocida como Bitcoin Beach. Tiene buena ola para surf y hospedajes pequeños frente al mar.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Surf",
+   "Ambiente tranquilo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-sunzal",
+  "name": "Playa El Sunzal",
+  "category": "playa",
+  "municipality": "Tamanique",
+  "department": "La Libertad",
+  "lat": 13.49362,
+  "lng": -89.3888,
+  "description": "Ola larga y suave, de las mejores para aprender surf, justo al lado de El Tunco. Playa de piedras y arena con varios hoteles.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Surf para principiantes",
+   "Marea baja"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "puerto-de-la-libertad",
+  "name": "Puerto de La Libertad",
+  "category": "gastronomía",
+  "municipality": "La Libertad",
+  "department": "La Libertad",
+  "lat": 13.48582,
+  "lng": -89.3183,
+  "description": "Puerto pesquero con muelle, mercado de mariscos y un malecón renovado con restaurantes frente al mar. Desde el muelle se ven llegar las lanchas con la pesca del día.",
+  "schedule": "Todos los días",
+  "price": "Gratis",
+  "recommendations": [
+   "Mariscos frescos",
+   "Malecón",
+   "Muelle"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-majahual",
+  "name": "Playa El Majahual",
+  "category": "playa",
+  "municipality": "La Libertad",
+  "department": "La Libertad",
+  "lat": 13.49022,
+  "lng": -89.36664,
+  "description": "Playa amplia y popular entre familias salvadoreñas, con ranchos y comedores frente al mar, a pocos minutos del Puerto de La Libertad.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Ranchos frente al mar",
+   "Fines de semana con más gente"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "joya-de-ceren",
+  "name": "Joya de Cerén",
+  "category": "histórico",
+  "municipality": "San Juan Opico",
+  "department": "La Libertad",
+  "lat": 13.8273,
+  "lng": -89.3567,
+  "description": "Aldea maya sepultada por la ceniza del volcán Loma Caldera hacia el año 600. Patrimonio de la Humanidad: muestra cómo vivía la gente común, no solo los templos.",
+  "schedule": "Martes a domingo",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Combinar con San Andrés",
+   "Guía en el lugar"
+  ],
+  "coordSource": "manual"
+ },
+ {
+  "id": "sitio-arqueologico-san-andres",
+  "name": "Sitio Arqueológico San Andrés",
+  "category": "histórico",
+  "municipality": "Ciudad Arce",
+  "department": "La Libertad",
+  "lat": 13.80046,
+  "lng": -89.3889,
+  "description": "Centro ceremonial maya en el valle de Zapotitán, con pirámides, plaza y un museo pequeño. Queda cerca de Joya de Cerén y se pueden visitar el mismo día.",
+  "schedule": "Martes a domingo",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Mismo día que Joya de Cerén",
+   "Sombrero"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "lago-de-coatepeque",
+  "name": "Lago de Coatepeque",
+  "category": "lago",
+  "municipality": "El Congo",
+  "department": "Santa Ana",
+  "lat": 13.86333,
+  "lng": -89.54733,
+  "description": "Lago de cráter de agua azul turquesa rodeado de cerros, con la Isla Teopán en el centro. Se puede nadar, pasear en lancha y comer en los restaurantes de la orilla.",
+  "schedule": "Todo el día",
+  "price": "Acceso por restaurantes y hoteles",
+  "recommendations": [
+   "Paseo en lancha",
+   "Mirador del Cerro Verde",
+   "Entre semana"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "volcan-de-santa-ana",
+  "name": "Volcán de Santa Ana (Ilamatepec)",
+  "category": "montaña",
+  "municipality": "Santa Ana",
+  "department": "Santa Ana",
+  "lat": 13.85142,
+  "lng": -89.62902,
+  "description": "El volcán más alto de El Salvador. La subida guiada sale del Parque Nacional Cerro Verde y llega al cráter con su laguna verde de azufre y vista al Lago de Coatepeque.",
+  "schedule": "Subida guiada diaria por la mañana",
+  "price": "Entrada y guía con costo",
+  "recommendations": [
+   "Llegá antes de las 10",
+   "Agua y abrigo",
+   "Zapatos de montaña"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "volcan-de-izalco",
+  "name": "Volcán de Izalco",
+  "category": "montaña",
+  "municipality": "Izalco",
+  "department": "Sonsonate",
+  "lat": 13.81393,
+  "lng": -89.6325,
+  "description": "Volcán joven de cono casi perfecto, conocido como el Faro del Pacífico porque estuvo en erupción casi dos siglos, hasta 1966. Se sube con guía desde el Cerro Verde.",
+  "schedule": "Subida guiada según temporada",
+  "price": "Entrada y guía con costo",
+  "recommendations": [
+   "Subida exigente",
+   "Con guía"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "parque-cerro-verde",
+  "name": "Parque Nacional Cerro Verde",
+  "category": "montaña",
+  "municipality": "Santa Ana",
+  "department": "Santa Ana",
+  "lat": 13.8265,
+  "lng": -89.624,
+  "description": "Bosque nuboso sobre un volcán antiguo, con senderos y miradores a los volcanes de Santa Ana e Izalco y al Lago de Coatepeque. Desde aquí salen las subidas a los volcanes.",
+  "schedule": "Todos los días, 8 a. m. a 5 p. m.",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Clima frío",
+   "Miradores",
+   "Aves"
+  ],
+  "coordSource": "manual"
+ },
+ {
+  "id": "tazumal",
+  "name": "Tazumal",
+  "category": "histórico",
+  "municipality": "Chalchuapa",
+  "department": "Santa Ana",
+  "lat": 13.97906,
+  "lng": -89.67408,
+  "description": "El sitio arqueológico maya más visitado del país, con una gran estructura escalonada en el centro de Chalchuapa y un museo con piezas encontradas en la zona.",
+  "schedule": "Martes a domingo",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Museo del sitio",
+   "Combinar con Casa Blanca"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "catedral-santa-ana",
+  "name": "Catedral de Santa Ana",
+  "category": "cultura",
+  "municipality": "Santa Ana",
+  "department": "Santa Ana",
+  "lat": 13.99495,
+  "lng": -89.55557,
+  "description": "Catedral neogótica blanca frente al parque Libertad, junto al Teatro de Santa Ana y el Palacio Municipal. Uno de los conjuntos de arquitectura más bonitos del país.",
+  "schedule": "Todos los días",
+  "price": "Gratis",
+  "recommendations": [
+   "Teatro de Santa Ana",
+   "Centro a pie"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "parque-montecristo",
+  "name": "Parque Nacional Montecristo",
+  "category": "montaña",
+  "municipality": "Metapán",
+  "department": "Santa Ana",
+  "lat": 14.38742,
+  "lng": -89.3866,
+  "description": "Bosque nuboso en el punto donde se unen El Salvador, Guatemala y Honduras, con robles, helechos gigantes y orquídeas. Se necesita reservar y vehículo alto para subir.",
+  "schedule": "Con reservación; cierra en temporada de anidación de aves",
+  "price": "Entrada con costo",
+  "recommendations": [
+   "Reservá antes",
+   "Vehículo 4x4",
+   "Abrigo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "lago-de-guija",
+  "name": "Lago de Güija",
+  "category": "lago",
+  "municipality": "Metapán",
+  "department": "Santa Ana",
+  "lat": 14.26759,
+  "lng": -89.52381,
+  "description": "Lago compartido con Guatemala, rodeado de volcancitos, con islas y petrograbados prehispánicos en sus orillas. Se recorre en lancha con pescadores de la zona.",
+  "schedule": "Todo el día",
+  "price": "Paseo en lancha con costo",
+  "recommendations": [
+   "Petrograbados",
+   "Paseo en lancha"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "concepcion-de-ataco",
+  "name": "Concepción de Ataco",
+  "category": "cultura",
+  "municipality": "Ataco",
+  "department": "Ahuachapán",
+  "lat": 13.87037,
+  "lng": -89.8509,
+  "description": "Pueblo de la Ruta de las Flores con calles empedradas, murales de colores, talleres de textiles y cafés de altura. De noche el centro se llena de comida típica.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Murales",
+   "Café de la zona",
+   "Fin de semana"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "juayua",
+  "name": "Juayúa",
+  "category": "gastronomía",
+  "municipality": "Juayúa",
+  "department": "Sonsonate",
+  "lat": 13.84323,
+  "lng": -89.74647,
+  "description": "Pueblo de la Ruta de las Flores famoso por su feria gastronómica de fines de semana y el Cristo Negro de su iglesia. Cerca están los Chorros de la Calera.",
+  "schedule": "Feria sábados y domingos",
+  "price": "Gratis",
+  "recommendations": [
+   "Feria gastronómica",
+   "Chorros de la Calera"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "apaneca",
+  "name": "Apaneca",
+  "category": "aventura",
+  "municipality": "Apaneca",
+  "department": "Ahuachapán",
+  "lat": 13.85885,
+  "lng": -89.80398,
+  "description": "El pueblo más alto de la Ruta de las Flores, entre cafetales y clima fresco. Tiene canopy, laberinto de cipreses y la Laguna Verde cerca.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Canopy",
+   "Laguna Verde",
+   "Abrigo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "nahuizalco",
+  "name": "Nahuizalco",
+  "category": "cultura",
+  "municipality": "Nahuizalco",
+  "department": "Sonsonate",
+  "lat": 13.77922,
+  "lng": -89.73729,
+  "description": "Pueblo nahua de la Ruta de las Flores conocido por sus artesanías de mimbre y tule y por su mercado nocturno alumbrado con candelas.",
+  "schedule": "Mercado nocturno por la tarde y noche",
+  "price": "Gratis",
+  "recommendations": [
+   "Mercado nocturno",
+   "Artesanías de tule"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "salcoatitan",
+  "name": "Salcoatitán",
+  "category": "cultura",
+  "municipality": "Salcoatitán",
+  "department": "Sonsonate",
+  "lat": 13.83356,
+  "lng": -89.76129,
+  "description": "Pueblo pequeño de la Ruta de las Flores con una iglesia colonial, murales y una feria de comida los fines de semana, entre Nahuizalco y Juayúa.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Iglesia colonial",
+   "Feria de fin de semana"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "chorros-de-la-calera",
+  "name": "Chorros de la Calera",
+  "category": "río",
+  "municipality": "Juayúa",
+  "department": "Sonsonate",
+  "lat": 13.83572,
+  "lng": -89.73132,
+  "description": "Cascadas que brotan de la roca y forman pozas de agua fría, a una caminata corta desde Juayúa. Conviene ir con guía local o con la policía de turismo.",
+  "schedule": "De día",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Con guía local",
+   "Ropa para mojarse"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "los-ausoles",
+  "name": "Ausoles de Ahuachapán",
+  "category": "aventura",
+  "municipality": "Ahuachapán",
+  "department": "Ahuachapán",
+  "lat": 13.9296,
+  "lng": -89.80508,
+  "description": "Fumarolas y pozas de lodo hirviente por la actividad geotérmica de la zona. Se ven desde miradores y hay balnearios de aguas termales cerca.",
+  "schedule": "De día",
+  "price": "Varía según el lugar",
+  "recommendations": [
+   "No te salgas del camino",
+   "Aguas termales"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "barra-de-santiago",
+  "name": "Barra de Santiago",
+  "category": "playa",
+  "municipality": "Jujutla",
+  "department": "Ahuachapán",
+  "lat": 13.68965,
+  "lng": -90.00099,
+  "description": "Playa y estero con manglares protegidos, tortugas marinas y aves. Se recorre en lancha por los canales y hay hospedajes pequeños frente al mar.",
+  "schedule": "Todo el día",
+  "price": "Paseo en lancha con costo",
+  "recommendations": [
+   "Tour de manglar",
+   "Tortugas en temporada"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "parque-el-imposible",
+  "name": "Parque Nacional El Imposible",
+  "category": "aventura",
+  "municipality": "Tacuba",
+  "department": "Ahuachapán",
+  "lat": 13.83074,
+  "lng": -89.93929,
+  "description": "El bosque tropical más grande y diverso del país, con ríos, pozas y senderos de varios niveles. Se entra con guía desde San Benito o desde Tacuba.",
+  "schedule": "Con guía",
+  "price": "Entrada y guía con costo",
+  "recommendations": [
+   "Con guía",
+   "Repelente",
+   "Día completo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-los-cobanos",
+  "name": "Playa Los Cóbanos",
+  "category": "playa",
+  "municipality": "Acajutla",
+  "department": "Sonsonate",
+  "lat": 13.52525,
+  "lng": -89.80563,
+  "description": "El único arrecife de coral del Pacífico salvadoreño, área natural protegida. Buena para buceo y snorkel en temporada seca, con comedores de mariscos.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Snorkel",
+   "Temporada seca",
+   "Mariscos"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "suchitoto",
+  "name": "Suchitoto",
+  "category": "cultura",
+  "municipality": "Suchitoto",
+  "department": "Cuscatlán",
+  "lat": 13.93672,
+  "lng": -89.02593,
+  "description": "Ciudad colonial de calles empedradas, casas de colores y la iglesia de Santa Lucía, con vista al embalse Suchitlán. Centro de talleres de añil, galerías y festivales culturales.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Taller de añil",
+   "Mirador al lago",
+   "Fin de semana"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "cascada-los-tercios",
+  "name": "Cascada Los Tercios",
+  "category": "río",
+  "municipality": "Suchitoto",
+  "department": "Cuscatlán",
+  "lat": 13.93726,
+  "lng": -89.01315,
+  "description": "Cascada sobre columnas de roca hexagonal, a pocos minutos del centro de Suchitoto. Lleva más agua en la temporada de lluvias.",
+  "schedule": "De día",
+  "price": "Gratis o con aporte voluntario",
+  "recommendations": [
+   "Época de lluvias",
+   "Con guía local"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "cerro-de-las-pavas",
+  "name": "Cerro de las Pavas",
+  "category": "cultura",
+  "municipality": "Cojutepeque",
+  "department": "Cuscatlán",
+  "lat": 13.71337,
+  "lng": -88.93713,
+  "description": "Santuario de la Virgen de Fátima en lo alto de Cojutepeque, con vista al Lago de Ilopango. Cojutepeque es famoso por sus chorizos y sus dulces típicos.",
+  "schedule": "Todos los días",
+  "price": "Gratis",
+  "recommendations": [
+   "Chorizos de Cojute",
+   "Mirador"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "ilobasco",
+  "name": "Ilobasco",
+  "category": "cultura",
+  "municipality": "Ilobasco",
+  "department": "Cabañas",
+  "lat": 13.84301,
+  "lng": -88.84892,
+  "description": "Capital salvadoreña de la cerámica, famosa por las sorpresas: figuras diminutas escondidas en cascarones de barro. Hay talleres abiertos en la calle principal.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Sorpresas de barro",
+   "Talleres de cerámica"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "bosque-de-cinquera",
+  "name": "Bosque de Cinquera",
+  "category": "aventura",
+  "municipality": "Cinquera",
+  "department": "Cabañas",
+  "lat": 13.88862,
+  "lng": -88.96014,
+  "description": "Bosque regenerado después de la guerra, con senderos, cascadas y un antiguo campamento guerrillero que guías locales explican en el recorrido.",
+  "schedule": "Con guía",
+  "price": "Entrada y guía con costo bajo",
+  "recommendations": [
+   "Con guía local",
+   "Historia del conflicto"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "la-palma",
+  "name": "La Palma",
+  "category": "cultura",
+  "municipality": "La Palma",
+  "department": "Chalatenango",
+  "lat": 14.31732,
+  "lng": -89.17048,
+  "description": "Pueblo de clima fresco famoso por las artesanías de colores inspiradas en el pintor Fernando Llort. Sus paredes y talleres están llenos de ese estilo.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Artesanías de Llort",
+   "Clima fresco"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "cerro-el-pital",
+  "name": "Cerro El Pital",
+  "category": "montaña",
+  "municipality": "San Ignacio",
+  "department": "Chalatenango",
+  "lat": 14.38439,
+  "lng": -89.12915,
+  "description": "El punto más alto de El Salvador, a 2730 metros, en la frontera con Honduras. Bosque de pinos, camping y amaneceres con mar de nubes.",
+  "schedule": "Todo el día; camping con reservación",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Abrigo",
+   "Camping",
+   "Amanecer"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "embalse-cerron-grande",
+  "name": "Embalse Cerrón Grande",
+  "category": "lago",
+  "municipality": "Chalatenango",
+  "department": "Chalatenango",
+  "lat": 14.01316,
+  "lng": -89.03579,
+  "description": "El cuerpo de agua más grande del país, formado por la represa sobre el río Lempa. Sitio Ramsar con miles de aves acuáticas; se recorre en lancha.",
+  "schedule": "Todo el día",
+  "price": "Paseo en lancha con costo",
+  "recommendations": [
+   "Aves",
+   "Paseo en lancha"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "volcan-chichontepec",
+  "name": "Volcán Chichontepec (San Vicente)",
+  "category": "montaña",
+  "municipality": "San Vicente",
+  "department": "San Vicente",
+  "lat": 13.59726,
+  "lng": -88.83869,
+  "description": "Volcán de dos picos que domina el valle de Jiboa. La subida, entre cafetales y bosque, se hace con guías locales desde Guadalupe.",
+  "schedule": "Subida con guía",
+  "price": "Guía con costo",
+  "recommendations": [
+   "Con guía",
+   "Salí temprano"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "costa-del-sol",
+  "name": "Costa del Sol",
+  "category": "playa",
+  "municipality": "San Luis La Herradura",
+  "department": "La Paz",
+  "lat": 13.33878,
+  "lng": -88.99518,
+  "description": "Franja de playa de arena clara entre el mar y el estero de Jaltepeque, con hoteles, ranchos y aguas más tranquilas que las de La Libertad. Cerca del aeropuerto.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Estero de Jaltepeque",
+   "Mar tranquilo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "estero-de-jaltepeque",
+  "name": "Estero de Jaltepeque",
+  "category": "aventura",
+  "municipality": "San Luis La Herradura",
+  "department": "La Paz",
+  "lat": 13.31672,
+  "lng": -88.92246,
+  "description": "Estero con manglares e islas detrás de la Costa del Sol, donde termina el río Lempa. Se recorre en lancha para ver aves y comer mariscos en las islas.",
+  "schedule": "Todo el día",
+  "price": "Paseo en lancha con costo",
+  "recommendations": [
+   "Tour en lancha",
+   "Aves",
+   "Mariscos"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-san-marcelino",
+  "name": "Playa San Marcelino",
+  "category": "playa",
+  "municipality": "San Pedro Masahuat",
+  "department": "La Paz",
+  "lat": 13.35098,
+  "lng": -89.02489,
+  "description": "Playa larga y tranquila en la zona de la Costa del Sol, con ranchos y hoteles frente al mar, lejos del ambiente surfero de La Libertad.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Descanso",
+   "Ranchos frente al mar"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "bahia-de-jiquilisco",
+  "name": "Bahía de Jiquilisco",
+  "category": "aventura",
+  "municipality": "Jiquilisco",
+  "department": "Usulután",
+  "lat": 13.24127,
+  "lng": -88.55737,
+  "description": "Reserva de biósfera con el manglar más grande del país, islas y la tortuga carey. Se sale en lancha desde Puerto El Triunfo hacia islas como Espíritu Santo.",
+  "schedule": "Todo el día",
+  "price": "Paseo en lancha con costo",
+  "recommendations": [
+   "Salí desde Puerto El Triunfo",
+   "Tortugas",
+   "Manglar"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-espino",
+  "name": "Playa El Espino",
+  "category": "playa",
+  "municipality": "Jucuarán",
+  "department": "Usulután",
+  "lat": 13.17099,
+  "lng": -88.29413,
+  "description": "Una de las playas más largas del país, de arena clara y aguas tranquilas, con anidación de tortugas y comedores de mariscos.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Tortugas",
+   "Playa larga"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "laguna-de-alegria",
+  "name": "Laguna de Alegría",
+  "category": "lago",
+  "municipality": "Alegría",
+  "department": "Usulután",
+  "lat": 13.49305,
+  "lng": -88.49381,
+  "description": "Laguna verde esmeralda dentro del cráter del volcán Tecapa, a poca distancia del pueblo de Alegría, conocido por sus viveros de flores y su clima fresco.",
+  "schedule": "De día",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Pueblo de Alegría",
+   "Viveros",
+   "Abrigo"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "volcan-chaparrastique",
+  "name": "Volcán de San Miguel (Chaparrastique)",
+  "category": "montaña",
+  "municipality": "San Miguel",
+  "department": "San Miguel",
+  "lat": 13.43202,
+  "lng": -88.27174,
+  "description": "Uno de los volcanes más activos del país, de cono simétrico. La subida depende de la alerta de Protección Civil y se hace con guía.",
+  "schedule": "Según alerta de Protección Civil",
+  "price": "Guía con costo",
+  "recommendations": [
+   "Revisá la alerta antes",
+   "Con guía"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "laguna-el-jocotal",
+  "name": "Laguna El Jocotal",
+  "category": "lago",
+  "municipality": "El Tránsito",
+  "department": "San Miguel",
+  "lat": 13.33216,
+  "lng": -88.25077,
+  "description": "Laguna con humedales protegidos, sitio Ramsar famoso por las aves migratorias. Se recorre en lancha con pescadores de la zona.",
+  "schedule": "Todo el día",
+  "price": "Paseo en lancha con costo",
+  "recommendations": [
+   "Aves migratorias",
+   "Paseo en lancha"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-cuco",
+  "name": "Playa El Cuco",
+  "category": "playa",
+  "municipality": "Chirilagua",
+  "department": "San Miguel",
+  "lat": 13.17433,
+  "lng": -88.11013,
+  "description": "Playa de arena clara y oleaje moderado en el oriente, con hoteles y comedores. Cerca están playas de surf como Las Flores y Punta Mango.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Surf en Las Flores",
+   "Mariscos"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "perquin",
+  "name": "Perquín y Museo de la Revolución",
+  "category": "histórico",
+  "municipality": "Perquín",
+  "department": "Morazán",
+  "lat": 13.95852,
+  "lng": -88.16137,
+  "description": "Pueblo de montaña que fue zona guerrillera durante el conflicto. El Museo de la Revolución Salvadoreña guarda objetos, fotos y la historia de la radio Venceremos.",
+  "schedule": "Museo todos los días",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Museo de la Revolución",
+   "Clima fresco"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "rio-sapo",
+  "name": "Río Sapo",
+  "category": "río",
+  "municipality": "Arambala",
+  "department": "Morazán",
+  "lat": 13.93,
+  "lng": -88.11,
+  "description": "Río de aguas cristalinas entre pinares, con pozas y pequeñas cascadas. Área protegida con camping manejada por la comunidad.",
+  "schedule": "De día; camping con aviso",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Pozas",
+   "Camping",
+   "Agua fría"
+  ],
+  "coordSource": "manual"
+ },
+ {
+  "id": "el-mozote",
+  "name": "El Mozote",
+  "category": "histórico",
+  "municipality": "Meanguera",
+  "department": "Morazán",
+  "lat": 13.89864,
+  "lng": -88.11502,
+  "description": "Lugar de memoria por la masacre de 1981. Un monumento y un jardín recuerdan a las víctimas; guías de la comunidad cuentan lo que pasó.",
+  "schedule": "Todos los días",
+  "price": "Aporte voluntario",
+  "recommendations": [
+   "Visita con respeto",
+   "Guía de la comunidad"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "cacaopera",
+  "name": "Cacaopera",
+  "category": "cultura",
+  "municipality": "Cacaopera",
+  "department": "Morazán",
+  "lat": 13.77219,
+  "lng": -88.07854,
+  "description": "Pueblo de raíz indígena kakawira con un museo comunitario de su cultura y la Danza de los Emplumados en sus fiestas.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Museo kakawira",
+   "Fiestas patronales"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "golfo-de-fonseca",
+  "name": "Golfo de Fonseca e Islas",
+  "category": "aventura",
+  "municipality": "La Unión",
+  "department": "La Unión",
+  "lat": 13.34144,
+  "lng": -87.84171,
+  "description": "Golfo compartido con Honduras y Nicaragua, con islas volcánicas como Meanguera, Zacatillo y Conchagüita. Las lanchas salen desde el muelle de La Unión.",
+  "schedule": "Lanchas de día",
+  "price": "Lancha con costo",
+  "recommendations": [
+   "Isla Meanguera",
+   "Salí temprano"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "playa-el-tamarindo",
+  "name": "Playa El Tamarindo",
+  "category": "playa",
+  "municipality": "Conchagua",
+  "department": "La Unión",
+  "lat": 13.18366,
+  "lng": -87.91727,
+  "description": "Playa de aguas mansas en la entrada del Golfo de Fonseca, con vista a las islas y comedores de mariscos. Desde aquí salen lanchas a Meanguera.",
+  "schedule": "Todo el día",
+  "price": "Gratis",
+  "recommendations": [
+   "Agua tranquila",
+   "Mariscos",
+   "Lanchas a las islas"
+  ],
+  "coordSource": "osm"
+ },
+ {
+  "id": "volcan-de-conchagua",
+  "name": "Mirador del Volcán de Conchagua",
+  "category": "montaña",
+  "municipality": "Conchagua",
+  "department": "La Unión",
+  "lat": 13.28029,
+  "lng": -87.82925,
+  "description": "Volcán con mirador hacia el Golfo de Fonseca y sus islas, desde donde se ven tres países. Ideal al amanecer.",
+  "schedule": "De día",
+  "price": "Entrada con costo bajo",
+  "recommendations": [
+   "Amanecer",
+   "Vista a tres países"
+  ],
+  "coordSource": "osm"
+ }
+]
