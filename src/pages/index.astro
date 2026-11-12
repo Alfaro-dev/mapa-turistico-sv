@@ -735,8 +735,8 @@ const categories = [
   map.createPane('selPane'); (map.getPane('selPane') as HTMLElement).style.zIndex = '650';
   const bizLayer = L.layerGroup();
   const BIZ_MIN_ZOOM = 12;
-  // Carga por zona: franjas de 0.2° de latitud; desde el zoom 10 se piden por zona.
-  const BAND = 0.2, ZONE_ZOOM = 10, TOP_LIMIT = 40;
+  // Carga por zona: franjas de 0.2° de latitud; desde el zoom 9 se piden por zona.
+  const BAND = 0.2, ZONE_ZOOM = 9, TOP_LIMIT = 40;
 
   function renderBizMarkers() {
     bizLayer.clearLayers();
