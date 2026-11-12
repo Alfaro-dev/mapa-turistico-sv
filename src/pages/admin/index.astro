@@ -281,6 +281,10 @@ const categories = [
   .ad-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--photo); }
   .ad-photos p { margin: 0; font-size: 12px; color: var(--muted); }
   .ad-plan { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: var(--neblina); }
+  .ad-toast { position: fixed; left: 50%; bottom: 24px; z-index: 50; max-width: min(520px, calc(100vw - 32px)); padding: 12px 18px; border-radius: 14px; background: var(--rama, #14302F); color: #FFFFFF; font-weight: 700; font-size: 15px; box-shadow: 0 10px 30px rgba(20,48,47,0.3); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+  .ad-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+  @media (prefers-reduced-motion: reduce) { .ad-toast { transition: none; } }
+  .ad-btn:disabled { opacity: .5; cursor: not-allowed; }
   .ad-minimap { height: 180px; border-radius: 12px; overflow: hidden; }
   .ad-biz-top { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
   .ad-biz-photo { width: 180px; height: 120px; border-radius: 14px; object-fit: cover; background: var(--photo); }
@@ -305,6 +309,14 @@ const categories = [
   import { esc, safeUrl, num } from '../../lib/escape';
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
+
+  // Aviso breve abajo de la pantalla, para confirmar lo que se hizo.
+  function toast(msg: string) {
+    let t = document.getElementById('adToast');
+    if (!t) { t = document.createElement('div'); t.id = 'adToast'; t.className = 'ad-toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('is-on');
+    clearTimeout((t as any)._h); (t as any)._h = setTimeout(() => t!.classList.remove('is-on'), 4500);
+  }
 
   // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
   document.addEventListener('error', (e) => {
@@ -550,9 +562,10 @@ const categories = [
         <div><p class="ad-field-label">Ubicación que marcó</p><div id="bizMiniMap" class="ad-minimap" role="region" aria-label="Ubicación del negocio"></div></div>
         <div${st === 'active' ? ' hidden' : ''}>
           <p class="ad-field-label">Antes de aprobar</p>
-          <label class="ad-check"><input type="checkbox">El punto está en el lugar correcto</label>
-          <label class="ad-check"><input type="checkbox">Las fotos son del negocio</label>
-          <label class="ad-check"><input type="checkbox">Contestó por WhatsApp</label>
+          <label class="ad-check"><input type="checkbox" data-check>El punto está en el lugar correcto</label>
+          <label class="ad-check"><input type="checkbox" data-check>Las fotos son del negocio (o no subió)</label>
+          <label class="ad-check"><input type="checkbox" data-check>Contestó por WhatsApp</label>
+          <p class="ad-muted" id="checkHelp">Marcá las 3 revisiones para poder aprobar.</p>
           ${waUrl ? `<a class="ad-btn ad-btn-outline ad-btn-sm" href="${waUrl}" target="_blank" rel="noopener">Escribirle por WhatsApp</a>` : ''}
         </div>
       </div>
@@ -571,17 +584,34 @@ const categories = [
       </section>` : ''}
       <p id="bizStatus" class="ad-status" role="status"></p>
       <div class="ad-actions">
-        ${st !== 'active' ? '<button type="button" class="ad-btn ad-btn-primary" data-setstatus="active">Aprobar y publicar</button>' : ''}
+        ${st !== 'active' ? '<button type="button" class="ad-btn ad-btn-primary" data-setstatus="active" disabled>Aprobar y publicar</button>' : ''}
         ${st === 'active' ? '<button type="button" class="ad-btn ad-btn-outline" data-setstatus="pending">Quitar del mapa (volver a revisión)</button>' : ''}
         ${st !== 'rejected' ? '<button type="button" class="ad-btn ad-btn-danger" data-setstatus="rejected">Rechazar</button>' : ''}
       </div>`;
+    // Aprobar solo se activa con las 3 revisiones marcadas.
+    const checks = [...$('bizDetail').querySelectorAll('[data-check]')] as HTMLInputElement[];
+    const approveBtn = $('bizDetail').querySelector('[data-setstatus="active"]') as HTMLButtonElement | null;
+    const syncChecks = () => {
+      const done = checks.every((c) => c.checked);
+      if (approveBtn) approveBtn.disabled = !done;
+      if ($('checkHelp')) $('checkHelp').textContent = done ? 'Listo para aprobar.' : `Marcá las 3 revisiones para poder aprobar (${checks.filter((c) => c.checked).length} de 3).`;
+    };
+    checks.forEach((c) => c.addEventListener('change', syncChecks));
+    if (approveBtn && !checks.length) approveBtn.disabled = false;
     $('bizDetail').querySelectorAll('[data-setstatus]').forEach((btn: HTMLButtonElement) => btn.addEventListener('click', async () => {
       const status = btn.dataset.setstatus!;
+      // Rechazar o quitar del mapa piden un segundo toque.
+      if (status !== 'active' && !btn.classList.contains('is-confirm')) {
+        const label = btn.textContent;
+        btn.classList.add('is-confirm'); btn.textContent = status === 'rejected' ? '¿Seguro? Rechazar' : '¿Seguro? Quitar del mapa';
+        setTimeout(() => { if (btn.isConnected) { btn.classList.remove('is-confirm'); btn.textContent = label; } }, 6000);
+        return;
+      }
       btn.disabled = true;
       try {
         await updateDoc(doc(db, 'businesses', b.id), { status, reviewedAt: serverTimestamp(), reviewedBy: user.uid });
         b.status = status;
-        $('bizStatus').textContent = status === 'active' ? 'Aprobado: ya sale en el mapa.' : status === 'rejected' ? 'Rechazado.' : 'Vuelve a revisión.';
+        toast(status === 'active' ? `${b.name} quedó aprobado y ya sale en el mapa.` : status === 'rejected' ? `${b.name} quedó rechazado. Lo encontrás en Rechazados.` : `${b.name} volvió a Por aprobar y ya no sale en el mapa.`);
         selBiz = null; renderAll();
       } catch (err) { console.error(err); btn.disabled = false; $('bizStatus').textContent = 'No se pudo guardar. Revisá tu conexión.'; $('bizStatus').classList.add('is-error'); }
     }));
@@ -607,6 +637,8 @@ const categories = [
       miniMap = L.map('bizMiniMap', { zoomControl: false, attributionControl: false }).setView([Number(b.lat), Number(b.lng)], 15);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(miniMap);
       L.marker([Number(b.lat), Number(b.lng)], { icon: L.divIcon({ className: '', html: '<div style="width:20px;height:20px;border-radius:10px;background:#C2581F;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }) }).addTo(miniMap);
+      // El recuadro toma su ancho final después de pintarse: se vuelve a centrar en el punto.
+      const mm = miniMap; setTimeout(() => { if (mm === miniMap) { mm.invalidateSize(); mm.setView([Number(b.lat), Number(b.lng)], 15); } }, 60);
     }
   }
 
