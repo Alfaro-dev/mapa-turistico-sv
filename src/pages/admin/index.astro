@@ -285,7 +285,9 @@ const categories = [
   .ad-biz-top { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
   .ad-biz-photo { width: 180px; height: 120px; border-radius: 14px; object-fit: cover; background: var(--photo); }
   @media (max-width: 860px) {
-    .ad-nav { flex: 1 1 100%; height: auto; position: static; flex-direction: column; padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .ad { align-content: flex-start; }
+    .ad-nav { flex: 0 0 100%; min-width: 0; max-width: 100%; height: auto; position: static; flex-direction: column; padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .ad-links { min-width: 0; }
     .ad-brand { padding-bottom: 8px; }
     .ad-links { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
     .ad-link { flex-shrink: 0; white-space: nowrap; }
