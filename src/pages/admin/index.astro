@@ -306,6 +306,17 @@ const categories = [
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
 
+  // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
+  document.addEventListener('error', (e) => {
+    const img = e.target as HTMLElement;
+    if (!(img instanceof HTMLImageElement) || img.dataset.broken) return;
+    const s = document.createElement('span');
+    s.className = `${img.className} img-broken`.trim();
+    s.setAttribute('aria-hidden', 'true');
+    img.replaceWith(s);
+  }, true);
+
+
   declare const L: any;
   const $ = (id: string) => document.getElementById(id) as any;
   const normalize = (s: unknown) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');

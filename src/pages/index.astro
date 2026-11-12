@@ -422,6 +422,17 @@ const categories = [
   import { esc, safeUrl, num } from '../lib/escape';
   import { GOZ_PIN_SVG } from '../lib/gozPin';
 
+  // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
+  document.addEventListener('error', (e) => {
+    const img = e.target as HTMLElement;
+    if (!(img instanceof HTMLImageElement) || img.dataset.broken) return;
+    const s = document.createElement('span');
+    s.className = `${img.className} img-broken`.trim();
+    s.setAttribute('aria-hidden', 'true');
+    img.replaceWith(s);
+  }, true);
+
+
   declare const L: any;
 
   interface Place {

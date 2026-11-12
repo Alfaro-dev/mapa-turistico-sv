@@ -139,6 +139,17 @@ import GozMark from '../components/GozMark.astro';
   import { esc, safeUrl, num } from '../lib/escape';
   import { computeBadges, badgeIcon, type SeasonalBadge } from '../lib/badges';
 
+  // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
+  document.addEventListener('error', (e) => {
+    const img = e.target as HTMLElement;
+    if (!(img instanceof HTMLImageElement) || img.dataset.broken) return;
+    const s = document.createElement('span');
+    s.className = `${img.className} img-broken`.trim();
+    s.setAttribute('aria-hidden', 'true');
+    img.replaceWith(s);
+  }, true);
+
+
   declare const L: any;
   const $ = (id: string) => document.getElementById(id) as any;
   const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
