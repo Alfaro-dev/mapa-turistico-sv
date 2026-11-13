@@ -60,3 +60,29 @@
     .lp-btn { flex: 1 1 auto; }
     .lp-near { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   }
+
+/* Fotos, votos, reseñas y reportes en la página del lugar */
+.lp-sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.lp-btn-sm { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.lp-help { margin: 0; font-size: 14px; }
+.lp-help:empty { display: none; }
+.lp-gallery { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.lp-ph { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.lp-ph-open { padding: 0; border: 0; background: var(--photo); border-radius: 14px; overflow: hidden; cursor: zoom-in; aspect-ratio: 4 / 3; }
+.lp-ph-open img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp-ph-open:focus-visible, .lp-vote:focus-visible, .lp-link-btn:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+.lp-ph-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.lp-vote { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; font-variant-numeric: tabular-nums; }
+.lp-vote svg { fill: none; stroke: var(--canela); stroke-width: 2; }
+.lp-vote.is-on { border-color: var(--canela); background: #FBE9DE; }
+.lp-vote.is-on svg { fill: var(--canela); }
+.lp-vote:disabled { opacity: .6; cursor: default; }
+.lp-link-btn { min-height: 32px; padding: 0 4px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; align-self: flex-start; }
+.lp-link-btn:hover { color: var(--canela); }
+.lp-link-btn[hidden] { display: none; }
+.lp-review-head a { color: inherit; text-decoration: none; }
+.lp-review-head a:hover { color: var(--turquesa); text-decoration: underline; }
+@media (max-width: 640px) {
+  .lp-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .lp-sec-head .lp-btn { flex: 0 0 auto; }
+}

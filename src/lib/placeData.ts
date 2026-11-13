@@ -33,9 +33,11 @@ export interface SitePlace {
   id: string; name: string; category: string; lat: number; lng: number;
   description: string; municipality: string; department: string; schedule: string; price: string; website: string;
   recommendations: string[]; photos: string[]; visitCount: number;
-  cover: string; rating: number; reviewCount: number; reviews: SiteReview[]; photoCount: number;
+  cover: string; rating: number; reviewCount: number; reviews: SiteReview[]; photoCount: number; gallery: SitePhoto[];
 }
-export interface SiteReview { userName: string; rating: number; comment: string; visitDate: string; verified: boolean; created: string }
+// Foto de la galería: las de turistas (se votan) y después las del lugar.
+export interface SitePhoto { id: string; url: string; votes: number; userId: string; userName: string }
+export interface SiteReview { id: string; userId: string; userName: string; rating: number; comment: string; visitDate: string; verified: boolean; created: string }
 
 // Convierte el formato de valores de Firestore REST a valores normales.
 function val(v: any): any {
@@ -86,8 +88,12 @@ export function buildPlaces(places: any[], photos: any[], reviews: any[]): SiteP
         cover, photoCount: ph.length + (p.photos || []).length,
         rating: rated.length ? rated.reduce((s, x) => s + Number(x.rating), 0) / rated.length : 0,
         reviewCount: rv.length,
-        reviews: rv.filter((x) => x.comment).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, 6)
-          .map((x) => ({ userName: x.userName || 'Visitante', rating: Number(x.rating) || 0, comment: String(x.comment), visitDate: x.visitDate || '', verified: !!x.verified, created: x.createdAt || '' })),
+        gallery: [
+          ...ph.map((x) => ({ id: x.id, url: String(x.url), votes: Number(x.votes) || 0, userId: x.userId || '', userName: x.userName || '' })),
+          ...(p.photos || []).filter((u: string) => /^https?:\/\//.test(u || '')).map((u: string) => ({ id: '', url: u, votes: 0, userId: '', userName: '' })),
+        ].slice(0, 24),
+        reviews: rv.filter((x) => x.comment).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, 10)
+          .map((x) => ({ id: x.id, userId: x.userId || '', userName: x.userName || 'Visitante', rating: Number(x.rating) || 0, comment: String(x.comment), visitDate: x.visitDate || '', verified: !!x.verified, created: x.createdAt || '' })),
       } as SitePlace;
   }).sort((a, b) => b.visitCount - a.visitCount || a.name.localeCompare(b.name, 'es'));
 }
@@ -149,8 +155,14 @@ export function renderPlace(p: SitePlace, all: SitePlace[]): string {
   ].filter(Boolean).join('');
   const reviews = p.reviews.map((r) => {
     const meta = `${r.verified ? '<span class="lp-verified">Visita verificada</span>' : ''}${r.verified && r.visitDate ? ' · ' : ''}${r.visitDate ? `Fue el ${fmtDate(r.visitDate)}` : ''}`;
-    return `<li class="lp-review"><p class="lp-review-head"><strong>${esc(r.userName)}</strong> <span class="lp-stars" aria-label="${r.rating} de 5">${stars(r.rating)}</span></p><p class="lp-review-meta">${meta}</p><p class="lp-text">${esc(r.comment)}</p></li>`;
+    const who = r.userId ? `<a href="/perfil?u=${encodeURIComponent(r.userId)}">${esc(r.userName)}</a>` : esc(r.userName);
+    return `<li class="lp-review"><p class="lp-review-head"><strong>${who}</strong> <span class="lp-stars" aria-label="${r.rating} de 5">${stars(r.rating)}</span></p><p class="lp-review-meta">${meta}</p><p class="lp-text">${esc(r.comment)}</p>${r.id ? `<button type="button" class="lp-link-btn" data-report="review" data-target="${esc(r.id)}" data-owner="${esc(r.userId)}">Reportar</button>` : ''}</li>`;
   }).join('');
+  const heart = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.3C1.2 8.4 3.3 5 6.8 5c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.5 0 5.6 3.4 4.3 6.7C19.5 16.4 12 21 12 21z"></path></svg>';
+  const gallery = p.gallery.map((g, i) => `<li class="lp-ph">
+    <button type="button" class="lp-ph-open" data-gal data-src="${esc(cld(g.url, 'q_auto,f_auto,w_1600'))}" data-cap="${esc(g.userName ? `Foto de ${g.userName}` : p.name)}" aria-label="Ver foto ${i + 1}"><img src="${esc(cld(g.url, 'c_fill,g_auto,w_400,h_300,q_auto,f_auto'))}" alt="" loading="lazy" width="400" height="300" /></button>
+    ${g.id ? `<span class="lp-ph-bar"><button type="button" class="lp-vote" data-vote="${esc(g.id)}" aria-pressed="false" aria-label="Votar por esta foto, ${g.votes} ${g.votes === 1 ? 'voto' : 'votos'}">${heart}<span>${g.votes}</span></button><button type="button" class="lp-link-btn" data-report="photo" data-target="${esc(g.id)}" data-owner="${esc(g.userId)}">Reportar</button></span>` : ''}
+  </li>`).join('');
   const near = nearby(p, all).map(({ x, km }) => `<li><a href="${placeUrl(x.id)}" class="lp-near-card">${x.cover
     ? `<img src="${esc(cld(x.cover, 'c_fill,g_auto,w_320,h_220,q_auto,f_auto'))}" alt="" loading="lazy" width="320" height="220" />`
     : `<span class="lp-near-empty" aria-hidden="true">${catIcon(x.category, 30)}</span>`}<span class="lp-near-name">${esc(x.name)}</span><span class="lp-near-meta">${CATEGORY_NAMES[x.category] || 'Lugar'} · a ${fmtKm(km)}</span></a></li>`).join('');
@@ -172,9 +184,12 @@ ${p.reviewCount > 0 && p.rating > 0
 ${facts ? `<dl class="lp-facts">${facts}</dl>` : ''}
 ${p.description ? `<section class="lp-sec"><h2 class="lp-h2">Cómo es</h2><p class="lp-text">${esc(p.description)}</p></section>` : ''}
 ${p.recommendations.length ? `<section class="lp-sec"><h2 class="lp-h2">Qué hacer</h2><ul class="lp-chips">${p.recommendations.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></section>` : ''}
-<section class="lp-sec"><h2 class="lp-h2">Lo que dicen quienes ya fueron</h2>
-${reviews ? `<ul class="lp-reviews">${reviews}</ul>` : '<p class="lp-muted">Nadie ha contado su visita todavía.</p>'}
-<a class="lp-btn lp-btn-outline" href="${mapHref}">${p.reviewCount > p.reviews.length ? `Ver las ${p.reviewCount} reseñas y escribir la tuya` : 'Escribir una reseña'}</a></section>
+<section class="lp-sec"><div class="lp-sec-head"><h2 class="lp-h2">Fotos de quienes fueron</h2><button type="button" class="lp-btn lp-btn-outline lp-btn-sm" data-add-photo>Subir foto</button></div>
+${gallery ? `<p class="lp-muted lp-help">Votá por tu favorita: la más votada queda de portada.</p><ul class="lp-gallery" data-gal-group>${gallery}</ul>` : '<p class="lp-muted">Nadie ha subido fotos de aquí todavía. ¿Tenés una?</p>'}
+<p class="lp-muted lp-help" data-photo-status role="status"></p></section>
+<section class="lp-sec"><div class="lp-sec-head"><h2 class="lp-h2">Lo que dicen quienes ya fueron</h2><button type="button" class="lp-btn lp-btn-primary lp-btn-sm" data-write-review>Escribir reseña</button></div>
+${reviews ? `<ul class="lp-reviews">${reviews}</ul>` : '<p class="lp-muted">Nadie ha contado su visita todavía. Sé la primera persona.</p>'}
+${p.reviewCount > p.reviews.length ? `<a class="lp-btn lp-btn-outline" href="${mapHref}">Ver las ${p.reviewCount} reseñas en el mapa</a>` : ''}</section>
 ${near ? `<section class="lp-sec"><h2 class="lp-h2">Cerca de aquí</h2><ul class="lp-near">${near}</ul></section>` : ''}
 </article>`;
 }

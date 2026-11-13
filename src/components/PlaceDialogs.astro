@@ -1,0 +1,256 @@
+---
+// Diálogos para reseñas, reportes y aceptar la privacidad. Los usan el mapa y la página de cada lugar;
+// la lógica está en src/lib/placeActions.ts.
+---
+  <!-- Reseña: se escribe sin salir del mapa. Para publicar hay que entrar con Google. -->
+  <dialog id="reviewDialog" class="review-dialog" aria-labelledby="reviewTitle">
+    <span class="rv-grab" aria-hidden="true"></span>
+    <div class="rv-head">
+      <h2 id="reviewTitle" class="review-title">Tu reseña</h2>
+      <button type="button" id="reviewClose" class="icon-btn" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+      </button>
+    </div>
+
+    <section id="reviewLogin" class="review-body" hidden>
+      <p class="review-lead">¿Y vos, ya fuiste? Entrá con tu cuenta de Google para contar tu visita y subir fotos.</p>
+      <button type="button" id="reviewGoogle" class="btn btn-google">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"></path><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"></path><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"></path><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"></path></svg>
+        Entrar con Google
+      </button>
+      <p id="reviewLoginError" class="form-error" hidden></p>
+      <p class="legal-note">Al publicar aceptás los <a href="/terminos" target="_blank" rel="noopener">Términos</a> y la <a href="/privacidad" target="_blank" rel="noopener">Política de privacidad</a>.</p>
+    </section>
+
+    <form id="reviewForm" class="review-body" novalidate hidden>
+      <fieldset class="stars-field">
+        <legend class="sr-only">Tu calificación</legend>
+        <div class="stars" id="starsGroup">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button type="button" class="star-pick" data-rating={n} aria-pressed="false" aria-label={`${n} de 5`}>
+              <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.7 6.3.9-4.6 4.4 1.1 6.3L12 17.1l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"></path></svg>
+            </button>
+          ))}
+          <span id="starLabel" class="star-label" aria-live="polite">Tocá una estrella</span>
+        </div>
+      </fieldset>
+
+      <div class="field">
+        <label for="reviewComment" class="field-label">Contá tu visita</label>
+        <textarea id="reviewComment" rows="4" maxlength="1000" aria-describedby="commentCount" placeholder="Qué hiciste, cuándo conviene ir, qué llevar…"></textarea>
+        <p id="commentCount" class="field-help field-count">Mínimo 10 letras · 0 de 1000</p>
+      </div>
+
+      <div class="field">
+        <span class="field-label" id="photosLabel">Fotos <span class="field-opt">(opcional)</span></span>
+        <div class="rv-photos" role="group" aria-labelledby="photosLabel">
+          <div id="reviewPhotos" class="photo-picks"></div>
+          <label class="dropzone" id="photoAdd">
+            <span class="dz-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+            <span class="dz-text"><strong id="dzTitle">Agregá fotos de tu visita</strong><span id="dzSub">Arrastralas aquí o tocá para elegir</span></span>
+            <input type="file" id="reviewPhotoInput" accept="image/*" multiple class="sr-only" />
+          </label>
+        </div>
+      </div>
+
+      <div class="rv-details">
+        <div class="field rv-date">
+          <label for="reviewDate" class="field-label">¿Cuándo fuiste?</label>
+          <input type="date" id="reviewDate" />
+        </div>
+        <div class="field rv-verify">
+          <span class="field-label">¿Estás ahí ahorita?</span>
+          <button type="button" id="verifyBtn" class="verify-chip" aria-describedby="verifyStatus">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+            <span id="verifyText">Verificar mi visita</span>
+          </button>
+        </div>
+      </div>
+      <p id="verifyStatus" class="field-help rv-verify-help" aria-live="polite"></p>
+
+      <div class="review-actions">
+        <p id="reviewError" class="form-error" role="alert" hidden></p>
+        <button type="submit" id="reviewSubmit" class="btn btn-primary">Publicar reseña</button>
+        <p class="rv-as"><span id="reviewAsAvatar" class="rv-as-avatar" aria-hidden="true"></span>Se publica como <strong id="reviewAs"></strong></p>
+      </div>
+    </form>
+
+    <section id="reviewDone" class="review-body" hidden>
+      <p class="review-lead"><strong>¡Gracias!</strong> Tu reseña ya está publicada.</p>
+      <button type="button" id="reviewDoneBtn" class="btn btn-primary">Listo</button>
+    </section>
+  </dialog>
+
+  <!-- Antes de publicar por primera vez: aceptar privacidad, términos y transferencia de datos. -->
+  <dialog id="consentDialog" class="report-dialog" aria-labelledby="consentTitle">
+    <form id="consentForm" method="dialog" novalidate>
+      <div class="rp-head">
+        <h2 id="consentTitle" class="rp-title">Antes de publicar</h2>
+        <button type="button" id="consentClose" class="icon-btn" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <p class="rp-lead">Tu nombre, tu foto de Google y lo que publiqués se van a ver en Goz. Tu correo no. Lo pedimos una sola vez.</p>
+      <div class="consent-list">
+        <label class="consent-item"><input type="checkbox" data-consent><span>Leí y acepto la <a href="/privacidad" target="_blank" rel="noopener">Política de privacidad</a> y los <a href="/terminos" target="_blank" rel="noopener">Términos de uso</a>.</span></label>
+        <label class="consent-item"><input type="checkbox" data-consent><span>Acepto que mis datos se guarden en servidores fuera de El Salvador (Google, Cloudinary y Render, en Estados Unidos).</span></label>
+        <label class="consent-item"><input type="checkbox" data-consent><span>Tengo 18 años o más, o tengo permiso de mi mamá, papá o encargado.</span></label>
+      </div>
+      <p id="consentError" class="form-error" role="alert" hidden></p>
+      <div class="rp-actions">
+        <button type="button" id="consentCancel" class="rp-btn rp-btn-ghost">Ahora no</button>
+        <button type="submit" id="consentOk" class="rp-btn rp-btn-primary">Aceptar y seguir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Reportar una reseña o una foto: le llega al admin. -->
+  <dialog id="reportDialog" class="report-dialog" aria-labelledby="reportTitle">
+    <form id="reportForm" method="dialog" novalidate>
+      <div class="rp-head">
+        <h2 id="reportTitle" class="rp-title">¿Qué pasa con esta reseña?</h2>
+        <button type="button" id="reportClose" class="icon-btn" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <p class="rp-lead">Lo revisamos y, si no cumple, lo quitamos. Quien la publicó no sabe que fuiste vos.</p>
+      <fieldset class="rp-options">
+        <legend class="sr-only">Motivo</legend>
+        <label><input type="radio" name="reason" value="falsa"><span>Es falsa o no pasó así</span></label>
+        <label><input type="radio" name="reason" value="ofensiva"><span>Tiene insultos o es ofensiva</span></label>
+        <label><input type="radio" name="reason" value="otro-lugar"><span>No es de este lugar</span></label>
+        <label><input type="radio" name="reason" value="spam"><span>Es publicidad o spam</span></label>
+        <label><input type="radio" name="reason" value="datos"><span>Muestra datos personales de alguien</span></label>
+        <label><input type="radio" name="reason" value="otra"><span>Otra cosa</span></label>
+      </fieldset>
+      <label for="reportNote" class="field-label">Contanos más <span class="field-opt">(opcional)</span></label>
+      <textarea id="reportNote" rows="2" maxlength="300" placeholder="Lo que nos ayude a revisarlo"></textarea>
+      <p id="reportError" class="form-error" role="alert" hidden></p>
+      <div class="rp-actions">
+        <button type="button" id="reportCancel" class="rp-btn rp-btn-ghost">Cancelar</button>
+        <button type="submit" id="reportSubmit" class="rp-btn rp-btn-primary">Enviar reporte</button>
+      </div>
+    </form>
+    <div id="reportDone" class="rp-done" hidden>
+      <h2 class="rp-title">Gracias por avisar</h2>
+      <p class="rp-lead">Ya nos llegó. Lo revisamos en estos días.</p>
+      <div class="rp-actions"><button type="button" id="reportOk" class="rp-btn rp-btn-primary">Listo</button></div>
+    </div>
+  </dialog>
+
+<style is:global>
+  .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  :is(.review-dialog, .report-dialog) .icon-btn { width: 44px; height: 44px; border-radius: 22px; border: 0; background: var(--neblina); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .review-dialog .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 23px; font: inherit; font-size: 15px; font-weight: 800; text-decoration: none; cursor: pointer; border: 2px solid transparent; white-space: nowrap; box-sizing: border-box; }
+  .review-dialog .btn-primary { background: var(--primary); color: var(--on-primary, #FFFFFF); }
+  .review-dialog .btn-google { border-color: var(--line); }
+  .review-dialog .btn:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  /* ---------- Reseña ---------- */
+  /* El reset de Tailwind quita el margin:auto del <dialog>: se devuelve para que quede centrado. */
+  .review-dialog { margin: auto; width: min(540px, calc(100vw - 32px)); max-height: min(760px, calc(100vh - 48px)); padding: 0; border: 0; border-radius: 24px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 70px rgba(20,48,47,0.32); overflow: auto; overscroll-behavior: contain; }
+  .review-dialog[open] { animation: rv-in .18s ease-out; }
+  @keyframes rv-in { from { opacity: 0; transform: translateY(8px) scale(.985); } }
+  @media (prefers-reduced-motion: reduce) { .review-dialog[open] { animation: none; } }
+  .rv-grab { display: none; }
+  .rv-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 8px 24px; background: var(--surface); }
+  .review-dialog::backdrop { background: rgba(20,48,47,0.45); }
+  .review-title:focus { outline: none; }
+  /* El botón de publicar queda siempre a la vista, aunque el formulario sea largo. */
+  .review-actions { position: sticky; bottom: 0; z-index: 2; margin: 4px -24px -24px; padding: 14px 24px 18px; background: var(--surface); border-top: 1px solid var(--line); }
+  .review-title { margin: 6px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1.12; text-wrap: balance; }
+  .review-body { display: flex; flex-direction: column; gap: 20px; padding: 4px 24px 24px; }
+  .review-body[hidden] { display: none; }
+  .review-lead { margin: 0; font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+  .btn-google { background: var(--surface); color: var(--ink); border: 2px solid var(--line); align-self: flex-start; }
+  .stars-field { border: 0; margin: 0; padding: 0; }
+  .field-label { display: block; margin: 0 0 6px; padding: 0; font-size: 14px; font-weight: 800; color: var(--ink); }
+  /* Las estrellas son lo principal: grandes, con una palabra que dice qué significa cada una. */
+  .stars { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+  .star-pick { width: 48px; height: 48px; padding: 0; border: 0; border-radius: 14px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .star-pick svg { fill: #E4ECEA; stroke: #C6D6D3; stroke-width: 1; transition: fill .12s, stroke .12s, transform .12s; }
+  .star-pick.is-on svg, .stars.is-preview .star-pick.is-hint svg { fill: var(--plumaje); stroke: #C9971E; }
+  .stars.is-preview .star-pick:not(.is-hint) svg { fill: #E4ECEA; stroke: #C6D6D3; }
+  .star-pick:hover svg { transform: scale(1.08); }
+  .star-pick:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 1px; }
+  .star-label { margin-left: 10px; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--muted); }
+  .star-label.is-set { color: var(--rama); }
+  @media (prefers-reduced-motion: reduce) { .star-pick svg { transition: none; } .star-pick:hover svg { transform: none; } }
+  .field { display: flex; flex-direction: column; min-width: 0; }
+  .field textarea, .field input[type="date"] { width: 100%; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); }
+  .field textarea:focus, .field input[type="date"]:focus { outline: none; border-color: var(--turquesa); box-shadow: 0 0 0 3px rgba(14,124,123,0.18); }
+  .field-opt { font-weight: 600; color: var(--muted); }
+  .rv-details { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+  .rv-date { flex: 1 1 250px; }
+  .rv-verify { flex: 1 1 190px; }
+  .rv-verify-help { margin: -12px 0 0; }
+  .rv-verify-help:empty { display: none; }
+  .verify-chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 16px; border-radius: 14px; border: 1.5px dashed #9CC3C0; background: #F1F8F7; color: var(--turquesa); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+  .verify-chip:hover { border-style: solid; }
+  .verify-chip.is-ok { border: 1.5px solid var(--turquesa); background: var(--turquesa); color: #FFFFFF; cursor: default; }
+  .verify-chip:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .field textarea { resize: vertical; line-height: 1.5; }
+  .field-help { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+  .field-help.is-ok { color: var(--turquesa); font-weight: 800; }
+  .field-count { margin: 4px 0 0; text-align: right; }
+  #reviewForm [aria-invalid="true"] { border-color: #C2581F; box-shadow: 0 0 0 3px rgba(194,88,31,0.18); }
+  .form-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #F6D9C8; color: #6E2E0C; font-size: 14px; font-weight: 700; }
+  .form-error[hidden] { display: none; }
+  .rv-photos { display: flex; flex-direction: column; gap: 10px; }
+  .photo-picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .photo-picks:empty { display: none; }
+  .photo-pick { position: relative; aspect-ratio: 1; }
+  .photo-pick img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; display: block; }
+  .photo-pick button { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 14px; border: 2px solid #FFFFFF; background: var(--rama); color: #FFFFFF; font-size: 14px; line-height: 1; cursor: pointer; }
+  .photo-pick.is-loading { background: var(--photo); border-radius: 14px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); }
+  /* Zona para soltar fotos: ocupa todo el ancho; se achica cuando ya hay fotos. */
+  .rv-as { margin: 2px 0 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .rv-as strong { color: var(--ink); }
+  .rv-as-avatar { width: 22px; height: 22px; border-radius: 11px; overflow: hidden; flex-shrink: 0; background: var(--plumaje); color: var(--rama); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .rv-as-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .review-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+  .review-actions .btn { align-self: stretch; }
+  .review-actions .form-error { align-self: stretch; margin-bottom: 6px; }
+  .consent-list { display: flex; flex-direction: column; gap: 6px; }
+  .consent-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px; cursor: pointer; font-size: 15px; line-height: 1.45; }
+  .consent-item input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--turquesa); flex: none; }
+  .consent-item:has(input:checked) { border-color: var(--turquesa); background: #F1F8F7; }
+  .consent-item:has(input:focus-visible) { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .consent-item a, .legal-note a { color: var(--turquesa); font-weight: 700; }
+  .legal-note { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  #consentError { margin-top: 10px; }
+  /* Reportar */
+  .report-dialog { margin: auto; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); box-sizing: border-box; padding: 20px 22px; border: 0; border-radius: 24px; background: var(--surface); color: var(--ink); box-shadow: 0 20px 50px rgba(20,48,47,0.25); }
+  .report-dialog::backdrop { background: rgba(20,48,47,0.55); }
+  .rp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .rp-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 1.2; }
+  .rp-lead { margin: 4px 0 12px; font-size: 14px; line-height: 1.45; color: var(--muted); }
+  .rp-options { border: 0; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .rp-options label { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 14px; cursor: pointer; font-size: 15px; font-weight: 700; }
+  .rp-options label:hover { border-color: var(--turquesa); }
+  .rp-options input { width: 20px; height: 20px; margin: 0; accent-color: var(--turquesa); flex: none; }
+  .rp-options label:has(input:checked) { border-color: var(--turquesa); background: #F1F8F7; }
+  .rp-options label:has(input:focus-visible) { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .rp-options.is-invalid label { border-color: #C2581F; }
+  #reportNote { display: block; width: 100%; box-sizing: border-box; margin-top: 6px; border: 1.5px solid var(--border); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 16px; color: var(--ink); resize: vertical; }
+  #reportNote:focus { outline: none; border-color: var(--turquesa); box-shadow: 0 0 0 3px rgba(14,124,123,0.18); }
+  .rp-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+  .rp-btn { height: 48px; padding: 0 20px; border-radius: 24px; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+  .rp-btn-primary { border: 0; background: var(--primary); color: #FFFFFF; }
+  .rp-btn-primary:disabled { opacity: .6; cursor: default; }
+  .rp-btn-ghost { border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
+  .rp-btn:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  #reportError { margin-top: 10px; }
+  @media (max-width: 767px) {
+    /* En el celular es una hoja que sube desde abajo. */
+    .review-dialog { width: 100vw; max-width: 100vw; max-height: 92vh; margin: auto 0 0; border-radius: 24px 24px 0 0; }
+    .review-dialog[open] { animation: rv-up .22s ease-out; }
+    @keyframes rv-up { from { transform: translateY(24px); opacity: .6; } }
+    .rv-grab { display: block; width: 40px; height: 5px; margin: 8px auto 0; border-radius: 3px; background: #D3DFDD; }
+    .rv-head { padding: 10px 16px 6px 20px; }
+    .review-body { padding: 4px 20px 20px; }
+    .review-actions { margin: 4px -20px -20px; padding: 12px 20px calc(14px + env(safe-area-inset-bottom)); }
+    .review-title { font-size: 23px; }
+    .star-pick { width: 46px; height: 46px; }
+    .star-label { width: 100%; margin: 2px 0 0 6px; }
+  }
+</style>

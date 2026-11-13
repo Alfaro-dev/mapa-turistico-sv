@@ -3,6 +3,7 @@
 // El HTML se arma al publicar (para buscadores y vistas previas) y en el navegador se vuelve a leer en vivo.
 import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
+import PlaceDialogs from '../../components/PlaceDialogs.astro';
 import { loadPlaces, SITE, placeUrl, shareImage, renderPlace, placeShort, placeTitle, type SitePlace } from '../../lib/siteData';
 import '../../styles/place.css';
 
@@ -27,7 +28,8 @@ const jsonLd = {
 <Layout title={placeTitle(p)} description={metaDesc} image={img} canonical={placeUrl(p.id)} type="place">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}></script>
   <SiteHeader id={`lp-${p.id}`} />
-  <main class="lp" id="lp" data-id={p.id} set:html={renderPlace(p, all)}></main>
+  <main class="lp" id="lp" data-id={p.id} data-name={p.name} data-lat={p.lat} data-lng={p.lng} set:html={renderPlace(p, all)}></main>
+  <PlaceDialogs />
   <footer class="lp-foot">
     <p>Goz · El Salvador, un país chiquito, pero no te lo acabás.</p>
     <p><a href="/lugares">Todos los lugares</a> · <a href="/negocios">Tu negocio en Goz</a> · <a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
@@ -35,14 +37,8 @@ const jsonLd = {
 </Layout>
 
 <script>
-  import { loadPlaceLive, renderPlace, placeTitle, wireShare } from '../../lib/placeData';
+  import { startPlacePage } from '../../lib/placePage';
   // Lo que se ve es lo de hoy: se vuelve a leer el lugar, sus reseñas y fotos al abrir la página.
   const root = document.getElementById('lp')!;
-  wireShare(root);
-  loadPlaceLive(root.dataset.id!).then((live) => {
-    if (!live) return;
-    const html = renderPlace(live.place, live.all);
-    if (html !== root.innerHTML) root.innerHTML = html;
-    document.title = placeTitle(live.place);
-  }).catch(() => { /* sin conexión: queda lo que ya se ve */ });
+  startPlacePage(root, root.dataset.id!);
 </script>

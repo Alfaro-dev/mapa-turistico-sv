@@ -4,6 +4,7 @@
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import GozLoader from '../components/GozLoader.astro';
+import PlaceDialogs from '../components/PlaceDialogs.astro';
 import '../styles/place.css';
 ---
 <Layout title="Goz · El Salvador, un país chiquito, pero no te lo acabás." noindex>
@@ -19,6 +20,7 @@ import '../styles/place.css';
       </div>
     </section>
   </main>
+  <PlaceDialogs />
 </Layout>
 
 <style is:global>
@@ -27,17 +29,10 @@ import '../styles/place.css';
 </style>
 
 <script>
-  import { loadPlaceLive, renderPlace, placeTitle, wireShare } from '../lib/placeData';
+  import { startPlacePage } from '../lib/placePage';
   const root = document.getElementById('lp')!;
   const missing = () => { document.getElementById('nfLoading')?.remove(); document.getElementById('nfMissing')!.hidden = false; };
   const m = /^\/lugar\/([^/]+)\/?$/.exec(location.pathname);
   if (!m) missing();
-  else {
-    wireShare(root);
-    loadPlaceLive(decodeURIComponent(m[1])).then((live) => {
-      if (!live) return missing();
-      root.innerHTML = renderPlace(live.place, live.all);
-      document.title = placeTitle(live.place);
-    }).catch(missing);
-  }
+  else startPlacePage(root, decodeURIComponent(m[1]), { onMissing: missing });
 </script>
