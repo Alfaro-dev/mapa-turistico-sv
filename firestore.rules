@@ -31,6 +31,22 @@ service cloud.firestore {
       return request.resource.data[field] == resource.data.get(field, 0) + 1;
     }
 
+    // Campos permitidos (web y app). Evita que alguien guarde basura o documentos enormes.
+    function reviewKeysOk() {
+      return request.resource.data.keys().hasOnly(['placeId', 'placeName', 'placeLat', 'placeLng', 'userId', 'userName', 'userPhoto',
+        'rating', 'comment', 'photos', 'visitDate', 'verified', 'useful', 'fun', 'like', 'createdAt'])
+        && request.resource.data.get('userName', '') is string && request.resource.data.get('userName', '').size() <= 80
+        && request.resource.data.get('userPhoto', '') is string && request.resource.data.get('userPhoto', '').size() <= 500;
+    }
+    function photoKeysOk() {
+      return request.resource.data.keys().hasOnly(['id', 'placeId', 'placeName', 'url', 'caption', 'userId', 'userName', 'userPhoto',
+        'votes', 'useful', 'fun', 'like', 'rating', 'createdAt'])
+        && request.resource.data.url is string
+        && request.resource.data.url.matches('^https://res[.]cloudinary[.]com/n6yslku2/.*')
+        && request.resource.data.get('caption', '') is string && request.resource.data.get('caption', '').size() <= 300
+        && request.resource.data.get('userName', '') is string && request.resource.data.get('userName', '').size() <= 80;
+    }
+
     // ---------- Administradores ----------
     match /admins/{uid} {
       allow read: if isOwner(uid);
@@ -60,6 +76,7 @@ service cloud.firestore {
       allow read: if true;
       // El admin puede recrearla al restaurarla desde el archivo.
       allow create: if isAdmin() || signedIn()
+        && reviewKeysOk()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.placeId is string
         && request.resource.data.rating is int
@@ -71,7 +88,8 @@ service cloud.firestore {
         && request.resource.data.get('photos', []).size() <= 4
         && request.resource.data.get('verified', false) is bool;
       allow update: if (isOwner(resource.data.userId)
-                        && request.resource.data.userId == resource.data.userId)
+                        && request.resource.data.userId == resource.data.userId
+                        && reviewKeysOk())
         || (signedIn() && onlyChanges(['useful']) && bumpedByOne('useful'))
         || (signedIn() && onlyChanges(['fun']) && bumpedByOne('fun'))
         || (signedIn() && onlyChanges(['like']) && bumpedByOne('like'));
@@ -89,6 +107,7 @@ service cloud.firestore {
     match /photos/{photoId} {
       allow read: if true;
       allow create: if isAdmin() || signedIn()
+        && photoKeysOk()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.get('votes', 0) == 0;
       allow update: if (isOwner(resource.data.userId)
