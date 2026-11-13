@@ -59,5 +59,10 @@ const url = canonical ? new URL(canonical, SITE).href : new URL(Astro.url.pathna
   </head>
   <body>
     <slot />
+    <script>
+      import { countVisit, watchErrors } from '../lib/telemetry';
+      watchErrors();
+      countVisit();
+    </script>
   </body>
 </html>

@@ -5,11 +5,13 @@ import GozLoader from '../../components/GozLoader.astro';
 
 const sections = [
   { id: 'resumen', label: 'Resumen' },
+  { id: 'visitas', label: 'Visitas' },
   { id: 'negocios', label: 'Negocios' },
   { id: 'resenas', label: 'Reseñas' },
   { id: 'fotos', label: 'Fotos' },
   { id: 'lugares', label: 'Lugares turísticos' },
   { id: 'temporada', label: 'Insignias de temporada' },
+  { id: 'errores', label: 'Errores' },
 ];
 const categories = [
   ['playa', 'Playa'], ['montaña', 'Volcán o montaña'], ['lago', 'Lago o laguna'], ['mirador', 'Mirador'], ['pueblo', 'Pueblo'],
@@ -56,6 +58,7 @@ const categories = [
           <a href="#resenas" class="ad-todo-card" data-hot><span class="ad-num" id="tdReviews">0</span><span class="ad-todo-label">Reseñas nuevas esta semana</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#negocios" class="ad-todo-card" data-plans-link><span class="ad-num" id="tdPlans">0</span><span class="ad-todo-label">Planes por vencer</span><span class="ad-todo-go">Ver pagos</span></a>
           <a href="#resenas" id="tdReportsLink" class="ad-todo-card"><span class="ad-num" id="tdReports">0</span><span class="ad-todo-label">Reportes por revisar</span><span class="ad-todo-go">Revisar</span></a>
+          <a href="#errores" class="ad-todo-card"><span class="ad-num" id="tdErrors">0</span><span class="ad-todo-label">Errores sin resolver</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares por corregir</span><span class="ad-todo-go">Corregir</span></a>
         </div>
         <section id="delAccounts" class="ad-card" hidden aria-labelledby="hDelAcc">
@@ -80,6 +83,47 @@ const categories = [
             <ul id="sumBiz" class="ad-rows"></ul>
           </section>
         </div>
+      </section>
+
+      <!-- Visitas -->
+      <section id="sec-visitas" class="ad-sec" hidden>
+        <div class="ad-head"><div><h1 class="ad-h1">Visitas</h1><p class="ad-muted">Totales por día, sin cookies ni datos de nadie. Tus visitas al panel no cuentan.</p></div></div>
+        <div class="ad-filters" role="group" aria-label="Periodo">
+          <button type="button" class="ad-filter" data-range="7" aria-pressed="false">Últimos 7 días</button>
+          <button type="button" class="ad-filter" data-range="30" aria-pressed="true">Últimos 30 días</button>
+        </div>
+        <dl class="ad-stats">
+          <div><dt>Personas</dt><dd id="vsPeople">0</dd></div>
+          <div><dt>Páginas vistas</dt><dd id="vsViews">0</dd></div>
+          <div><dt>Personas hoy</dt><dd id="vsToday">0</dd></div>
+          <div><dt>Páginas por persona</dt><dd id="vsPer">0</dd></div>
+        </dl>
+        <section class="ad-card">
+          <h2 class="ad-h2">Personas por día</h2>
+          <div id="vsChart" class="vs-chart"></div>
+          <details class="vs-table"><summary>Ver como tabla</summary><table><thead><tr><th scope="col">Día</th><th scope="col">Personas</th><th scope="col">Páginas vistas</th></tr></thead><tbody id="vsTable"></tbody></table></details>
+        </section>
+        <div class="ad-two">
+          <section class="ad-card"><h2 class="ad-h2">De dónde llegan</h2><p class="ad-muted">La primera visita del día de cada persona.</p><ul id="vsSrc" class="vs-bars"></ul></section>
+          <section class="ad-card"><h2 class="ad-h2">Qué abren</h2><ul id="vsPages" class="vs-bars"></ul></section>
+        </div>
+        <div class="ad-two">
+          <section class="ad-card"><h2 class="ad-h2">Desde qué</h2><ul id="vsDev" class="vs-bars"></ul></section>
+          <section class="ad-card"><h2 class="ad-h2">Lugares más vistos</h2><p class="ad-muted">Desde que existe Goz.</p><ul id="vsTop" class="vs-bars"></ul></section>
+        </div>
+      </section>
+
+      <!-- Errores -->
+      <section id="sec-errores" class="ad-sec" hidden>
+        <div class="ad-head"><div><h1 class="ad-h1">Errores</h1><p class="ad-muted">Lo que le falló a la gente en el sitio. Si algo vuelve a fallar después de marcarlo, aparece otra vez aquí.</p></div></div>
+        <div class="ad-filters" role="group" aria-label="Filtrar errores">
+          <button type="button" class="ad-filter" data-errfilter="open" aria-pressed="true">Sin resolver</button>
+          <button type="button" class="ad-filter" data-errfilter="resolved" aria-pressed="false">Resueltos</button>
+        </div>
+        <section class="ad-card">
+          <ul id="errList" class="ad-rows"></ul>
+          <nav class="ad-pager" data-pager="errors" aria-label="Páginas de errores"></nav>
+        </section>
       </section>
 
       <!-- Negocios -->
@@ -305,6 +349,26 @@ const categories = [
   .ad-num { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
   .ad-todo-label { flex: 1 1 auto; font-size: 15px; font-weight: 800; line-height: 1.3; }
   .ad-todo-go { margin-top: 4px; font-size: 14px; font-weight: 800; color: var(--turquesa); }
+  .vs-chart { position: relative; margin-top: 8px; }
+  .vs-chart svg { display: block; width: 100%; height: 220px; overflow: visible; }
+  .vs-chart .vs-grid { stroke: var(--line); stroke-width: 1; }
+  .vs-chart .vs-axis { fill: var(--muted); font-size: 12px; font-family: var(--font-body, inherit); }
+  .vs-chart .vs-bar { fill: var(--turquesa); }
+  .vs-chart .vs-bar.is-on { fill: var(--rama); }
+  .vs-tip { position: absolute; pointer-events: none; transform: translate(-50%, -100%); background: var(--rama); color: #FFFFFF; font-size: 13px; line-height: 1.35; padding: 6px 10px; border-radius: 10px; white-space: nowrap; }
+  .vs-tip strong { font-weight: 800; }
+  .vs-table { margin-top: 10px; font-size: 14px; }
+  .vs-table summary { cursor: pointer; color: var(--turquesa); font-weight: 800; min-height: 32px; display: flex; align-items: center; }
+  .vs-table table { border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .vs-table th, .vs-table td { text-align: left; padding: 4px 16px 4px 0; border-bottom: 1px solid var(--line); }
+  .vs-bars { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .vs-bars li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; }
+  .vs-bars .vs-label { color: var(--ink); font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vs-bars .vs-val { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .vs-bars .vs-track { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--neblina); overflow: hidden; }
+  .vs-bars .vs-fill { display: block; height: 100%; border-radius: 4px; background: var(--turquesa); min-width: 4px; }
+  .err-msg { margin: 0; font-weight: 800; color: var(--ink); overflow-wrap: anywhere; }
+  .err-src { margin: 2px 0 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
   .ad-stats { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
   .ad-stats div { background: var(--surface); border-radius: 16px; padding: 16px 18px; }
   .ad-stats dt { font-size: 14px; font-weight: 700; color: var(--muted); }
@@ -474,6 +538,8 @@ const categories = [
   const BIZ: Record<string, string> = { hotel: 'Hospedaje', restaurante: 'Restaurante', cafeteria: 'Cafetería', tienda: 'Tienda', otro: 'Negocio' };
 
   let user: any = null;
+  let stats: any[] = [], errors: any[] = [];
+  let visRange = 30, errFilter: 'open' | 'resolved' = 'open';
   let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [], reports: any[] = [], archived: any[] = [], accountDeletions: any[] = [];
   let revFilter: 'live' | 'removed' = 'live', phFilter: 'live' | 'removed' = 'live';
   let bizFilter = 'pending', placeFilter = 'all', seasonFilter = 'active', selSeason: string | null = null;
@@ -501,7 +567,7 @@ const categories = [
     const b = (e.target as HTMLElement).closest('[data-page]') as HTMLButtonElement | null;
     if (!b || b.disabled) return;
     pages[b.dataset.page!] = Number(b.dataset.to);
-    ({ biz: renderBizList, places: renderPlaceList, season: renderSeason } as Record<string, () => void>)[b.dataset.page!]?.() ?? renderModeration();
+    ({ biz: renderBizList, places: renderPlaceList, season: renderSeason, errors: renderErrors } as Record<string, () => void>)[b.dataset.page!]?.() ?? renderModeration();
     const card = b.closest('.ad-card, .ad-list-wrap') as HTMLElement | null;
     card?.scrollIntoView({ block: 'start', behavior: 'smooth' });
   });
@@ -531,7 +597,7 @@ const categories = [
   });
 
   async function loadAll() {
-    const [p, b, r, f, s, rp, ar, dl] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports', 'archive', 'accountDeletions']
+    const [p, b, r, f, s, rp, ar, dl, st, er] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports', 'archive', 'accountDeletions', 'stats', 'errors']
       .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[])));
     places = p.map((x: any) => ({ ...x, lat: Number(x.lat), lng: Number(x.lng) })).sort((a: any, b2: any) => String(a.name).localeCompare(String(b2.name), 'es'));
     businesses = b.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
@@ -544,6 +610,8 @@ const categories = [
     expired.forEach((x: any) => deleteDoc(doc(db, 'archive', x.id)).catch((e: any) => console.error(e)));
     archived = ar.filter((x: any) => !x.restoredAt && !expired.includes(x)).sort((a: any, b2: any) => ms(b2.deletedAt) - ms(a.deletedAt));
     accountDeletions = dl.filter((x: any) => x.status !== 'done').sort((a: any, b2: any) => ms(a.createdAt) - ms(b2.createdAt));
+    stats = st.sort((a: any, b2: any) => a.id.localeCompare(b2.id));
+    errors = er.sort((a: any, b2: any) => ms(b2.last) - ms(a.last));
     seasonal = s.sort((a: any, b2: any) => String(b2.start).localeCompare(String(a.start)));
     renderAll();
     checkPhotos();
@@ -612,6 +680,8 @@ const categories = [
     const setCount = (id: string, n: number) => { $(`count-${id}`).hidden = !n; $(`count-${id}`).textContent = n; };
     setCount('negocios', pendingBiz.length); setCount('resenas', newReviews.length + repGroups.filter((g) => g.type === 'review').length);
     setCount('fotos', newPhotos.length + repGroups.filter((g) => g.type === 'photo').length); setCount('lugares', probs.length);
+    const openErrors = errors.filter((x) => !x.resolved);
+    setCount('errores', openErrors.length); $('tdErrors').textContent = openErrors.length;
 
     $('today').textContent = new Date().toLocaleDateString('es-SV', { weekday: 'long', day: 'numeric', month: 'long' });
     $('tdBiz').textContent = pendingBiz.length; $('tdReviews').textContent = newReviews.length;
@@ -632,8 +702,101 @@ const categories = [
       <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${placeLink(b.placeId, b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
       <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente. Los negocios nuevos no salen en el mapa hasta que los aprobés.</li>';
     renderDeletions();
-    renderBizList(); renderModeration(); renderPlaceList(); renderSeason();
+    renderBizList(); renderModeration(); renderPlaceList(); renderSeason(); renderVisits(); renderErrors();
   }
+
+  // ---------- Visitas ----------
+  const SRC: Record<string, string> = { google: 'Google', buscador: 'Otros buscadores', whatsapp: 'WhatsApp', facebook: 'Facebook', instagram: 'Instagram', redes: 'Otras redes', directo: 'Directo o app', otro: 'Otros sitios' };
+  const PAGES: Record<string, string> = { mapa: 'Mapa', lugar: 'Página de un lugar', lugares: 'Lista de lugares', perfil: 'Perfiles', insignias: 'Insignias', legal: 'Privacidad y términos', otra: 'Otras' };
+  const DEV: Record<string, string> = { movil: 'Celular', compu: 'Compu' };
+  const svDay = (offset = 0) => new Date(Date.now() - 6 * 3600e3 - offset * 864e5).toISOString().slice(0, 10);
+  const fmtN = (n: number) => n.toLocaleString('es-SV');
+  function bars(el: HTMLElement, rows: [string, number][], empty: string) {
+    const max = Math.max(1, ...rows.map((r) => r[1]));
+    const total = rows.reduce((a, r) => a + r[1], 0) || 1;
+    el.innerHTML = rows.filter((r) => r[1] > 0).map(([label, n]) => `<li><span class="vs-label">${label}</span><span class="vs-val">${fmtN(n)} · ${Math.round((n / total) * 100)}%</span><span class="vs-track" aria-hidden="true"><span class="vs-fill" style="width:${(n / max) * 100}%"></span></span></li>`).join('')
+      || `<li class="ad-empty">${empty}</li>`;
+  }
+  function renderVisits() {
+    document.querySelectorAll('[data-range]').forEach((b) => b.setAttribute('aria-pressed', String(Number((b as HTMLElement).dataset.range) === visRange)));
+    const days = Array.from({ length: visRange }, (_, i) => svDay(visRange - 1 - i));
+    const byDay = new Map(stats.map((x) => [x.id, x]));
+    const rows = days.map((d) => ({ d, people: num(byDay.get(d)?.visitors), views: num(byDay.get(d)?.views) }));
+    const inRange = days.map((d) => byDay.get(d)).filter(Boolean) as any[];
+    const sum = (k: string) => inRange.reduce((a, x) => a + num(x[k]), 0);
+    const people = sum('visitors'), views = sum('views');
+    $('vsPeople').textContent = fmtN(people); $('vsViews').textContent = fmtN(views);
+    $('vsToday').textContent = fmtN(num(byDay.get(svDay())?.visitors));
+    $('vsPer').textContent = people ? (views / people).toLocaleString('es-SV', { maximumFractionDigits: 1 }) : '0';
+    drawChart(rows);
+    $('vsTable').innerHTML = rows.slice().reverse().map((r) => `<tr><td>${fmtDay(r.d)}</td><td>${fmtN(r.people)}</td><td>${fmtN(r.views)}</td></tr>`).join('');
+    const pick = (map: Record<string, string>, prefix: string) => Object.entries(map).map(([k, label]) => [label, sum(`${prefix}${k}`)] as [string, number]).sort((a, b) => b[1] - a[1]);
+    bars($('vsSrc'), pick(SRC, 's_'), 'Todavía no hay visitas en estos días.');
+    bars($('vsPages'), pick(PAGES, 'p_'), 'Todavía no hay visitas en estos días.');
+    bars($('vsDev'), pick(DEV, 'd_'), 'Todavía no hay visitas en estos días.');
+    const top = places.filter((p) => num(p.visitCount) > 0).sort((a, b) => num(b.visitCount) - num(a.visitCount)).slice(0, 8);
+    bars($('vsTop'), top.map((p) => [placeLink(p.id, p.name), num(p.visitCount)] as [string, number]), 'Nadie ha abierto un lugar todavía.');
+  }
+  function drawChart(rows: { d: string; people: number; views: number }[]) {
+    const W = 720, H = 220, padL = 36, padB = 26, padT = 10;
+    const max = Math.max(4, ...rows.map((r) => r.people));
+    const step = Math.pow(10, Math.floor(Math.log10(max))) * (max / Math.pow(10, Math.floor(Math.log10(max))) > 5 ? 2 : 1);
+    const top = Math.ceil(max / step) * step;
+    const y = (v: number) => padT + (H - padT - padB) * (1 - v / top);
+    const cw = (W - padL) / rows.length, bw = Math.max(3, cw - 2);
+    const ticks = Array.from({ length: Math.floor(top / step) + 1 }, (_, i) => i * step);
+    const labelEvery = rows.length > 10 ? 5 : 1;
+    const bar = (r: typeof rows[0], i: number) => {
+      const x = padL + i * cw + (cw - bw) / 2, yy = y(r.people), h = H - padB - yy;
+      if (r.people <= 0) return '';
+      const rad = Math.min(4, bw / 2, h);
+      return `<path class="vs-bar" data-i="${i}" d="M${x},${H - padB} V${yy + rad} Q${x},${yy} ${x + rad},${yy} H${x + bw - rad} Q${x + bw},${yy} ${x + bw},${yy + rad} V${H - padB} Z"></path>`;
+    };
+    $('vsChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Personas por día en los últimos ${rows.length} días">
+      ${ticks.map((t) => `<line class="vs-grid" x1="${padL}" x2="${W}" y1="${y(t)}" y2="${y(t)}"></line><text class="vs-axis" x="${padL - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}
+      ${rows.map(bar).join('')}
+      ${rows.map((r, i) => ((rows.length - 1 - i) % labelEvery === 0 ? `<text class="vs-axis" x="${padL + i * cw + cw / 2}" y="${H - 6}" text-anchor="middle">${Number(r.d.slice(8))}</text>` : '')).join('')}
+    </svg><div class="vs-tip" id="vsTip" hidden></div>`;
+    const svg = $('vsChart').querySelector('svg') as SVGSVGElement, tip = $('vsTip');
+    const show = (e: PointerEvent) => {
+      const box = svg.getBoundingClientRect();
+      const i = Math.min(rows.length - 1, Math.max(0, Math.floor(((e.clientX - box.left) / box.width * W - padL) / cw)));
+      const r = rows[i];
+      svg.querySelectorAll('.vs-bar').forEach((b) => b.classList.toggle('is-on', Number((b as HTMLElement).dataset.i) === i));
+      tip.innerHTML = `<strong>${fmtDay(r.d)}</strong><br>${fmtN(r.people)} ${r.people === 1 ? 'persona' : 'personas'} · ${fmtN(r.views)} ${r.views === 1 ? 'página' : 'páginas'}`;
+      tip.hidden = false;
+      tip.style.left = `${Math.min(box.width - 80, Math.max(80, ((padL + i * cw + cw / 2) / W) * box.width))}px`;
+      tip.style.top = `${(y(r.people) / H) * box.height - 8}px`;
+    };
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerleave', () => { tip.hidden = true; svg.querySelectorAll('.vs-bar').forEach((b) => b.classList.remove('is-on')); });
+  }
+  document.querySelectorAll('[data-range]').forEach((b) => b.addEventListener('click', () => { visRange = Number((b as HTMLElement).dataset.range); renderVisits(); }));
+
+  // ---------- Errores ----------
+  function renderErrors() {
+    document.querySelectorAll('[data-errfilter]').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.errfilter === errFilter)));
+    const all = errors.filter((x) => (errFilter === 'open' ? !x.resolved : x.resolved));
+    $('errList').innerHTML = page('errors', all, 10).map((x) => `<li class="ad-row">
+      <div class="ad-row-main">
+        <p class="err-msg">${esc(x.msg)}</p>
+        ${x.src ? `<p class="err-src">${esc(x.src)}</p>` : ''}
+        <p class="ad-row-meta">${num(x.count)} ${num(x.count) === 1 ? 'vez' : 'veces'} · la última ${ago(x.last)} · en ${esc(x.page || '/')} · ${esc(x.ua || '')}${x.app === 'app' ? ' · app' : ''}</p>
+      </div>
+      ${x.resolved ? '' : `<button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-err-done="${esc(x.id)}">Ya lo arreglé</button>`}
+    </li>`).join('') || `<li class="ad-empty">${errFilter === 'open' ? 'No hay errores sin resolver. Todo anda bien.' : 'Todavía no marcaste ningún error como resuelto.'}</li>`;
+  }
+  document.querySelectorAll('[data-errfilter]').forEach((b) => b.addEventListener('click', () => { errFilter = (b as HTMLElement).dataset.errfilter as any; resetPage('errors'); renderErrors(); }));
+  $('errList').addEventListener('click', async (e: Event) => {
+    const b = (e.target as HTMLElement).closest('[data-err-done]') as HTMLButtonElement | null;
+    if (!b) return;
+    b.disabled = true;
+    try {
+      await updateDoc(doc(db, 'errors', b.dataset.errDone!), { resolved: true, resolvedAt: serverTimestamp() });
+      const x = errors.find((y) => y.id === b.dataset.errDone); if (x) x.resolved = true;
+      renderAll(); toast('Error marcado como resuelto. Si vuelve a pasar, aparece otra vez.');
+    } catch (err) { console.error(err); b.disabled = false; toast('No se pudo marcar. Probá otra vez.'); }
+  });
 
   // ---------- Cuentas borradas ----------
   function renderDeletions() {
