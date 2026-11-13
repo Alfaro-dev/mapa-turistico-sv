@@ -59,13 +59,13 @@ service cloud.firestore {
       allow create, update: if day.matches('^20[0-9]{2}-[01][0-9]-[0-3][0-9]$')
         && request.resource.data.keys().hasOnly(['views', 'visitors',
           'p_mapa', 'p_lugar', 'p_lugares', 'p_perfil', 'p_insignias', 'p_legal', 'p_otra',
-          's_google', 's_buscador', 's_whatsapp', 's_facebook', 's_instagram', 's_redes', 's_directo', 's_otro',
+          's_google', 's_buscador', 's_whatsapp', 's_facebook', 's_instagram', 's_redes', 's_directo', 's_otro', 's_compartido',
           'd_movil', 'd_compu'])
         && request.resource.data.views == statPrev('views') + 1
         && statStep('visitors') && statStep('p_mapa') && statStep('p_lugar') && statStep('p_lugares') && statStep('p_perfil')
         && statStep('p_insignias') && statStep('p_legal') && statStep('p_otra')
         && statStep('s_google') && statStep('s_buscador') && statStep('s_whatsapp') && statStep('s_facebook')
-        && statStep('s_instagram') && statStep('s_redes') && statStep('s_directo') && statStep('s_otro')
+        && statStep('s_instagram') && statStep('s_redes') && statStep('s_directo') && statStep('s_otro') && statStep('s_compartido')
         && statStep('d_movil') && statStep('d_compu');
     }
 

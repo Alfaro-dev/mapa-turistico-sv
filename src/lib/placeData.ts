@@ -199,7 +199,7 @@ export function wireShare(root: HTMLElement) {
   root.addEventListener('click', async (e) => {
     const btn = (e.target as HTMLElement).closest('[data-share-page]') as HTMLElement | null;
     if (!btn) return;
-    const url = location.href.split('#')[0];
+    const url = `${location.origin}${location.pathname}?ref=compartir`;
     const title = btn.dataset.title || document.title;
     try {
       if (navigator.share) { await navigator.share({ title, text: `${title} en Goz`, url }); return; }

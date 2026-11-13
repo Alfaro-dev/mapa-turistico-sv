@@ -1318,7 +1318,7 @@ const categories = [
     if (!b) return;
     const id = b.dataset.share!;
     const p = allPlaces.find((x) => x.id === id);
-    const url = `${location.origin}/lugar/${encodeURIComponent(id)}`;
+    const url = `${location.origin}/lugar/${encodeURIComponent(id)}?ref=compartir`;
     try {
       if (navigator.share) { await navigator.share({ title: p?.name || 'Goz', text: `${p?.name || 'Este lugar'} en Goz`, url }); return; }
       await navigator.clipboard.writeText(url);

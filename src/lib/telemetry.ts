@@ -21,7 +21,10 @@ function pageKind(path: string) {
   return 'otra';
 }
 function source() {
-  const utm = new URLSearchParams(location.search).get('utm_source')?.toLowerCase() || '';
+  const params = new URLSearchParams(location.search);
+  // Enlaces que la gente comparte desde el botón Compartir de Goz.
+  if (params.get('ref') === 'compartir') return 'compartido';
+  const utm = params.get('utm_source')?.toLowerCase() || '';
   let host = '';
   try { host = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : ''; } catch { /* sin referencia */ }
   const h = `${utm} ${host}`;
