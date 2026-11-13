@@ -738,21 +738,21 @@ const categories = [
     bars($('vsTop'), top.map((p) => [placeLink(p.id, p.name), num(p.visitCount)] as [string, number]), 'Nadie ha abierto un lugar todavía.');
   }
   function drawChart(rows: { d: string; people: number; views: number }[]) {
-    const W = 720, H = 220, padL = 36, padB = 26, padT = 10;
+    const W = Math.max(280, Math.round(($('vsChart') as HTMLElement).clientWidth || 720)), H = 220, padL = 36, padB = 26, padT = 10;
     const max = Math.max(4, ...rows.map((r) => r.people));
     const step = Math.pow(10, Math.floor(Math.log10(max))) * (max / Math.pow(10, Math.floor(Math.log10(max))) > 5 ? 2 : 1);
     const top = Math.ceil(max / step) * step;
     const y = (v: number) => padT + (H - padT - padB) * (1 - v / top);
     const cw = (W - padL) / rows.length, bw = Math.max(3, cw - 2);
     const ticks = Array.from({ length: Math.floor(top / step) + 1 }, (_, i) => i * step);
-    const labelEvery = rows.length > 10 ? 5 : 1;
+    const labelEvery = rows.length > 10 ? (W < 520 ? 10 : 5) : 1;
     const bar = (r: typeof rows[0], i: number) => {
       const x = padL + i * cw + (cw - bw) / 2, yy = y(r.people), h = H - padB - yy;
       if (r.people <= 0) return '';
       const rad = Math.min(4, bw / 2, h);
       return `<path class="vs-bar" data-i="${i}" d="M${x},${H - padB} V${yy + rad} Q${x},${yy} ${x + rad},${yy} H${x + bw - rad} Q${x + bw},${yy} ${x + bw},${yy + rad} V${H - padB} Z"></path>`;
     };
-    $('vsChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Personas por día en los últimos ${rows.length} días">
+    $('vsChart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Personas por día en los últimos ${rows.length} días">
       ${ticks.map((t) => `<line class="vs-grid" x1="${padL}" x2="${W}" y1="${y(t)}" y2="${y(t)}"></line><text class="vs-axis" x="${padL - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}
       ${rows.map(bar).join('')}
       ${rows.map((r, i) => ((rows.length - 1 - i) % labelEvery === 0 ? `<text class="vs-axis" x="${padL + i * cw + cw / 2}" y="${H - 6}" text-anchor="middle">${Number(r.d.slice(8))}</text>` : '')).join('')}
@@ -772,6 +772,9 @@ const categories = [
     svg.addEventListener('pointerleave', () => { tip.hidden = true; svg.querySelectorAll('.vs-bar').forEach((b) => b.classList.remove('is-on')); });
   }
   document.querySelectorAll('[data-range]').forEach((b) => b.addEventListener('click', () => { visRange = Number((b as HTMLElement).dataset.range); renderVisits(); }));
+  // La gráfica se vuelve a dibujar al cambiar el ancho, para que el texto no se estire.
+  let vsW = 0;
+  new ResizeObserver(() => { const w = ($('vsChart') as HTMLElement).clientWidth; if (w && Math.abs(w - vsW) > 8) { vsW = w; renderVisits(); } }).observe($('vsChart'));
 
   // ---------- Errores ----------
   function renderErrors() {

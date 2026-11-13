@@ -64,7 +64,7 @@ const sent = new Set<string>();
 
 export async function reportError(message: string, where = '') {
   const msg = String(message || 'Error sin mensaje').slice(0, 300);
-  const src = String(where).replace(location.origin, '').slice(0, 300);
+  const src = String(where).replace(location.origin, '').replace(/[?#][^:]*/, '').slice(0, 300);
   if (IGNORE.test(msg) || /extension:\/\//.test(src) || isBot() || isLocal()) return;
   const id = `e_${hash(`${msg}|${src.replace(/:\d+(:\d+)?$/, '')}`)}`;
   if (sent.has(id) || sent.size >= 3) return; // como mucho 3 errores distintos por página abierta
