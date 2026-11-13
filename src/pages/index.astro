@@ -1843,14 +1843,13 @@ const categories = [
 
   // ---------- Compartir un lugar ----------
   // Comparte la página propia del lugar (/lugar/id), que se ve con foto en WhatsApp y redes.
-  // Si el lugar es nuevo y su página todavía no existe, comparte el enlace del mapa.
+  // Los lugares nuevos también tienen página: se arma en vivo aunque el sitio no se haya vuelto a publicar.
   $('detailView').addEventListener('click', async (e: Event) => {
     const b = (e.target as HTMLElement).closest('[data-share]') as HTMLElement | null;
     if (!b) return;
     const id = b.dataset.share!;
     const p = allPlaces.find((x) => x.id === id);
-    let url = `${location.origin}/lugar/${encodeURIComponent(id)}`;
-    try { const r = await fetch(url, { method: 'HEAD' }); if (!r.ok) url = `${location.origin}/#${encodeURIComponent(id)}`; } catch { url = `${location.origin}/#${encodeURIComponent(id)}`; }
+    const url = `${location.origin}/lugar/${encodeURIComponent(id)}`;
     try {
       if (navigator.share) { await navigator.share({ title: p?.name || 'Goz', text: `${p?.name || 'Este lugar'} en Goz`, url }); return; }
       await navigator.clipboard.writeText(url);

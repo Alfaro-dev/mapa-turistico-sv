@@ -1,0 +1,43 @@
+---
+// Página para enlaces que no existen. Si es un lugar recién agregado (/lugar/id) que todavía no tiene
+// página propia, lo muestra igual leyéndolo en vivo, así no hace falta volver a publicar el sitio.
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import GozLoader from '../components/GozLoader.astro';
+import '../styles/place.css';
+---
+<Layout title="Goz · El Salvador, un país chiquito, pero no te lo acabás." noindex>
+  <SiteHeader id="nf" />
+  <main class="lp" id="lp">
+    <GozLoader id="nfLoading" text="Buscando el lugar…" class="nf-loading" />
+    <section class="lp-main nf" id="nfMissing" hidden>
+      <h1 class="lp-h1">Aquí no hay nada</h1>
+      <p class="lp-text">Puede que el enlace esté mal escrito o que el lugar ya no esté en Goz.</p>
+      <div class="lp-actions">
+        <a class="lp-btn lp-btn-primary" href="/">Ver el mapa</a>
+        <a class="lp-btn" href="/lugares">Ver todos los lugares</a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style is:global>
+  .nf-loading { min-height: 50vh; }
+  .nf { padding: 28px; display: flex; flex-direction: column; gap: 12px; }
+</style>
+
+<script>
+  import { loadPlaceLive, renderPlace, placeTitle, wireShare } from '../lib/placeData';
+  const root = document.getElementById('lp')!;
+  const missing = () => { document.getElementById('nfLoading')?.remove(); document.getElementById('nfMissing')!.hidden = false; };
+  const m = /^\/lugar\/([^/]+)\/?$/.exec(location.pathname);
+  if (!m) missing();
+  else {
+    wireShare(root);
+    loadPlaceLive(decodeURIComponent(m[1])).then((live) => {
+      if (!live) return missing();
+      root.innerHTML = renderPlace(live.place, live.all);
+      document.title = placeTitle(live.place);
+    }).catch(missing);
+  }
+</script>
