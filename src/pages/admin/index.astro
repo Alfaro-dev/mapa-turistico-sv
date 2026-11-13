@@ -58,6 +58,11 @@ const categories = [
           <a href="#resenas" id="tdReportsLink" class="ad-todo-card"><span class="ad-num" id="tdReports">0</span><span class="ad-todo-label">Reportes por revisar</span><span class="ad-todo-go">Revisar</span></a>
           <a href="#lugares" class="ad-todo-card"><span class="ad-num" id="tdPlaces">0</span><span class="ad-todo-label">Lugares por corregir</span><span class="ad-todo-go">Corregir</span></a>
         </div>
+        <section id="delAccounts" class="ad-card" hidden aria-labelledby="hDelAcc">
+          <h2 id="hDelAcc" class="ad-h2">Cuentas borradas por limpiar</h2>
+          <p class="ad-muted">Estas personas borraron su cuenta. Sus reseñas y fotos ya no están en Goz, pero las imágenes siguen en Cloudinary. Entrá a Cloudinary, buscá la etiqueta y borralas; tenés hasta 30 días (lo dice la política de privacidad).</p>
+          <ul id="delAccList" class="ad-rows"></ul>
+        </section>
         <h2 class="ad-h2">En Goz hoy</h2>
         <dl class="ad-stats">
           <div><dt>Lugares turísticos</dt><dd id="stPlaces">0</dd></div>
@@ -312,6 +317,7 @@ const categories = [
   .ad-row-title { margin: 0; font-weight: 800; font-size: 15px; }
   .ad-row-text { margin: 2px 0 0; font-size: 14px; color: var(--ink-2); line-height: 1.45; overflow-wrap: anywhere; }
   .ad-row-meta { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .ad-code { font-size: 13px; background: var(--neblina); padding: 2px 6px; border-radius: 6px; }
   .ad-removed { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: #8A3A10; }
   .ad-mini-photos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .ad-mini { padding: 0; border: 0; background: var(--photo); width: 64px; height: 64px; border-radius: 10px; overflow: hidden; cursor: zoom-in; flex: none; }
@@ -468,7 +474,7 @@ const categories = [
   const BIZ: Record<string, string> = { hotel: 'Hospedaje', restaurante: 'Restaurante', cafeteria: 'Cafetería', tienda: 'Tienda', otro: 'Negocio' };
 
   let user: any = null;
-  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [], reports: any[] = [], archived: any[] = [];
+  let places: any[] = [], businesses: any[] = [], reviews: any[] = [], photos: any[] = [], seasonal: any[] = [], reports: any[] = [], archived: any[] = [], accountDeletions: any[] = [];
   let revFilter: 'live' | 'removed' = 'live', phFilter: 'live' | 'removed' = 'live';
   let bizFilter = 'pending', placeFilter = 'all', seasonFilter = 'active', selSeason: string | null = null;
   let selBiz: string | null = null, selPlace: string | null = null;
@@ -525,14 +531,19 @@ const categories = [
   });
 
   async function loadAll() {
-    const [p, b, r, f, s, rp, ar] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports', 'archive']
+    const [p, b, r, f, s, rp, ar, dl] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports', 'archive', 'accountDeletions']
       .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[])));
     places = p.map((x: any) => ({ ...x, lat: Number(x.lat), lng: Number(x.lng) })).sort((a: any, b2: any) => String(a.name).localeCompare(String(b2.name), 'es'));
     businesses = b.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     reviews = r.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     photos = f.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     reports = rp.filter((x: any) => x.status === 'open');
-    archived = ar.filter((x: any) => !x.restoredAt).sort((a: any, b2: any) => ms(b2.deletedAt) - ms(a.deletedAt));
+    // Lo archivado se guarda hasta 12 meses; lo más viejo se borra de verdad (política de privacidad).
+    const yearAgo = Date.now() - 365 * 864e5;
+    const expired = ar.filter((x: any) => ms(x.deletedAt) && ms(x.deletedAt) < yearAgo);
+    expired.forEach((x: any) => deleteDoc(doc(db, 'archive', x.id)).catch((e: any) => console.error(e)));
+    archived = ar.filter((x: any) => !x.restoredAt && !expired.includes(x)).sort((a: any, b2: any) => ms(b2.deletedAt) - ms(a.deletedAt));
+    accountDeletions = dl.filter((x: any) => x.status !== 'done').sort((a: any, b2: any) => ms(a.createdAt) - ms(b2.createdAt));
     seasonal = s.sort((a: any, b2: any) => String(b2.start).localeCompare(String(a.start)));
     renderAll();
     checkPhotos();
@@ -620,8 +631,31 @@ const categories = [
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
       <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
       <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente. Los negocios nuevos no salen en el mapa hasta que los aprobés.</li>';
+    renderDeletions();
     renderBizList(); renderModeration(); renderPlaceList(); renderSeason();
   }
+
+  // ---------- Cuentas borradas ----------
+  function renderDeletions() {
+    $('delAccounts').hidden = !accountDeletions.length;
+    $('delAccList').innerHTML = accountDeletions.map((x) => {
+      const days = Math.max(0, 30 - Math.floor((Date.now() - ms(x.createdAt)) / 864e5));
+      return `<li class="ad-row"><div class="ad-row-main">
+        <p class="ad-row-title">Etiqueta <code class="ad-code">${esc(x.cloudinaryTag)}</code> <span class="ad-tag${days <= 7 ? ' ad-tag-warn' : ''}">${days ? `quedan ${days} días` : 'vence hoy'}</span></p>
+        <p class="ad-row-meta">Se borró ${ago(x.createdAt)} · tenía ${num(x.photos)} ${num(x.photos) === 1 ? 'foto' : 'fotos'} y ${num(x.reviews)} ${num(x.reviews) === 1 ? 'reseña' : 'reseñas'}</p>
+      </div><button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-deldone="${esc(x.id)}">Ya las borré</button></li>`;
+    }).join('');
+  }
+  document.addEventListener('click', async (e) => {
+    const b = (e.target as HTMLElement).closest('[data-deldone]') as HTMLButtonElement | null;
+    if (!b) return;
+    b.disabled = true;
+    try {
+      await updateDoc(doc(db, 'accountDeletions', b.dataset.deldone!), { status: 'done', doneAt: serverTimestamp(), doneBy: user.uid });
+      accountDeletions = accountDeletions.filter((x) => x.id !== b.dataset.deldone);
+      renderDeletions(); toast('Listo. Esa cuenta quedó limpia.');
+    } catch (err) { console.error(err); b.disabled = false; b.textContent = 'No se pudo guardar'; }
+  });
 
   // ---------- Reseñas y fotos ----------
   const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';

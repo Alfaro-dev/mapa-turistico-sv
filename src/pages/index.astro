@@ -50,6 +50,7 @@ const categories = [
       <a href="/perfil" role="menuitem" class="account-item">Mi perfil e insignias</a>
       <a id="adminLink" href="/admin" role="menuitem" class="account-item" hidden>Panel de administrador</a>
       <button type="button" id="logoutBtn" role="menuitem" class="account-item">Salir</button>
+      <p class="account-legal"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
     </div>
   </div>
 
@@ -108,6 +109,7 @@ const categories = [
             <li class="sk-row" aria-hidden="true"><span class="sk sk-thumb"></span><span class="sk-lines"><span class="sk" style={`width:${[70, 55, 80, 60, 75, 50][i]}%`}></span><span class="sk sk-sub"></span></span></li>
           ))}
         </ul>
+        <p class="list-legal"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
       </section>
       <section id="detailView" hidden aria-live="polite"></section>
     </div>
@@ -130,6 +132,7 @@ const categories = [
         Entrar con Google
       </button>
       <p id="reviewLoginError" class="form-error" hidden></p>
+      <p class="legal-note">Al publicar aceptás los <a href="/terminos" target="_blank" rel="noopener">Términos</a> y la <a href="/privacidad" target="_blank" rel="noopener">Política de privacidad</a>.</p>
     </section>
 
     <form id="reviewForm" class="review-body" novalidate hidden>
@@ -224,6 +227,29 @@ const categories = [
         <span id="lbVoteTxt"></span>
       </button>
     </div>
+  </dialog>
+
+  <!-- Antes de publicar por primera vez: aceptar privacidad, términos y transferencia de datos. -->
+  <dialog id="consentDialog" class="report-dialog" aria-labelledby="consentTitle">
+    <form id="consentForm" method="dialog" novalidate>
+      <div class="rp-head">
+        <h2 id="consentTitle" class="rp-title">Antes de publicar</h2>
+        <button type="button" id="consentClose" class="icon-btn" aria-label="Cerrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <p class="rp-lead">Tu nombre, tu foto de Google y lo que publiqués se van a ver en Goz. Tu correo no. Lo pedimos una sola vez.</p>
+      <div class="consent-list">
+        <label class="consent-item"><input type="checkbox" data-consent><span>Leí y acepto la <a href="/privacidad" target="_blank" rel="noopener">Política de privacidad</a> y los <a href="/terminos" target="_blank" rel="noopener">Términos de uso</a>.</span></label>
+        <label class="consent-item"><input type="checkbox" data-consent><span>Acepto que mis datos se guarden en servidores fuera de El Salvador (Google, Cloudinary y Render, en Estados Unidos).</span></label>
+        <label class="consent-item"><input type="checkbox" data-consent><span>Tengo 18 años o más, o tengo permiso de mi mamá, papá o encargado.</span></label>
+      </div>
+      <p id="consentError" class="form-error" role="alert" hidden></p>
+      <div class="rp-actions">
+        <button type="button" id="consentCancel" class="rp-btn rp-btn-ghost">Ahora no</button>
+        <button type="submit" id="consentOk" class="rp-btn rp-btn-primary">Aceptar y seguir</button>
+      </div>
+    </form>
   </dialog>
 
   <!-- Reportar una reseña o una foto: le llega al admin. -->
@@ -474,6 +500,17 @@ const categories = [
   .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 28px; }
   .section-head .section-title { margin: 0; }
   .section-help { margin: 4px 0 10px; font-size: 13px; color: var(--muted); }
+  /* Aceptar privacidad y enlaces legales */
+  .consent-list { display: flex; flex-direction: column; gap: 6px; }
+  .consent-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 14px; cursor: pointer; font-size: 15px; line-height: 1.45; }
+  .consent-item input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--turquesa); flex: none; }
+  .consent-item:has(input:checked) { border-color: var(--turquesa); background: #F1F8F7; }
+  .consent-item:has(input:focus-visible) { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .consent-item a, .legal-note a, .list-legal a, .account-legal a { color: var(--turquesa); font-weight: 700; }
+  .legal-note { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .list-legal { margin: 18px 0 8px; font-size: 13px; color: var(--muted); }
+  .account-legal { margin: 6px 0 0; padding: 8px 12px 2px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  #consentError { margin-top: 10px; }
   /* Reportar */
   .report-dialog { margin: auto; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); box-sizing: border-box; padding: 20px 22px; border: 0; border-radius: 24px; background: var(--surface); color: var(--ink); box-shadow: 0 20px 50px rgba(20,48,47,0.25); }
   .report-dialog::backdrop { background: rgba(20,48,47,0.55); }
@@ -615,6 +652,7 @@ const categories = [
   import { uploadImage } from '../lib/cloudinary';
   import { esc, safeUrl, num } from '../lib/escape';
   import { datePicker } from '../lib/datePicker';
+  import { LEGAL } from '../lib/legal';
   import { GOZ_PIN_SVG } from '../lib/gozPin';
 
   // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
@@ -1237,7 +1275,7 @@ const categories = [
     $('detailView').querySelectorAll('[data-review]').forEach((b: HTMLElement) => b.addEventListener('click', () => openReview(b.dataset.review!)));
     $('detailView').querySelectorAll('[data-vote]').forEach((b: HTMLElement) => b.addEventListener('click', () => votePhoto(b.dataset.vote!)));
     $('detailView').querySelectorAll('[data-addphoto]').forEach((b) => b.addEventListener('click', async () => {
-      if (!currentUser && !(await login())) return;
+      if (!(await readyToPost())) return;
       $('placePhotoInput').click();
     }));
     $('placePhotoInput')?.addEventListener('change', (e: Event) => uploadPlacePhoto(p, e.target as HTMLInputElement));
@@ -1330,7 +1368,7 @@ const categories = [
     $('detailView').querySelectorAll('[data-biz]').forEach((b: HTMLElement) => b.addEventListener('click', () => selectBusiness(b.dataset.biz!, p.id)));
     $('detailView').querySelectorAll('[data-vote]').forEach((b: HTMLElement) => b.addEventListener('click', () => votePhoto(b.dataset.vote!)));
     $('detailView').querySelectorAll('[data-addphoto], [data-first-photo]').forEach((b) => b.addEventListener('click', async () => {
-      if (!currentUser && !(await login())) return;
+      if (!(await readyToPost())) return;
       $('placePhotoInput').click();
     }));
     $('placePhotoInput')?.addEventListener('change', (e: Event) => uploadPlacePhoto(p, e.target as HTMLInputElement));
@@ -1355,6 +1393,58 @@ const categories = [
       return false;
     }
   }
+
+  // ---------- Aceptar privacidad (una vez por versión de la política) ----------
+  // La ley pide consentimiento expreso, también para guardar datos fuera de El Salvador.
+  // Queda en users/{uid}.privacy con la versión y la fecha.
+  let consentFor = '';
+  async function ensureConsent(): Promise<boolean> {
+    if (!currentUser) return false;
+    if (consentFor === currentUser.uid) return true;
+    try {
+      const snap = await getDoc(doc(db, 'users', currentUser.uid));
+      if (snap.exists() && snap.data()?.privacy?.version === LEGAL.updated) { consentFor = currentUser.uid; return true; }
+    } catch { /* si no se puede leer, se pregunta */ }
+    const dlg = $('consentDialog') as HTMLDialogElement;
+    ($('consentForm') as HTMLFormElement).reset();
+    $('consentError').hidden = true;
+    dlg.showModal();
+    return new Promise<boolean>((resolve) => {
+      const done = (ok: boolean) => { cleanup(); if (dlg.open) dlg.close(); resolve(ok); };
+      const onSubmit = async (e: Event) => {
+        e.preventDefault();
+        const boxes = [...dlg.querySelectorAll('[data-consent]')] as HTMLInputElement[];
+        const missing = boxes.find((b) => !b.checked);
+        if (missing) { $('consentError').textContent = 'Para publicar tenés que marcar las tres casillas.'; $('consentError').hidden = false; missing.focus(); return; }
+        ($('consentOk') as HTMLButtonElement).disabled = true;
+        try {
+          await setDoc(doc(db, 'users', currentUser.uid), {
+            privacy: { version: LEGAL.updated, acceptedAt: serverTimestamp(), transfers: true, ageOk: true },
+          }, { merge: true });
+          consentFor = currentUser.uid;
+          done(true);
+        } catch (err) {
+          console.error(err);
+          $('consentError').textContent = 'No se pudo guardar. Revisá tu conexión y probá otra vez.'; $('consentError').hidden = false;
+        } finally { ($('consentOk') as HTMLButtonElement).disabled = false; }
+      };
+      const onCancel = () => done(false);
+      const onClose = () => { cleanup(); resolve(consentFor === currentUser?.uid); };
+      const cleanup = () => {
+        $('consentForm').removeEventListener('submit', onSubmit);
+        $('consentCancel').removeEventListener('click', onCancel);
+        $('consentClose').removeEventListener('click', onCancel);
+        dlg.removeEventListener('close', onClose);
+      };
+      $('consentForm').addEventListener('submit', onSubmit);
+      $('consentCancel').addEventListener('click', onCancel);
+      $('consentClose').addEventListener('click', onCancel);
+      dlg.addEventListener('close', onClose);
+      dlg.querySelectorAll('[data-consent]').forEach((b) => b.addEventListener('change', () => { $('consentError').hidden = true; }));
+    });
+  }
+  // Para votar, reportar, pedir cupones o subir fotos: cuenta y aceptación.
+  const readyToPost = async () => (!!currentUser || await login()) && await ensureConsent();
 
   function setAccountMenu(open: boolean) {
     $('accountMenu').hidden = !open;
@@ -1554,6 +1644,7 @@ const categories = [
     addReviewPhotos(Array.from(e.dataTransfer?.files || []).filter((f) => f.type.startsWith('image/')));
   });
   async function addReviewPhotos(picked: File[]) {
+    if (!(await ensureConsent())) return;
     const room = Math.max(0, 4 - reviewPhotos.length - uploadingPhotos);
     const files = picked.slice(0, room);
     $('reviewError').hidden = true;
@@ -1587,6 +1678,7 @@ const categories = [
     $('reviewError').hidden = true;
     document.querySelectorAll('#reviewForm [aria-invalid]').forEach((x) => x.removeAttribute('aria-invalid'));
     if (!currentUser || !reviewPlace) return;
+    if (!(await ensureConsent())) return;
     if (!reviewRating) { err('Elegí de 1 a 5 estrellas.'); (document.querySelector('.star-pick') as HTMLElement)?.focus(); return; }
     const comment = ($('reviewComment') as HTMLTextAreaElement).value.trim();
     if (comment.length < 10) return err(`Contá un poquito más: faltan ${10 - comment.length} letras.`, 'reviewComment');
@@ -1724,12 +1816,12 @@ const categories = [
 
   // Un cupón por persona: el canje es couponRedemptions/{cupón}_{usuario} y va junto con el +1.
   async function redeemCoupon(b: Business, couponId: string, btn: HTMLButtonElement) {
-    if (!currentUser && !(await login())) return;
+    if (!(await readyToPost())) return;
     if (myRedemptions.has(couponId)) { renderBusinessDetail(b); return; }
     btn.disabled = true; btn.textContent = 'Un momento…';
     try {
       const batch = writeBatch(db);
-      batch.set(doc(db, 'couponRedemptions', `${couponId}_${currentUser.uid}`), { couponId, businessId: b.id, userId: currentUser.uid, userName: currentUser.displayName || 'Visitante', redeemedAt: new Date().toISOString() });
+      batch.set(doc(db, 'couponRedemptions', `${couponId}_${currentUser.uid}`), { couponId, businessId: b.id, userId: currentUser.uid, redeemedAt: new Date().toISOString() });
       batch.update(doc(db, 'coupons', couponId), { usedCount: increment(1) });
       await batch.commit();
       myRedemptions.add(couponId);
@@ -1747,7 +1839,7 @@ const categories = [
   const reportedIds = new Set<string>();
   let reportTarget: { type: 'review' | 'photo'; id: string; placeId: string } | null = null;
   async function openReport(type: 'review' | 'photo', id: string, placeId: string) {
-    if (!currentUser && !(await login())) return;
+    if (!(await readyToPost())) return;
     reportTarget = { type, id, placeId };
     const done = reportedIds.has(`${type}_${id}`);
     $('reportTitle').textContent = type === 'review' ? '¿Qué pasa con esta reseña?' : '¿Qué pasa con esta foto?';
@@ -1808,7 +1900,7 @@ const categories = [
   // Un voto por persona: el documento photoVotes/{foto}_{usuario} y el +1 van juntos,
   // y las reglas de Firestore no dejan sumar sin ese documento.
   async function votePhoto(photoId: string) {
-    if (!currentUser && !(await login())) return;
+    if (!(await readyToPost())) return;
     if (votedPhotos.has(photoId)) return;
     const ph = Object.values(photosByPlace).flat().find((x) => x.id === photoId);
     if (!ph) return;
@@ -1988,7 +2080,10 @@ const categories = [
       const snaps = await Promise.all(todo.map((k) => getDocs(query(collection(db, 'places'), where('lat', '>=', k * BAND), where('lat', '<', (k + 1) * BAND)))));
       const fresh = addPlaces(snaps.flatMap((sn) => sn.docs.map(asPlace)));
       if (fresh.length) { refreshAfterLoad(); await loadExtras(fresh); refreshAfterLoad(); }
-    } catch (err) { console.error('No se pudo cargar la zona:', err); todo.forEach((k) => loadedBands.delete(k)); }
+    } catch (err) {
+      console.error('No se pudo cargar la zona:', err); todo.forEach((k) => loadedBands.delete(k));
+      if (!allPlaces.length) { $('resultCount').textContent = ''; $('peekTitle').textContent = 'No se pudieron cargar los lugares'; $('errorState').hidden = false; }
+    }
   }
   let zoneTimer: any;
   map.on('moveend', () => { clearTimeout(zoneTimer); zoneTimer = setTimeout(() => { loadZone(); if (!currentQuery) renderList(); }, 250); });

@@ -1,0 +1,93 @@
+---
+import LegalPage from '../components/LegalPage.astro';
+import { LEGAL } from '../lib/legal';
+---
+<LegalPage title="Política de privacidad" updated={LEGAL.updated} id="privacidad">
+  <div class="lg-summary">
+    <p><strong>En corto:</strong></p>
+    <ul>
+      <li>Para ver el mapa no necesitás cuenta y no guardamos nada tuyo.</li>
+      <li>Si entrás con Google para reseñar o subir fotos, guardamos tu nombre, tu foto de perfil y tu correo. Tu nombre, tu foto y lo que publicás se ven en Goz; tu correo no.</li>
+      <li>No vendemos tus datos ni usamos publicidad que te rastree.</li>
+      <li>Podés borrar tu cuenta cuando querás desde tu perfil, o escribirnos a <a href={`mailto:${LEGAL.contact}`}>{LEGAL.contact}</a>.</li>
+    </ul>
+  </div>
+
+  <h2>Quién es responsable</h2>
+  <p>Goz es un mapa turístico de El Salvador hecho por {LEGAL.owner}, en {LEGAL.city}. {LEGAL.owner} es el responsable de tus datos personales en Goz. Para cualquier pregunta o solicitud sobre tus datos, escribí a <a href={`mailto:${LEGAL.contact}`}>{LEGAL.contact}</a>.</p>
+  <p>Seguimos la Ley para la Protección de Datos Personales de El Salvador.</p>
+
+  <h2>Qué datos guardamos y para qué</h2>
+  <div class="lg-table">
+    <table>
+      <thead><tr><th scope="col">Dato</th><th scope="col">Para qué</th><th scope="col">¿Se ve en Goz?</th></tr></thead>
+      <tbody>
+        <tr><td>Nombre y foto de tu cuenta de Google</td><td>Mostrar quién escribió cada reseña o subió cada foto, y tu perfil</td><td>Sí</td></tr>
+        <tr><td>Correo de tu cuenta de Google</td><td>Identificar tu cuenta y contestarte si nos escribís</td><td>No</td></tr>
+        <tr><td>Tus reseñas, calificaciones, fechas de visita y fotos</td><td>Que otros turistas sepan cómo es cada lugar</td><td>Sí</td></tr>
+        <tr><td>Tus votos por fotos</td><td>Elegir la portada de cada lugar y que no se vote dos veces</td><td>Solo el total, no quién votó</td></tr>
+        <tr><td>Reportes que hacés</td><td>Revisar contenido que rompe las reglas</td><td>No; solo lo ve el administrador</td></tr>
+        <tr><td>Cupones que obtenés</td><td>Que cada cupón se use una vez por persona</td><td>No</td></tr>
+        <tr><td>Datos de tu negocio, si registrás uno: nombre, ubicación, contacto, horario y fotos</td><td>Mostrarlo en el mapa</td><td>Sí</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h2>Con qué permiso los usamos</h2>
+  <p>Con tu consentimiento. La primera vez que vas a publicar, votar o pedir un cupón, te pedimos que aceptés esta política, los términos y que tus datos se guarden fuera de El Salvador. Guardamos la fecha en que aceptaste. Si no aceptás, podés seguir viendo el mapa sin cuenta.</p>
+  <p>Podés retirar tu consentimiento cuando querás borrando tu cuenta o escribiéndonos.</p>
+
+  <h2>Tu ubicación</h2>
+  <ul>
+    <li><strong>"Cerca de mí"</strong> usa tu ubicación solo en tu teléfono o computadora para ordenar los lugares. No la enviamos ni la guardamos.</li>
+    <li><strong>"Verificar mi visita"</strong> compara tu ubicación con la del lugar en ese momento. Guardamos solo si la visita quedó verificada o no, nunca tus coordenadas.</li>
+    <li>Antes de subir una foto le quitamos la información interna que algunos teléfonos guardan dentro de la imagen, como la ubicación y el modelo del teléfono.</li>
+  </ul>
+  <p>Tu navegador te pide permiso antes de usar tu ubicación, y lo podés quitar cuando querás.</p>
+
+  <h2>Quién más maneja tus datos</h2>
+  <p>Goz usa estos servicios para funcionar. Ellos guardan o procesan datos por nosotros y sus servidores pueden estar fuera de El Salvador, principalmente en Estados Unidos:</p>
+  <ul>
+    <li><strong>Google Firebase:</strong> inicio de sesión y base de datos.</li>
+    <li><strong>Cloudinary:</strong> guarda las fotos.</li>
+    <li><strong>Render:</strong> aloja el sitio.</li>
+    <li><strong>OpenStreetMap:</strong> dibuja el mapa. Tu navegador le pide los pedazos del mapa que ves.</li>
+    <li><strong>Google Fonts:</strong> las letras del sitio.</li>
+  </ul>
+  <p>Como estos servicios están fuera de El Salvador, te pedimos permiso expreso antes de que publiqués. Con cada uno aplican sus condiciones de tratamiento de datos.</p>
+  <p>No vendemos ni alquilamos tus datos. Solo los entregaríamos a una autoridad si la ley nos obliga.</p>
+
+  <h2>Lo que se guarda en tu navegador</h2>
+  <p>Goz no usa cookies de publicidad ni de rastreo. Tu navegador solo guarda tu sesión de Google, para que no tengás que entrar cada vez. Si cerrás sesión o borrás los datos del sitio, se borra.</p>
+
+  <h2>Cuánto tiempo los guardamos</h2>
+  <ul>
+    <li>Tu cuenta y lo que publicás, mientras tengás la cuenta.</li>
+    <li>Si borrás tu cuenta, borramos tus reseñas, tus fotos y tus datos de perfil en ese momento. Las imágenes en sí se terminan de borrar de Cloudinary en un plazo de hasta 30 días.</li>
+    <li>Si el administrador quita una reseña o foto por romper las reglas, se guarda aparte hasta {LEGAL.archiveMonths} meses por si hubo un error y hay que devolverla. Después se borra.</li>
+    <li>Tus votos y cupones usados quedan solo como números en los totales, sin tu nombre.</li>
+    <li>Copias de respaldo: el administrador puede sacar copias de la base de datos para no perder información. Se guardan en un lugar privado y se borran cuando se reemplazan por una nueva, como máximo a los 12 meses.</li>
+  </ul>
+
+  <h2>Tus derechos</h2>
+  <p>Podés pedirnos en cualquier momento:</p>
+  <ul>
+    <li><strong>Ver</strong> qué datos tuyos tenemos.</li>
+    <li><strong>Corregir</strong> datos que estén mal.</li>
+    <li><strong>Borrar</strong> tus datos. También podés borrar tu cuenta vos mismo desde tu perfil.</li>
+    <li><strong>Oponerte</strong> a que usemos tus datos para algo, o pedir que <strong>limitemos</strong> su uso.</li>
+    <li><strong>Llevarte</strong> tus datos en un archivo.</li>
+    <li>Que <strong>quitemos</strong> de Goz información tuya publicada (derecho al olvido).</li>
+  </ul>
+  <p>Pedirlo es gratis. Escribí a <a href={`mailto:${LEGAL.contact}`}>{LEGAL.contact}</a> desde el correo de tu cuenta. Te contestamos en un máximo de 20 días hábiles; si necesitamos más tiempo, te avisamos, y nunca serán más de 20 días hábiles adicionales. Si no estás de acuerdo con nuestra respuesta, podés acudir a la Agencia de Ciberseguridad del Estado, que es la autoridad de protección de datos en El Salvador.</p>
+
+  <h2>Cómo cuidamos tus datos</h2>
+  <p>Las reglas de nuestra base de datos solo dejan que cada persona cambie lo suyo, y solo el administrador ve los reportes. El sitio usa conexión segura (https). Si alguna vez hay un problema de seguridad que afecte tus datos, en un máximo de 72 horas desde que lo sepamos se lo avisamos a las personas afectadas y a las autoridades, como pide la ley.</p>
+
+  <h2>Menores de edad</h2>
+  <p>Para entrar con Google tenés que cumplir la edad mínima que pide Google. Si sos menor de 18 años, necesitás permiso de tu mamá, papá o encargado para publicar en Goz; te lo preguntamos antes de tu primera publicación. Si sabemos que una cuenta es de un menor sin permiso, la borramos.</p>
+
+  <h2>Cambios</h2>
+  <p>Si cambiamos esta política, actualizamos la fecha de arriba. Si el cambio es importante, lo avisamos en Goz antes de que aplique.</p>
+
+  <p>Ver también los <a href="/terminos">Términos de uso</a>.</p>
+</LegalPage>

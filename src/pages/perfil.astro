@@ -73,7 +73,24 @@ import GozLoader from '../components/GozLoader.astro';
         <ul id="myReviews" class="pf-reviews"></ul>
       </section>
 
-      <button type="button" id="pfLogout" class="pf-btn pf-btn-ghost">Salir de mi cuenta</button>
+      <div id="pfAccount" class="pf-account">
+        <button type="button" id="pfLogout" class="pf-btn pf-btn-ghost">Salir de mi cuenta</button>
+        <section id="pfDelete" class="pf-section pf-delete" aria-labelledby="hDelete">
+          <h2 id="hDelete" class="pf-h2">Borrar mi cuenta</h2>
+          <p class="pf-lead">Se borran tus reseñas, tus fotos y tu perfil de Goz, y tu cuenta deja de existir aquí. No se puede deshacer.</p>
+          <p id="delBiz" class="pf-warn" hidden></p>
+          <div id="delConfirm" class="pf-del-confirm" hidden>
+            <label class="pf-del-check"><input type="checkbox" id="delCheck">Entiendo que se borra todo y que no se puede recuperar.</label>
+            <p class="pf-muted">Google te va a pedir que confirmés que sos vos.</p>
+          </div>
+          <p id="delStatus" class="pf-del-status" role="status"></p>
+          <div class="pf-del-actions">
+            <button type="button" id="delStart" class="pf-btn pf-btn-danger">Borrar mi cuenta</button>
+            <button type="button" id="delCancel" class="pf-btn pf-btn-ghost" hidden>Cancelar</button>
+          </div>
+        </section>
+        <p class="pf-legal"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
+      </div>
     </div>
   </main>
 </Layout>
@@ -102,6 +119,20 @@ import GozLoader from '../components/GozLoader.astro';
   .pf-stats dt { font-size: 13px; font-weight: 700; color: var(--muted); }
   .pf-stats dd { margin: 2px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; color: var(--ink); font-variant-numeric: tabular-nums; }
   .pf-section { background: var(--surface); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .pf-account { display: flex; flex-direction: column; gap: 20px; }
+  .pf-delete { border: 1.5px solid #EBC6B1; }
+  .pf-warn { margin: 0; padding: 12px 14px; border-radius: 12px; background: #F6D9C8; color: #6E2E0C; font-weight: 700; font-size: 14px; }
+  .pf-del-confirm { display: flex; flex-direction: column; gap: 6px; }
+  .pf-del-check { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; cursor: pointer; }
+  .pf-del-check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: #A3461A; flex: none; }
+  .pf-del-status { margin: 0; font-size: 14px; font-weight: 700; color: var(--muted); }
+  .pf-del-status:empty { display: none; }
+  .pf-del-status.is-error { color: #8A3A10; }
+  .pf-del-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pf-btn-danger { background: #A3461A; color: #FFFFFF; }
+  .pf-btn-danger:disabled { opacity: .6; cursor: default; }
+  .pf-legal { margin: 0; font-size: 13px; color: var(--muted); }
+  .pf-legal a { color: var(--turquesa); font-weight: 700; }
   .pf-section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
   #pfBody:not([hidden]) { display: flex; flex-direction: column; gap: 24px; }
   .pf-link { color: var(--link); font-size: 15px; font-weight: 800; text-decoration: none; }
@@ -142,8 +173,10 @@ import GozLoader from '../components/GozLoader.astro';
 </style>
 
 <script>
-  import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-  import { auth, googleProvider } from '../lib/firebase';
+  import { signInWithPopup, signOut, onAuthStateChanged, reauthenticateWithPopup, deleteUser } from 'firebase/auth';
+  import { collection, getDocs, query, where, doc, writeBatch, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+  import { auth, googleProvider, db } from '../lib/firebase';
+  import { LEGAL } from '../lib/legal';
   import { esc, safeUrl, num } from '../lib/escape';
   import { type SeasonalBadge } from '../lib/badges';
   import { loadUserData, userBadges, seasonalTag } from '../lib/userData';
@@ -171,6 +204,65 @@ import GozLoader from '../components/GozLoader.astro';
 
   $('pfLoginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
   $('pfLogout').addEventListener('click', async () => { await signOut(auth); location.href = '/'; });
+
+  // ---------- Borrar mi cuenta ----------
+  // Primero Google confirma que es la persona; después se borran reseñas, fotos y perfil,
+  // se deja aviso al admin para borrar las imágenes en Cloudinary y al final se borra la cuenta.
+  const delMsg = (m: string, err = false) => { $('delStatus').textContent = m; $('delStatus').classList.toggle('is-error', err); };
+  let delStep = 0;
+  $('delCancel').addEventListener('click', () => {
+    delStep = 0; $('delConfirm').hidden = true; $('delCancel').hidden = true; $('delBiz').hidden = true;
+    $('delStart').textContent = 'Borrar mi cuenta'; delMsg('');
+  });
+  $('delStart').addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    if (delStep === 0) {
+      delStep = 1;
+      $('delConfirm').hidden = false; $('delCancel').hidden = false;
+      $('delStart').textContent = 'Sí, borrar mi cuenta';
+      try {
+        const biz = await getDocs(query(collection(db, 'businesses'), where('ownerId', '==', user.uid)));
+        if (!biz.empty) {
+          $('delBiz').textContent = `Tenés ${biz.size === 1 ? 'un negocio registrado' : `${biz.size} negocios registrados`} en Goz. No se borra${biz.size === 1 ? '' : 'n'} con tu cuenta: escribinos a ${LEGAL.contact} para darl${biz.size === 1 ? 'o' : 'os'} de baja.`;
+          $('delBiz').hidden = false;
+        }
+      } catch { /* sin negocios o sin conexión */ }
+      ($('delCheck') as HTMLInputElement).focus();
+      return;
+    }
+    if (!($('delCheck') as HTMLInputElement).checked) { delMsg('Marcá la casilla para confirmar.', true); ($('delCheck') as HTMLInputElement).focus(); return; }
+    const btn = $('delStart') as HTMLButtonElement;
+    btn.disabled = true; $('delCancel').hidden = true;
+    try {
+      delMsg('Confirmá con Google que sos vos…');
+      await reauthenticateWithPopup(user, googleProvider);
+      delMsg('Borrando tus reseñas y fotos…');
+      const uid = user.uid;
+      const [rv, ph] = await Promise.all([
+        getDocs(query(collection(db, 'reviews'), where('userId', '==', uid))),
+        getDocs(query(collection(db, 'photos'), where('userId', '==', uid))),
+      ]);
+      // Aviso para el admin: las imágenes en Cloudinary se borran a mano con la etiqueta uid_…
+      await setDoc(doc(db, 'accountDeletions', uid), { uid, cloudinaryTag: `uid_${uid}`, reviews: rv.size, photos: ph.size, status: 'pending', createdAt: serverTimestamp() });
+      const docs = [...rv.docs, ...ph.docs];
+      for (let i = 0; i < docs.length; i += 400) {
+        const batch = writeBatch(db);
+        docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+      await deleteDoc(doc(db, 'users', uid)).catch(() => {});
+      await deleteUser(user);
+      document.getElementById('pfBody')!.innerHTML = '<section class="pf-section"><h1 class="pf-h1">Tu cuenta se borró</h1><p class="pf-lead">Borramos tus reseñas, tus fotos y tu perfil. Las imágenes terminan de borrarse en un plazo de hasta 30 días. Gracias por haber sido parte de Goz.</p><a href="/" class="pf-btn pf-btn-primary">Ir al mapa</a></section>';
+    } catch (err: any) {
+      console.error(err);
+      btn.disabled = false; $('delCancel').hidden = false;
+      delMsg(err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request'
+        ? 'No se borró nada: cerraste la ventana de Google. Probá otra vez cuando querás.'
+        : err?.code === 'auth/user-mismatch' ? 'Elegiste otra cuenta de Google. Usá la misma con la que entraste.'
+        : 'No se pudo terminar. Revisá tu conexión y probá otra vez; si algo ya se borró, se termina de borrar al reintentar.', true);
+    }
+  });
 
   // /perfil?u=UID muestra el perfil público de otra persona (sus fotos, reseñas e insignias), sin pedir cuenta.
   const viewUid = new URLSearchParams(location.search).get('u') || '';
@@ -213,7 +305,7 @@ import GozLoader from '../components/GozLoader.astro';
     $('pfBody').hidden = false;
     const name = user.displayName || 'Visitante';
     document.title = isPublic ? `${name} · Goz` : 'Mi perfil · Goz';
-    $('pfLogout').hidden = isPublic;
+    $('pfAccount').hidden = isPublic;
     $('badgesAll').href = isPublic ? `/insignias?u=${encodeURIComponent(viewUid)}` : '/insignias';
     $('pfSub').textContent = isPublic ? 'Turista en Goz' : 'El Salvador, un país chiquito, pero no te lo acabás.';
     $('galleryEmptyTxt').textContent = isPublic ? 'Todavía no ha subido fotos.' : 'Todavía no subiste fotos. Aparecen aquí cuando subís una desde un lugar.';

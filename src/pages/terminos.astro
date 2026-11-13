@@ -1,0 +1,54 @@
+---
+import LegalPage from '../components/LegalPage.astro';
+import { LEGAL } from '../lib/legal';
+---
+<LegalPage title="Términos de uso" updated={LEGAL.updated} id="terminos">
+  <div class="lg-summary">
+    <p><strong>En corto:</strong> usá Goz para descubrir El Salvador y contá cómo te fue con respeto. Publicá solo lo que es tuyo y verdadero. Revisá horarios y condiciones antes de salir, y cuidate en volcanes, ríos y playas.</p>
+  </div>
+
+  <h2>Qué es Goz</h2>
+  <p>Goz es un mapa de lugares turísticos y negocios de El Salvador, con reseñas y fotos de quienes ya fueron. Lo hace {LEGAL.owner}. Usar Goz es gratis para turistas. Al usarlo aceptás estos términos y la <a href="/privacidad">Política de privacidad</a>.</p>
+
+  <h2>Tu cuenta</h2>
+  <ul>
+    <li>Para escribir reseñas, subir fotos, votar o pedir cupones entrás con tu cuenta de Google.</li>
+    <li>Sos responsable de lo que se publica con tu cuenta.</li>
+    <li>Podés borrar tu cuenta cuando querás desde tu perfil.</li>
+  </ul>
+
+  <h2>Reglas para publicar</h2>
+  <p>Las reseñas y fotos ayudan a otras personas a decidir a dónde ir. Por eso:</p>
+  <ul>
+    <li>Contá tu experiencia real en ese lugar. No publiqués reseñas falsas, pagadas o de un lugar donde no fuiste.</li>
+    <li>Subí fotos tomadas por vos y del lugar que dice la ficha.</li>
+    <li>Nada de insultos, amenazas, discriminación ni contenido sexual o violento.</li>
+    <li>No publiqués datos personales de nadie: teléfonos, direcciones, placas, ni fotos de personas que se puedan reconocer sin su permiso.</li>
+    <li>Nada de publicidad, spam ni enlaces a otros sitios en las reseñas.</li>
+  </ul>
+  <p>Si ves algo que rompe estas reglas, tocá "Reportar". Lo revisamos y podemos quitar cualquier reseña o foto que no las cumpla, o suspender una cuenta que las rompa varias veces.</p>
+
+  <h2>Lo que publicás sigue siendo tuyo</h2>
+  <p>Tus reseñas y fotos siguen siendo tuyas. Al publicarlas nos das permiso, sin costo, para mostrarlas en Goz (sitio web, app y redes de Goz), con tu nombre, mientras estén publicadas. Si las borrás o borrás tu cuenta, dejamos de usarlas.</p>
+
+  <h2>Negocios</h2>
+  <ul>
+    <li>Quien registra un negocio confirma que es el dueño o encargado, y que los datos y fotos son reales.</li>
+    <li>Revisamos cada negocio antes de mostrarlo en el mapa y podemos no aprobarlo o quitarlo si los datos no son ciertos.</li>
+    <li>Los planes Destacado y Pro se pagan por adelantado y duran el tiempo pagado. Si no se renuevan, el negocio sigue en el mapa con el plan Básico.</li>
+    <li>Cada negocio es responsable de sus precios, sus servicios y de respetar los cupones que publica en Goz.</li>
+  </ul>
+
+  <h2>La información de los lugares</h2>
+  <p>Hacemos lo posible porque horarios, precios, ubicaciones y descripciones estén al día, pero pueden cambiar sin aviso. Antes de ir, confirmá con el lugar o el negocio.</p>
+  <p>Muchos lugares de Goz son volcanes, ríos, cascadas, playas y senderos. Visitarlos tiene riesgos. Andá preparado, seguí las indicaciones de guías y autoridades, y no te arriesgués. Goz no organiza tours ni es responsable de lo que pase durante una visita.</p>
+
+  <h2>Hasta dónde llega nuestra responsabilidad</h2>
+  <p>Goz se ofrece tal como está. Las reseñas y fotos son opiniones de cada turista, no de Goz. No respondemos por daños que vengan de usar información de Goz, de visitar un lugar o de tratos con un negocio, salvo lo que la ley de El Salvador no permita excluir.</p>
+
+  <h2>Cambios y ley aplicable</h2>
+  <p>Podemos cambiar estos términos. Si el cambio es importante, lo avisamos en Goz antes de que aplique. Estos términos se rigen por las leyes de El Salvador.</p>
+
+  <h2>Contacto</h2>
+  <p>Escribinos a <a href={`mailto:${LEGAL.contact}`}>{LEGAL.contact}</a>.</p>
+</LegalPage>

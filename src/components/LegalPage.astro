@@ -1,0 +1,50 @@
+---
+// Página de texto legal (privacidad, términos) con la cabecera de Goz.
+import Layout from '../layouts/Layout.astro';
+import GozMark from './GozMark.astro';
+interface Props { title: string; updated: string; id: string }
+const { title, updated, id } = Astro.props;
+---
+<Layout title={`${title} · Goz`}>
+  <header class="lg-top">
+    <a href="/" class="lg-back" aria-label="Volver al mapa">
+      <span class="lg-mark"><GozMark size={18} simple id={id} /></span>
+      <span>Volver al mapa</span>
+    </a>
+    <nav class="lg-nav" aria-label="Textos legales">
+      <a href="/privacidad" aria-current={id === 'privacidad' ? 'page' : undefined}>Privacidad</a>
+      <a href="/terminos" aria-current={id === 'terminos' ? 'page' : undefined}>Términos</a>
+    </nav>
+  </header>
+  <main class="lg">
+    <h1 class="lg-h1">{title}</h1>
+    <p class="lg-updated">Última actualización: {updated}</p>
+    <slot />
+  </main>
+</Layout>
+
+<style is:global>
+  html, body { height: auto; min-height: 100%; background: var(--neblina); }
+  .lg-top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-left)); }
+  .lg-back { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); font-weight: 800; text-decoration: none; }
+  .lg-mark { width: 34px; height: 34px; border-radius: 17px; background: var(--plumaje); display: flex; align-items: center; justify-content: center; }
+  .lg-nav { display: flex; gap: 6px; }
+  .lg-nav a { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 20px; color: var(--ink); font-weight: 700; text-decoration: none; }
+  .lg-nav a[aria-current="page"] { background: var(--rama); color: #FFFFFF; }
+  .lg { max-width: 720px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-left)) 64px; color: var(--ink-2); font-size: 16px; line-height: 1.65; }
+  .lg-h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 1.1; color: var(--ink); }
+  .lg-updated { margin: 6px 0 24px; font-size: 14px; color: var(--muted); }
+  .lg h2 { margin: 32px 0 8px; font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 1.25; color: var(--ink); }
+  .lg p { margin: 0 0 12px; }
+  .lg ul { margin: 0 0 12px; padding-left: 22px; }
+  .lg li { margin: 4px 0; }
+  .lg strong { color: var(--ink); }
+  .lg a { color: var(--turquesa); font-weight: 700; }
+  .lg-summary { background: var(--surface); border-radius: 18px; padding: 18px 20px; margin-bottom: 8px; }
+  .lg-summary p:last-child, .lg-summary ul:last-child { margin-bottom: 0; }
+  .lg table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 0 0 12px; }
+  .lg th, .lg td { text-align: left; vertical-align: top; padding: 10px 8px; border-top: 1px solid var(--line); }
+  .lg th { color: var(--ink); font-weight: 800; }
+  .lg-table { overflow-x: auto; }
+  @media (max-width: 640px) { .lg-h1 { font-size: 28px; } .lg-back span:last-child { display: none; } }
+</style>
