@@ -1,0 +1,27 @@
+---
+// Cabecera de las páginas públicas (lugares e índice): marca, índice y mapa.
+import GozMark from './GozMark.astro';
+interface Props { id: string }
+const { id } = Astro.props;
+---
+<header class="sh">
+  <a href="/" class="sh-brand" aria-label="Goz, ir al mapa">
+    <span class="sh-mark"><GozMark size={18} simple id={id} /></span>
+    <span class="sh-word">Goz</span>
+  </a>
+  <nav class="sh-nav" aria-label="Secciones">
+    <a href="/lugares">Lugares</a>
+    <a href="/" class="sh-map">Ver el mapa</a>
+  </nav>
+</header>
+<style is:global>
+  .sh { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-left)); }
+  .sh-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); text-decoration: none; }
+  .sh-mark { width: 34px; height: 34px; border-radius: 17px; background: var(--plumaje); display: flex; align-items: center; justify-content: center; }
+  .sh-word { font-family: var(--font-display); font-weight: 800; font-size: 22px; }
+  .sh-nav { display: flex; gap: 6px; align-items: center; }
+  .sh-nav a { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 20px; color: var(--ink); font-weight: 700; text-decoration: none; }
+  .sh-nav a:hover { background: var(--neblina); }
+  .sh-nav .sh-map { background: var(--primary); color: #FFFFFF; }
+  .sh-nav .sh-map:hover { background: var(--turquesa); }
+</style>

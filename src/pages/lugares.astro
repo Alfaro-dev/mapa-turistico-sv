@@ -1,0 +1,62 @@
+---
+// Índice de todos los lugares por categoría: ayuda a Google a encontrar cada página.
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { loadPlaces, catIcon, CATEGORY_NAMES, CATEGORY_PLURAL, placeUrl, shareImage } from '../lib/siteData';
+
+const places = await loadPlaces();
+const ORDER = ['playa', 'montaña', 'lago', 'río', 'mirador', 'pueblo', 'histórico', 'cultura', 'aventura', 'gastronomía', 'other'];
+const groups = ORDER.map((c) => ({ c, list: places.filter((p) => (ORDER.includes(p.category) ? p.category : 'other') === c) }))
+  .filter((g) => g.list.length);
+const img = places.find((p) => p.cover)?.cover;
+const thumb = (u: string) => (u.includes('res.cloudinary.com/') ? u.replace('/upload/', '/upload/c_fill,g_auto,w_320,h_220,q_auto,f_auto/') : u);
+---
+<Layout title="Lugares turísticos de El Salvador · Goz" description={`${places.length} playas, volcanes, lagos, pueblos y miradores de El Salvador, con cómo llegar y reseñas de quienes ya fueron.`} image={img ? shareImage(img) : ''} canonical="/lugares">
+  <SiteHeader id="lugares" />
+  <main class="lx">
+    <h1 class="lx-h1">Lugares turísticos de El Salvador</h1>
+    <p class="lx-lead">{places.length} lugares para conocer, de la playa al volcán. Tocá uno para ver cómo llegar, el horario y lo que dicen quienes ya fueron.</p>
+    <nav class="lx-jump" aria-label="Categorías">
+      {groups.map((g) => <a href={`#${g.c}`}>{CATEGORY_PLURAL[g.c]} <span>{g.list.length}</span></a>)}
+    </nav>
+    {groups.map((g) => (
+      <section class="lx-sec" id={g.c} aria-labelledby={`h-${g.c}`}>
+        <h2 class="lx-h2" id={`h-${g.c}`}>{CATEGORY_PLURAL[g.c]}</h2>
+        <ul class="lx-grid">{g.list.map((p) => (
+          <li><a class="lx-card" href={placeUrl(p.id)}>
+            {p.cover ? <img src={thumb(p.cover)} alt="" loading="lazy" width="320" height="220" /> : <span class="lx-empty" aria-hidden="true" set:html={catIcon(p.category, 30)}></span>}
+            <span class="lx-name">{p.name}</span>
+            <span class="lx-meta">{[p.municipality, p.department].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ') || CATEGORY_NAMES[p.category]}</span>
+          </a></li>))}</ul>
+      </section>
+    ))}
+  </main>
+  <footer class="lp-foot">
+    <p>Goz · El Salvador, un país chiquito, pero no te lo acabás.</p>
+    <p><a href="/">Ver el mapa</a> · <a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
+  </footer>
+</Layout>
+
+<style is:global>
+  html, body { height: auto; min-height: 100%; background: var(--neblina); }
+  .lx { max-width: 1040px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-left)) 48px; display: flex; flex-direction: column; gap: 18px; }
+  .lx-h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 38px; line-height: 1.1; color: var(--ink); text-wrap: balance; }
+  .lx-lead { margin: 0; max-width: 62ch; font-size: 17px; color: var(--ink-2); }
+  .lx-jump { display: flex; flex-wrap: wrap; gap: 8px; }
+  .lx-jump a { display: inline-flex; gap: 6px; align-items: center; min-height: 38px; padding: 0 14px; border-radius: 19px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-weight: 700; text-decoration: none; }
+  .lx-jump a:hover { border-color: var(--turquesa); }
+  .lx-jump span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .lx-sec { background: var(--surface); border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 80px; }
+  .lx-h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; color: var(--ink); }
+  .lx-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .lx-card { display: flex; flex-direction: column; gap: 4px; color: var(--ink); text-decoration: none; }
+  .lx-card img, .lx-empty { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; border-radius: 14px; background: var(--photo); display: block; }
+  .lx-empty { display: flex; align-items: center; justify-content: center; background: #E3EFEE; color: var(--turquesa); }
+  .lx-name { font-weight: 800; line-height: 1.3; }
+  .lx-card:hover .lx-name { color: var(--turquesa); text-decoration: underline; }
+  .lx-meta { font-size: 13px; color: var(--muted); }
+  .lp-foot { max-width: 1040px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-left)) 40px; font-size: 14px; color: var(--muted); }
+  .lp-foot p { margin: 4px 0; }
+  .lp-foot a { color: var(--turquesa); font-weight: 700; }
+  @media (max-width: 640px) { .lx-h1 { font-size: 30px; } .lx-sec { padding: 18px; } .lx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+</style>

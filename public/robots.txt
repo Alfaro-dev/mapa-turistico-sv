@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /perfil
+Disallow: /insignias
+
+Sitemap: https://mapa.carlosalfaro.dev/sitemap.xml

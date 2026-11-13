@@ -9,12 +9,22 @@ import '../styles/dropzone.css';
 interface Props {
   title: string;
   description?: string;
+  image?: string;      // foto para compartir (WhatsApp, redes)
+  canonical?: string;  // ruta propia de la página, ej. /lugar/playa-el-tunco
+  noindex?: boolean;   // páginas privadas (perfil, admin) no salen en Google
+  type?: string;
 }
 
+const SITE = 'https://mapa.carlosalfaro.dev';
 const {
   title,
   description = 'Goz: volcanes, playas, lagos y pueblos de El Salvador en un mapa, con cómo llegar y reseñas de quienes ya fueron. El Salvador, un país chiquito, pero no te lo acabás.',
+  image = '',
+  canonical,
+  noindex = false,
+  type = 'website',
 } = Astro.props;
+const url = canonical ? new URL(canonical, SITE).href : new URL(Astro.url.pathname, SITE).href;
 ---
 
 <!doctype html>
@@ -27,6 +37,19 @@ const {
     <meta name="theme-color" content="#F2C14E" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
+    <link rel="canonical" href={url} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:site_name" content="Goz" />
+    <meta property="og:locale" content="es_SV" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    {image && <meta property="og:image" content={image} />}
+    {image && <meta property="og:image:width" content="1200" />}
+    {image && <meta property="og:image:height" content="630" />}
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <slot name="head" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -511,6 +511,9 @@ const categories = [
   .list-legal { margin: 18px 0 8px; font-size: 13px; color: var(--muted); }
   .account-legal { margin: 6px 0 0; padding: 8px 12px 2px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
   #consentError { margin-top: 10px; }
+  .btn-icon { width: 48px; padding: 0; flex: none; }
+  .share-status { margin: 6px 0 0; font-size: 13px; color: var(--turquesa); font-weight: 700; }
+  .share-status:empty { display: none; }
   /* Reportar */
   .report-dialog { margin: auto; width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); box-sizing: border-box; padding: 20px 22px; border: 0; border-radius: 24px; background: var(--surface); color: var(--ink); box-shadow: 0 20px 50px rgba(20,48,47,0.25); }
   .report-dialog::backdrop { background: rgba(20,48,47,0.55); }
@@ -1311,7 +1314,11 @@ const categories = [
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l18-8-8 18-2-8z"></path></svg>
           Cómo llegar</a>
         <button type="button" class="btn btn-outline" data-review="${esc(p.id)}">Escribir reseña</button>
+        <button type="button" class="btn btn-outline btn-icon" data-share="${esc(p.id)}" aria-label="Compartir ${esc(p.name)}" title="Compartir">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.5"></circle><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"></path></svg>
+        </button>
       </div>
+      <p id="shareStatus" class="share-status" role="status"></p>
       ${p.description ? `<p class="detail-desc">${esc(p.description)}</p>` : ''}
       <ul class="detail-facts">
         ${specific(p.schedule) ? `<li>${icoClock}<span>${esc(p.schedule!)}</span></li>` : ''}
@@ -1833,6 +1840,23 @@ const categories = [
       if ($('couponStatus')) $('couponStatus').textContent = 'No se pudo obtener el cupón. Puede que ya se hayan acabado o que ya lo tengás.';
     }
   }
+
+  // ---------- Compartir un lugar ----------
+  // Comparte la página propia del lugar (/lugar/id), que se ve con foto en WhatsApp y redes.
+  // Si el lugar es nuevo y su página todavía no existe, comparte el enlace del mapa.
+  $('detailView').addEventListener('click', async (e: Event) => {
+    const b = (e.target as HTMLElement).closest('[data-share]') as HTMLElement | null;
+    if (!b) return;
+    const id = b.dataset.share!;
+    const p = allPlaces.find((x) => x.id === id);
+    let url = `${location.origin}/lugar/${encodeURIComponent(id)}`;
+    try { const r = await fetch(url, { method: 'HEAD' }); if (!r.ok) url = `${location.origin}/#${encodeURIComponent(id)}`; } catch { url = `${location.origin}/#${encodeURIComponent(id)}`; }
+    try {
+      if (navigator.share) { await navigator.share({ title: p?.name || 'Goz', text: `${p?.name || 'Este lugar'} en Goz`, url }); return; }
+      await navigator.clipboard.writeText(url);
+      if ($('shareStatus')) $('shareStatus').textContent = 'Enlace copiado. Pegalo donde querás compartirlo.';
+    } catch { /* la persona canceló */ }
+  });
 
   // ---------- Reportar reseñas y fotos ----------
   // Lo que ya reportó esta persona en esta visita (el documento no se puede leer después).
