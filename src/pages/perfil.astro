@@ -75,6 +75,12 @@ import GozLoader from '../components/GozLoader.astro';
 
       <div id="pfAccount" class="pf-account">
         <button type="button" id="pfLogout" class="pf-btn pf-btn-ghost">Salir de mi cuenta</button>
+        <section class="pf-section" aria-labelledby="hExport">
+          <h2 id="hExport" class="pf-h2">Tus datos</h2>
+          <p class="pf-lead">Descargá en un archivo lo que Goz tiene de vos: tu cuenta, reseñas, fotos, votos y cupones.</p>
+          <p id="expStatus" class="pf-del-status" role="status"></p>
+          <div class="pf-del-actions"><button type="button" id="expBtn" class="pf-btn pf-btn-ghost">Descargar mis datos</button></div>
+        </section>
         <section id="pfDelete" class="pf-section pf-delete" aria-labelledby="hDelete">
           <h2 id="hDelete" class="pf-h2">Borrar mi cuenta</h2>
           <p class="pf-lead">Se borran tus reseñas, tus fotos y tu perfil de Goz, y tu cuenta deja de existir aquí. No se puede deshacer.</p>
@@ -174,7 +180,7 @@ import GozLoader from '../components/GozLoader.astro';
 
 <script>
   import { signInWithPopup, signOut, onAuthStateChanged, reauthenticateWithPopup, deleteUser } from 'firebase/auth';
-  import { collection, getDocs, query, where, doc, writeBatch, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+  import { collection, getDocs, getDoc, query, where, doc, writeBatch, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
   import { auth, googleProvider, db } from '../lib/firebase';
   import { LEGAL } from '../lib/legal';
   import { esc, safeUrl, num } from '../lib/escape';
@@ -204,6 +210,40 @@ import GozLoader from '../components/GozLoader.astro';
 
   $('pfLoginBtn').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
   $('pfLogout').addEventListener('click', async () => { await signOut(auth); location.href = '/'; });
+
+  // ---------- Descargar mis datos (portabilidad) ----------
+  const plain = (v: any): any => v?.toDate ? v.toDate().toISOString() : Array.isArray(v) ? v.map(plain)
+    : v && typeof v === 'object' ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
+  $('expBtn').addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const btn = $('expBtn') as HTMLButtonElement;
+    btn.disabled = true; $('expStatus').textContent = 'Juntando tus datos…'; $('expStatus').classList.remove('is-error');
+    try {
+      const mine = (col: string) => getDocs(query(collection(db, col), where('userId', '==', user.uid)))
+        .then((sn) => sn.docs.map((d) => ({ id: d.id, ...plain(d.data()) }))).catch(() => []);
+      const [reviews, photos, votes, redemptions, profile] = await Promise.all([
+        mine('reviews'), mine('photos'), mine('photoVotes'), mine('couponRedemptions'),
+        getDoc(doc(db, 'users', user.uid)).then((d) => (d.exists() ? plain(d.data()) : null)).catch(() => null),
+      ]);
+      const data = {
+        exportadoEl: new Date().toISOString(),
+        cuenta: { id: user.uid, nombre: user.displayName, correo: user.email, foto: user.photoURL, creada: user.metadata.creationTime },
+        perfil: profile, resenas: reviews, fotos: photos, votos: votes, cupones: redemptions,
+        nota: 'Los reportes que hiciste los puede ver solo el administrador; si los querés, pedilos a ' + LEGAL.contact + '.',
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `goz-mis-datos-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      $('expStatus').textContent = 'Listo: se descargó el archivo con tus datos.';
+    } catch (err) {
+      console.error(err);
+      $('expStatus').textContent = 'No se pudo armar el archivo. Revisá tu conexión y probá otra vez.'; $('expStatus').classList.add('is-error');
+    } finally { btn.disabled = false; }
+  });
 
   // ---------- Borrar mi cuenta ----------
   // Primero Google confirma que es la persona; después se borran reseñas, fotos y perfil,
