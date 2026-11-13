@@ -75,6 +75,11 @@ import GozLoader from '../components/GozLoader.astro';
 
       <div id="pfAccount" class="pf-account">
         <button type="button" id="pfLogout" class="pf-btn pf-btn-ghost">Salir de mi cuenta</button>
+        <section class="pf-section" aria-labelledby="hBiz">
+          <h2 id="hBiz" class="pf-h2">Tu negocio</h2>
+          <p class="pf-lead">Registrá tu restaurante, hospedaje o tienda, mirá cuántos lo ven y publicá cupones.</p>
+          <a href="/negocios" class="pf-btn pf-btn-outline pf-link-btn">Ir a Tu negocio en Goz</a>
+        </section>
         <section class="pf-section" aria-labelledby="hExport">
           <h2 id="hExport" class="pf-h2">Tus datos</h2>
           <p class="pf-lead">Descargá en un archivo lo que Goz tiene de vos: tu cuenta, reseñas, fotos, votos y cupones.</p>
@@ -149,6 +154,7 @@ import GozLoader from '../components/GozLoader.astro';
   a.pf-btn { display: inline-flex; align-items: center; text-decoration: none; }
   a.pf-btn[hidden] { display: none; }
   .pf-btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+  .pf-link-btn { align-self: flex-start; display: inline-flex; align-items: center; text-decoration: none; }
   .pf-toggle { display: inline-flex; padding: 3px; border-radius: 22px; background: var(--neblina); }
   .pf-toggle button { height: 38px; padding: 0 16px; border: 0; border-radius: 19px; background: transparent; color: var(--ink); font-size: 14px; font-weight: 800; cursor: pointer; }
   .pf-toggle button[aria-pressed="true"] { background: var(--rama); color: #FFFFFF; }

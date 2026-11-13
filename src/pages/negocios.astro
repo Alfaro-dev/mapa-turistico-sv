@@ -1,0 +1,689 @@
+---
+// Goz para negocios: registrar el negocio, editar la ficha, ver cómo le va y manejar sus cupones.
+// Lo mismo que hace la app, en la web. Pantallas por enlace: #nuevo, #n/ID, #n/ID/editar, #n/ID/cupon, #n/ID/cupon/CID.
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import GozLoader from '../components/GozLoader.astro';
+import { LEGAL } from '../lib/legal';
+
+const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['hotel', 'Hospedaje'], ['tienda', 'Tienda'], ['otro', 'Otro']];
+---
+<Layout title="Tu negocio en Goz" description="Registrá gratis tu restaurante, hospedaje o tienda en Goz, el mapa turístico de El Salvador. Mirá cuántos turistas lo ven y publicá cupones.">
+  <SiteHeader id="ng" />
+  <main class="ng" id="ng">
+    <GozLoader id="ngLoading" text="Cargando…" class="ng-loading" />
+
+    <!-- Sin sesión -->
+    <section id="ngIntro" class="ng-screen" hidden>
+      <h1 class="ng-h1">Tu negocio en el mapa de Goz</h1>
+      <p class="ng-lead">Quien busca a dónde ir en El Salvador ve tu negocio junto al lugar que va a visitar, con tus fotos, tu horario y tu WhatsApp.</p>
+      <ol class="ng-steps">
+        <li><strong>Registralo gratis.</strong> Nombre, fotos, horario y cómo contactarte. Te toma unos minutos.</li>
+        <li><strong>Lo revisamos.</strong> Si está todo, sale en el mapa. Si falta algo, te escribimos.</li>
+        <li><strong>Mirá cómo le va.</strong> Cuántos vieron tu ficha y te contactaron, y publicá cupones para atraer más gente.</li>
+      </ol>
+      <div class="ng-actions"><button type="button" class="ng-btn ng-btn-primary" id="ngLogin">Entrar con Google para empezar</button></div>
+      <p class="ng-muted">El plan Básico es gratis. Si querés salir primero y resaltado, el plan Destacado cuesta $9.99 al mes; escribinos a <a href={`mailto:${LEGAL.contact}`}>{LEGAL.contact}</a>.</p>
+    </section>
+
+    <!-- Mis negocios -->
+    <section id="ngHome" class="ng-screen" hidden>
+      <div class="ng-head">
+        <h1 class="ng-h1">Tus negocios</h1>
+        <a href="#nuevo" class="ng-btn ng-btn-primary">Registrar un negocio</a>
+      </div>
+      <ul id="ngList" class="ng-list"></ul>
+    </section>
+
+    <!-- Ficha de un negocio -->
+    <section id="ngBiz" class="ng-screen" hidden></section>
+
+    <!-- Formulario del negocio -->
+    <section id="ngForm" class="ng-screen" hidden>
+      <a href="#" class="ng-back" id="ngFormBack">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+        <span id="ngFormBackText">Tus negocios</span>
+      </a>
+      <h1 class="ng-h1" id="ngFormTitle">Registrar un negocio</h1>
+      <form id="bizForm" class="ng-form" novalidate>
+        <div class="ng-form-main">
+          <fieldset class="ng-card">
+            <legend class="ng-h2">Qué es</legend>
+            <div class="ng-field">
+              <span class="ng-label" id="lblType">Tipo de negocio</span>
+              <div class="ng-chips" role="radiogroup" aria-labelledby="lblType">
+                {types.map(([v, l], i) => <label class="ng-chip"><input type="radio" name="category" value={v} checked={i === 0} /><span>{l}</span></label>)}
+              </div>
+            </div>
+            <label class="ng-field"><span class="ng-label">Nombre</span><input id="fName" class="ng-input" maxlength="80" autocomplete="organization" required /></label>
+            <label class="ng-field"><span class="ng-label">Qué ofrecen</span>
+              <textarea id="fDesc" class="ng-input" rows="4" maxlength="600" placeholder="Por ejemplo: pupusas de arroz y maíz, café de la zona y vista al lago. Atendemos grupos."></textarea>
+              <span class="ng-help" id="fDescHelp"></span></label>
+          </fieldset>
+
+          <fieldset class="ng-card">
+            <legend class="ng-h2">Dónde está</legend>
+            <label class="ng-field"><span class="ng-label">Cerca de qué lugar turístico</span><select id="fPlace" class="ng-input"></select></label>
+            <div class="ng-field">
+              <span class="ng-label">Ubicación exacta</span>
+              <span class="ng-help">Tocá el mapa donde está el negocio o arrastrá el punto.</span>
+              <div id="fMap" class="ng-map" role="application" aria-label="Mapa para marcar la ubicación del negocio"></div>
+            </div>
+            <label class="ng-field"><span class="ng-label">Dirección <span class="ng-opt">(opcional)</span></span><input id="fAddress" class="ng-input" maxlength="200" autocomplete="street-address" /></label>
+          </fieldset>
+
+          <fieldset class="ng-card">
+            <legend class="ng-h2">Cómo contactarlos</legend>
+            <div class="ng-row">
+              <label class="ng-field"><span class="ng-label">WhatsApp</span><input id="fWa" class="ng-input" inputmode="tel" maxlength="20" placeholder="7000 0000" /></label>
+              <label class="ng-field"><span class="ng-label">Teléfono <span class="ng-opt">(opcional)</span></span><input id="fPhone" class="ng-input" inputmode="tel" maxlength="20" autocomplete="tel" /></label>
+            </div>
+            <label class="ng-field"><span class="ng-label">Correo <span class="ng-opt">(opcional)</span></span><input id="fEmail" class="ng-input" type="email" maxlength="120" autocomplete="email" /></label>
+            <label class="ng-field"><span class="ng-label">Horario</span><input id="fSchedule" class="ng-input" maxlength="120" placeholder="Por ejemplo: martes a domingo, 8:00 a. m. a 6:00 p. m." /></label>
+            <label class="ng-field"><span class="ng-label">Menú o precios <span class="ng-opt">(opcional)</span></span><textarea id="fMenu" class="ng-input" rows="3" maxlength="1000" placeholder="Platos, habitaciones o productos con sus precios, o el enlace a tu menú."></textarea></label>
+          </fieldset>
+
+          <fieldset class="ng-card">
+            <legend class="ng-h2">Fotos</legend>
+            <p class="ng-help">Se piden al menos 2: el frente o la entrada, y lo que ofrecen. La primera es la portada.</p>
+            <label class="dropzone" id="fDrop">
+              <span class="dz-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+              <span class="dz-text"><strong>Agregá fotos del negocio</strong><span>Arrastralas aquí o tocá para elegir</span></span>
+              <input type="file" id="fFiles" accept="image/*" multiple class="sr-only" />
+            </label>
+            <p class="ng-help" id="fPhotoStatus" aria-live="polite"></p>
+            <ul id="fPhotos" class="ng-photos"></ul>
+          </fieldset>
+
+          <label class="ng-consent" id="fConsentWrap" hidden>
+            <input type="checkbox" id="fConsent" />
+            <span>Soy el dueño o encargado del negocio y acepto los <a href="/terminos" target="_blank">términos</a> y la <a href="/privacidad" target="_blank">política de privacidad</a>, incluido que los datos se guarden en servidores fuera de El Salvador. Tengo 18 años o más.</span>
+          </label>
+        </div>
+
+        <aside class="ng-card ng-checks" aria-labelledby="hChecks">
+          <h2 class="ng-h2" id="hChecks">Antes de publicarlo revisamos</h2>
+          <ul id="fChecks" class="ng-checklist"></ul>
+        </aside>
+
+        <div class="ng-form-foot">
+          <p id="fError" class="ng-error" role="alert" hidden></p>
+          <button type="submit" class="ng-btn ng-btn-primary" id="fSubmit">Enviar a revisión</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Formulario de cupón -->
+    <section id="ngCoupon" class="ng-screen" hidden>
+      <a href="#" class="ng-back" id="cBack">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+        <span id="cBackText">Tu negocio</span>
+      </a>
+      <h1 class="ng-h1" id="cTitle">Nuevo cupón</h1>
+      <form id="couponForm" class="ng-card ng-coupon-form" novalidate>
+        <label class="ng-field"><span class="ng-label">Qué ofrece el cupón</span><input id="cName" class="ng-input" maxlength="80" placeholder="Por ejemplo: Postre gratis con tu almuerzo" required /></label>
+        <div class="ng-row">
+          <label class="ng-field"><span class="ng-label">Descuento</span><input id="cDiscount" class="ng-input" maxlength="20" placeholder="10%, $2 o 2x1" /></label>
+          <label class="ng-field"><span class="ng-label">Código</span><span class="ng-inline"><input id="cCode" class="ng-input" maxlength="20" autocapitalize="characters" /><button type="button" class="ng-btn ng-btn-outline ng-btn-sm" id="cNewCode">Otro</button></span></label>
+        </div>
+        <label class="ng-field"><span class="ng-label">Condiciones <span class="ng-opt">(opcional)</span></span><textarea id="cDesc" class="ng-input" rows="3" maxlength="300" placeholder="Por ejemplo: válido de lunes a jueves, uno por mesa."></textarea></label>
+        <div class="ng-row">
+          <label class="ng-field"><span class="ng-label">Cuántos se pueden usar</span><input id="cMax" class="ng-input" type="number" min="0" max="10000" step="1" value="50" /><span class="ng-help">0 es sin límite.</span></label>
+          <label class="ng-field"><span class="ng-label">Vale hasta</span><input id="cUntil" type="date" /></label>
+        </div>
+        <p id="cError" class="ng-error" role="alert" hidden></p>
+        <div class="ng-actions"><button type="submit" class="ng-btn ng-btn-primary" id="cSubmit">Publicar cupón</button></div>
+      </form>
+    </section>
+  </main>
+</Layout>
+
+<style is:global>
+  html, body { height: auto; min-height: 100%; background: var(--neblina); }
+  .ng { max-width: 960px; margin: 0 auto; padding: 20px max(16px, env(safe-area-inset-left)) 64px; color: var(--ink-2); }
+  .ng-loading { min-height: 50vh; }
+  .ng-screen { display: flex; flex-direction: column; gap: 18px; }
+  .ng-screen[hidden] { display: none; }
+  .ng-h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.1; color: var(--ink); text-wrap: balance; }
+  .ng-h2 { margin: 0; padding: 0; font-family: var(--font-display); font-weight: 800; font-size: 21px; color: var(--ink); }
+  .ng-lead { margin: 0; font-size: 18px; line-height: 1.55; max-width: 60ch; }
+  .ng-muted, .ng-help { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .ng-muted a, .ng-help a, .ng-consent a { color: var(--turquesa); font-weight: 700; }
+  .ng-opt { font-weight: 600; color: var(--muted); }
+  .ng-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .ng-steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 12px; max-width: 62ch; }
+  .ng-steps li { counter-increment: s; display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; font-size: 16px; line-height: 1.5; }
+  .ng-steps li::before { content: counter(s); width: 36px; height: 36px; border-radius: 18px; background: var(--plumaje); color: var(--rama); font-family: var(--font-display); font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .ng-steps strong { color: var(--ink); }
+  .ng-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ng-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 24px; border: 2px solid transparent; font: inherit; font-size: 15px; font-weight: 800; text-decoration: none; cursor: pointer; }
+  .ng-btn:focus-visible, .ng-input:focus-visible, .ng-back:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .ng-btn-primary { background: var(--primary); color: #FFFFFF; }
+  .ng-btn-primary:hover { background: #0B6665; }
+  .ng-btn-primary:disabled { opacity: .55; cursor: default; }
+  .ng-btn-outline { background: var(--surface); border-color: var(--turquesa); color: var(--turquesa); }
+  .ng-btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+  .ng-btn-sm { min-height: 40px; padding: 0 16px; font-size: 14px; }
+  .ng-back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; color: var(--turquesa); font-weight: 800; text-decoration: none; }
+  .ng-card { margin: 0; border: 0; background: var(--surface); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .ng-card > legend { float: left; width: 100%; margin-bottom: 2px; }
+  .ng-card > legend + * { clear: both; }
+
+  /* Lista de negocios */
+  .ng-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .ng-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 18px; background: var(--surface); color: var(--ink); text-decoration: none; border: 2px solid transparent; }
+  .ng-item:hover { border-color: var(--line); }
+  .ng-item:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .ng-thumb { width: 72px; height: 72px; border-radius: 14px; object-fit: cover; background: var(--photo); flex: none; }
+  .ng-item-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .ng-item-name { font-weight: 800; font-size: 17px; }
+  .ng-item-meta { font-size: 14px; color: var(--muted); }
+  .ng-status { align-self: flex-start; font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 12px; background: #FCEFCB; color: #6B4B05; }
+  .ng-status.is-active { background: #DDF0EE; color: #0B5E5D; }
+  .ng-status.is-rejected { background: #F6D9C8; color: #8A3A10; }
+  .ng-empty { padding: 28px 20px; border-radius: 20px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+  /* Formulario */
+  .ng-form { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+  .ng-form-main { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .ng-checks { position: sticky; top: 84px; }
+  .ng-form-foot { grid-column: 1 / -1; position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--neblina) 70%, transparent); }
+  .ng-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ng-label { font-size: 15px; font-weight: 800; color: var(--ink); }
+  .ng-input { width: 100%; box-sizing: border-box; min-height: 48px; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+  textarea.ng-input { resize: vertical; line-height: 1.5; }
+  .ng-input[aria-invalid="true"] { border-color: #A3461A; }
+  .ng-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .ng-inline { display: flex; gap: 8px; }
+  .ng-inline .ng-input { flex: 1 1 auto; text-transform: uppercase; letter-spacing: .04em; }
+  .ng-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ng-chip { position: relative; }
+  .ng-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .ng-chip span { display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 21px; border: 1.5px solid var(--border); font-weight: 700; color: var(--ink); background: var(--surface); }
+  .ng-chip input:checked + span { background: var(--rama); border-color: var(--rama); color: #FFFFFF; }
+  .ng-chip input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .ng-map { height: 300px; border-radius: 16px; overflow: hidden; background: var(--photo); z-index: 0; }
+  .ng-photos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .ng-photos:empty { display: none; }
+  .ng-photo { position: relative; display: flex; flex-direction: column; gap: 6px; }
+  .ng-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; background: var(--photo); display: block; }
+  .ng-photo-tag { position: absolute; top: 6px; left: 6px; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: var(--plumaje); color: var(--rama); }
+  .ng-photo-acts { display: flex; gap: 6px; }
+  .ng-photo-acts button { flex: 1 1 auto; min-height: 34px; border-radius: 17px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .ng-photo-acts button:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 1px; }
+  .ng-checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .ng-checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; font-size: 14px; line-height: 1.4; color: var(--ink-2); }
+  .ng-checklist li::before { content: ''; width: 22px; height: 22px; border-radius: 11px; border: 2px solid var(--border); box-sizing: border-box; }
+  .ng-checklist li.is-ok { color: var(--ink); font-weight: 700; }
+  .ng-checklist li.is-ok::before { border-color: var(--turquesa); background: var(--turquesa) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 14px no-repeat; }
+  .ng-consent { display: flex; gap: 12px; align-items: flex-start; padding: 16px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--line); font-size: 14px; line-height: 1.5; cursor: pointer; }
+  .ng-consent[hidden] { display: none; }
+  .ng-consent input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--turquesa); flex: none; }
+  .ng-consent:has(input:checked) { border-color: var(--turquesa); }
+  .ng-error { margin: 0; color: #8A3A10; font-weight: 700; font-size: 14px; flex: 1 1 260px; }
+
+  /* Ficha del negocio */
+  .ng-hero { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 18px; align-items: center; }
+  .ng-hero img, .ng-hero .ng-hero-empty { width: 180px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 18px; background: var(--photo); }
+  .ng-hero-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .ng-banner { border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: #FCEFCB; color: #4D3604; font-size: 15px; line-height: 1.5; }
+  .ng-banner.is-active { background: #DDF0EE; color: #0B4A49; }
+  .ng-banner.is-rejected { background: #F6D9C8; color: #6E2C0B; }
+  .ng-banner strong { font-size: 16px; }
+  .ng-banner ul { margin: 0; padding-left: 20px; }
+  .ng-banner a { color: inherit; font-weight: 800; }
+  .ng-stats { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .ng-stats div { background: var(--surface); border-radius: 16px; padding: 14px 16px; }
+  .ng-stats dt { font-size: 14px; font-weight: 700; color: var(--muted); line-height: 1.3; }
+  .ng-stats dd { margin: 4px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .ng-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+  .ng-coupons { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .ng-coupon { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .ng-coupon:first-child { border-top: 0; padding-top: 0; }
+  .ng-coupon-main { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ng-coupon-title { font-weight: 800; color: var(--ink); }
+  .ng-coupon-meta { font-size: 13px; color: var(--muted); }
+  .ng-coupon-acts { display: flex; gap: 8px; }
+  .ng-promo { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ng-promo .ng-input { flex: 1 1 220px; }
+  .ng-coupon-form { max-width: 640px; }
+  .ng-toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--rama); color: #FFFFFF; padding: 12px 18px; border-radius: 14px; font-weight: 700; font-size: 15px; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 1000; max-width: calc(100vw - 32px); }
+  .ng-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 820px) {
+    .ng-form { grid-template-columns: 1fr; }
+    .ng-checks { position: static; order: -1; }
+    .ng-form-main { order: 0; }
+    .ng-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 560px) {
+    .ng-h1 { font-size: 28px; }
+    .ng-hero { grid-template-columns: 1fr; }
+    .ng-hero img, .ng-hero .ng-hero-empty { width: 100%; }
+    .ng-head .ng-btn, .ng-form-foot .ng-btn { flex: 1 1 auto; }
+    .ng-map { height: 260px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ng-toast { transition: none; } }
+</style>
+
+<script>
+  import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+  import { collection, getDocs, getDoc, addDoc, doc, updateDoc, setDoc, query, where, serverTimestamp, documentId } from 'firebase/firestore';
+  import { db, auth, googleProvider } from '../lib/firebase';
+  import { esc, safeUrl, num } from '../lib/escape';
+  import { uploadImage } from '../lib/cloudinary';
+  import { datePicker, dayText } from '../lib/datePicker';
+  import { LEGAL } from '../lib/legal';
+
+  declare const L: any;
+  const $ = (id: string) => document.getElementById(id) as any;
+  const TYPES: Record<string, string> = { restaurante: 'Restaurante', cafeteria: 'Cafetería', hotel: 'Hospedaje', tienda: 'Tienda', otro: 'Negocio' };
+  const PLANS: Record<string, string> = { basico: 'Básico (gratis)', destacado: 'Destacado', pro: 'Pro' };
+  const MIN_PHOTOS = 2;
+
+  let user: any = null;
+  let mine: any[] = [];
+  let coupons: Record<string, any[]> = {};
+  let places: any[] = [];
+  let consentOk = false;
+
+  function toast(msg: string) {
+    let t = $('ngToast');
+    if (!t) { t = document.createElement('div'); t.id = 'ngToast'; t.className = 'ng-toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('is-on');
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('is-on'), 4500);
+  }
+  const state = (b: any) => (b.status === 'pending' ? 'pending' : b.status === 'rejected' ? 'rejected' : 'active');
+  const STATE_TEXT: Record<string, string> = { pending: 'En revisión', rejected: 'No aprobado', active: 'Publicado' };
+  const photosOf = (b: any) => [...new Set([b.coverUrl, ...(b.photos || [])].filter((u: string) => !!safeUrl(u)))] as string[];
+  const near = (b: any) => b.placeName ? ` · cerca de ${esc(b.placeName)}` : '';
+
+  // Lo mismo que revisa el admin antes de aprobar (si falta algo, no se puede aprobar).
+  function checks(b: any) {
+    const n = photosOf(b).length;
+    const inSV = Number(b.lat) > 13 && Number(b.lat) < 14.6 && Number(b.lng) > -90.3 && Number(b.lng) < -87.5;
+    return [
+      { ok: String(b.name || '').trim().length >= 3 && !!b.category, label: 'Nombre y tipo de negocio' },
+      { ok: String(b.description || '').trim().length >= 40, label: 'Qué ofrecen, en unas dos líneas' },
+      { ok: !!String(b.schedule || '').trim(), label: 'Horario' },
+      { ok: !!String(b.phone || b.whatsapp || '').replace(/\D/g, ''), label: 'WhatsApp o teléfono' },
+      { ok: n >= MIN_PHOTOS, label: `Al menos ${MIN_PHOTOS} fotos${n ? ` (llevás ${n})` : ''}` },
+      { ok: inSV, label: 'Ubicación marcada en el mapa' },
+    ];
+  }
+
+  // ---------- Entrar y cargar ----------
+  $('ngLogin').addEventListener('click', () => signInWithPopup(auth, googleProvider).catch(() => {}));
+  onAuthStateChanged(auth, async (u) => {
+    user = u;
+    if (!u) { $('ngLoading').hidden = true; show('ngIntro'); return; }
+    $('ngLoading').hidden = false;
+    await loadMine();
+    $('ngLoading').hidden = true;
+    route();
+  });
+
+  async function loadMine() {
+    const [bs, ps, us] = await Promise.all([
+      getDocs(query(collection(db, 'businesses'), where('ownerId', '==', user.uid))).then((s) => s.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[]),
+      places.length ? Promise.resolve(null) : getDocs(collection(db, 'places')).then((s) => s.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[]),
+      getDoc(doc(db, 'users', user.uid)).catch(() => null),
+    ]);
+    mine = bs.sort((a: any, b: any) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    if (ps) places = (ps as any[]).filter((p) => !p.demo && !/^demo-/.test(p.id) && Number.isFinite(Number(p.lat))).map((p) => ({ ...p, lat: Number(p.lat), lng: Number(p.lng) }))
+      .sort((a, b) => String(a.department || '').localeCompare(String(b.department || ''), 'es') || String(a.name).localeCompare(String(b.name), 'es'));
+    consentOk = (us as any)?.data?.()?.privacy?.version === LEGAL.updated;
+    coupons = {};
+    const ids = mine.map((b) => b.id);
+    for (let i = 0; i < ids.length; i += 30) {
+      const snap = await getDocs(query(collection(db, 'coupons'), where('businessId', 'in', ids.slice(i, i + 30)))).catch(() => null);
+      snap?.docs.forEach((d) => { const c: any = { id: d.id, ...d.data() }; (coupons[c.businessId] ||= []).push(c); });
+    }
+  }
+
+  // ---------- Pantallas ----------
+  function show(id: string) {
+    document.querySelectorAll('.ng-screen').forEach((s) => ((s as HTMLElement).hidden = s.id !== id));
+    window.scrollTo(0, 0);
+  }
+  function route() {
+    if (!user) { show('ngIntro'); return; }
+    const [a, id, sub, cid] = location.hash.slice(1).split('/');
+    if (a === 'nuevo') return openForm(null);
+    const b = a === 'n' ? mine.find((x) => x.id === decodeURIComponent(id || '')) : null;
+    if (b && sub === 'editar') return openForm(b);
+    if (b && sub === 'cupon') return openCoupon(b, cid ? decodeURIComponent(cid) : null);
+    if (b) return renderBiz(b);
+    renderHome();
+  }
+  window.addEventListener('hashchange', route);
+
+  function renderHome() {
+    show('ngHome');
+    document.title = 'Tus negocios · Goz';
+    $('ngList').innerHTML = mine.map((b) => {
+      const st = state(b), cover = safeUrl(photosOf(b)[0]);
+      return `<li><a class="ng-item" href="#n/${encodeURIComponent(b.id)}">
+        ${cover ? `<img class="ng-thumb" src="${cover}" alt="">` : '<span class="ng-thumb"></span>'}
+        <span class="ng-item-main"><span class="ng-item-name">${esc(b.name)}</span><span class="ng-item-meta">${esc(TYPES[b.category] || 'Negocio')}${near(b)}</span>
+        <span class="ng-status${st === 'active' ? ' is-active' : st === 'rejected' ? ' is-rejected' : ''}">${STATE_TEXT[st]}</span></span>
+      </a></li>`;
+    }).join('') || `<li class="ng-empty"><p class="ng-lead">Todavía no tenés negocios en Goz.</p><p class="ng-muted">Registrá tu restaurante, hospedaje, cafetería o tienda. Es gratis y lo revisamos antes de publicarlo.</p><a href="#nuevo" class="ng-btn ng-btn-primary">Registrar un negocio</a></li>`;
+  }
+
+  // ---------- Ficha del negocio ----------
+  const fmtN = (n: number) => num(n).toLocaleString('es-SV');
+  function renderBiz(b: any) {
+    show('ngBiz');
+    document.title = `${b.name} · Goz para negocios`;
+    const st = state(b), cover = safeUrl(photosOf(b)[0]);
+    const missing = checks(b).filter((c) => !c.ok);
+    const cs = (coupons[b.id] || []).slice().sort((x, y) => Number(y.active !== false) - Number(x.active !== false) || String(y.createdAt || '').localeCompare(String(x.createdAt || '')));
+    const used = cs.reduce((a, c) => a + num(c.usedCount), 0);
+    const banner = st === 'pending'
+      ? `<div class="ng-banner" role="status"><strong>Lo estamos revisando.</strong><span>Cuando lo aprobemos sale en el mapa. Si falta algo te escribimos${b.whatsapp || b.phone ? ' por WhatsApp' : ''}.</span>${missing.length ? `<span>Para aprobarlo todavía falta:</span><ul>${missing.map((c) => `<li>${esc(c.label)}</li>`).join('')}</ul><a href="#n/${encodeURIComponent(b.id)}/editar">Completar la ficha</a>` : ''}</div>`
+      : st === 'rejected'
+        ? `<div class="ng-banner is-rejected" role="status"><strong>No se aprobó todavía.</strong>${missing.length ? `<span>Falta:</span><ul>${missing.map((c) => `<li>${esc(c.label)}</li>`).join('')}</ul>` : '<span>Revisá que los datos y las fotos sean reales y estén al día.</span>'}<a href="#n/${encodeURIComponent(b.id)}/editar">Corregir y enviar otra vez</a></div>`
+        : `<div class="ng-banner is-active" role="status"><strong>Publicado en el mapa.</strong><span>Los turistas lo ven cerca de ${esc(b.placeName || 'su zona')}. <a href="/#b-${encodeURIComponent(b.id)}" target="_blank" rel="noopener">Verlo en el mapa</a></span></div>`;
+    $('ngBiz').innerHTML = `
+      <a href="#" class="ng-back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Tus negocios</a>
+      <div class="ng-hero">
+        ${cover ? `<img src="${cover}" alt="Foto de ${esc(b.name)}">` : '<span class="ng-hero-empty" aria-hidden="true"></span>'}
+        <div class="ng-hero-main">
+          <span class="ng-status${st === 'active' ? ' is-active' : st === 'rejected' ? ' is-rejected' : ''}">${STATE_TEXT[st]}</span>
+          <h1 class="ng-h1">${esc(b.name)}</h1>
+          <p class="ng-muted">${esc(TYPES[b.category] || 'Negocio')}${near(b)} · plan ${esc(PLANS[b.plan] || PLANS.basico)}${b.planUntil && b.plan !== 'basico' ? `, pagado hasta el ${esc(dayText(b.planUntil))}` : ''}</p>
+          <div class="ng-actions"><a href="#n/${encodeURIComponent(b.id)}/editar" class="ng-btn ng-btn-outline ng-btn-sm">Editar la ficha</a></div>
+        </div>
+      </div>
+      ${banner}
+      <h2 class="ng-h2">Cómo le va</h2>
+      <dl class="ng-stats">
+        <div><dt>Vieron la ficha</dt><dd>${fmtN(b.viewCount)}</dd></div>
+        <div><dt>Tocaron para contactar</dt><dd>${fmtN(b.clickCount)}</dd></div>
+        <div><dt>Cupones usados</dt><dd>${fmtN(used)}</dd></div>
+        <div><dt>Reacciones</dt><dd>${fmtN(num(b.loves) + num(b.amazing) + num(b.recommended))}</dd></div>
+      </dl>
+      <div class="ng-two">
+        <section class="ng-card" aria-labelledby="hPromo">
+          <h2 class="ng-h2" id="hPromo">Promo de hoy</h2>
+          <p class="ng-help">Sale arriba de tu ficha en el mapa. Quitala cuando se acabe.</p>
+          <form class="ng-promo" id="promoForm">
+            <label class="sr-only" for="promoInput">Promo de hoy</label>
+            <input id="promoInput" class="ng-input" maxlength="120" value="${esc(b.promoToday || '')}" placeholder="Por ejemplo: café gratis con tu desayuno">
+            <button type="submit" class="ng-btn ng-btn-primary ng-btn-sm">Publicar</button>
+            ${b.promoToday ? '<button type="button" class="ng-btn ng-btn-ghost ng-btn-sm" id="promoClear">Quitar</button>' : ''}
+          </form>
+        </section>
+        <section class="ng-card" aria-labelledby="hCoupons">
+          <div class="ng-head"><h2 class="ng-h2" id="hCoupons">Cupones</h2><a href="#n/${encodeURIComponent(b.id)}/cupon" class="ng-btn ng-btn-outline ng-btn-sm">Crear cupón</a></div>
+          ${cs.length ? `<ul class="ng-coupons">${cs.map((c) => couponRow(b, c)).join('')}</ul>` : '<p class="ng-help">Un cupón le da a la gente una razón para ir a tu negocio y no a otro. Cada persona lo puede usar una vez.</p>'}
+        </section>
+      </div>
+      ${b.plan === 'basico' || !b.plan ? `<p class="ng-muted">¿Querés salir primero y resaltado en el mapa? El plan Destacado cuesta $9.99 al mes. Escribinos a <a href="mailto:${esc(LEGAL.contact)}?subject=${encodeURIComponent(`Plan Destacado para ${b.name}`)}">${esc(LEGAL.contact)}</a>.</p>` : ''}`;
+  }
+  function couponRow(b: any, c: any) {
+    const on = c.active !== false;
+    const expired = c.validUntil && Date.parse(c.validUntil) < Date.now();
+    const full = num(c.maxUses) > 0 && num(c.usedCount) >= num(c.maxUses);
+    const why = !on ? 'Pausado' : expired ? 'Venció' : full ? 'Se acabaron' : 'Activo';
+    return `<li class="ng-coupon">
+      <div class="ng-coupon-main"><span class="ng-coupon-title">${esc(c.title)}${c.discount ? ` · ${esc(c.discount)}` : ''}</span>
+      <span class="ng-coupon-meta">${why} · usado ${fmtN(c.usedCount)}${num(c.maxUses) ? ` de ${fmtN(c.maxUses)}` : ''} ${num(c.usedCount) === 1 ? 'vez' : 'veces'}${c.validUntil ? ` · hasta el ${esc(dayText(String(c.validUntil).slice(0, 10)))}` : ''} · código ${esc(c.code || '')}</span></div>
+      <div class="ng-coupon-acts">
+        <a class="ng-btn ng-btn-ghost ng-btn-sm" href="#n/${encodeURIComponent(b.id)}/cupon/${encodeURIComponent(c.id)}">Editar</a>
+        <button type="button" class="ng-btn ng-btn-ghost ng-btn-sm" data-toggle-coupon="${esc(c.id)}">${on ? 'Pausar' : 'Activar'}</button>
+      </div></li>`;
+  }
+  $('ngBiz').addEventListener('submit', async (e: Event) => {
+    if ((e.target as HTMLElement).id !== 'promoForm') return;
+    e.preventDefault();
+    await savePromo(String($('promoInput').value || '').trim());
+  });
+  $('ngBiz').addEventListener('click', async (e: Event) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('#promoClear')) { await savePromo(''); return; }
+    const tg = t.closest('[data-toggle-coupon]') as HTMLButtonElement | null;
+    if (!tg) return;
+    const b = currentBiz(); const c = (coupons[b?.id] || []).find((x) => x.id === tg.dataset.toggleCoupon);
+    if (!b || !c) return;
+    tg.disabled = true;
+    try {
+      await updateDoc(doc(db, 'coupons', c.id), { active: c.active === false });
+      c.active = c.active === false;
+      renderBiz(b); toast(c.active ? 'Cupón activo otra vez.' : 'Cupón pausado. Ya no sale en el mapa.');
+    } catch (err) { console.error(err); tg.disabled = false; toast('No se pudo cambiar. Probá otra vez.'); }
+  });
+  const currentBiz = () => { const [, id] = location.hash.slice(1).split('/'); return mine.find((x) => x.id === decodeURIComponent(id || '')); };
+  async function savePromo(text: string) {
+    const b = currentBiz(); if (!b) return;
+    try {
+      await updateDoc(doc(db, 'businesses', b.id), { promoToday: text });
+      b.promoToday = text; renderBiz(b);
+      toast(text ? 'Promo publicada.' : 'Promo quitada.');
+    } catch (err) { console.error(err); toast('No se pudo guardar la promo. Probá otra vez.'); }
+  }
+
+  // ---------- Formulario del negocio ----------
+  let editing: any = null;
+  let photos: string[] = [];
+  let uploading = 0;
+  let point: { lat: number; lng: number } | null = null;
+  let fmap: any = null, fmarker: any = null;
+
+  function fillPlaces(sel: string) {
+    const groups = new Map<string, any[]>();
+    places.forEach((p) => { const k = p.department || 'Otros'; (groups.get(k) || groups.set(k, []).get(k)!).push(p); });
+    $('fPlace').innerHTML = '<option value="">Elegí el lugar más cercano</option>'
+      + [...groups].map(([dep, list]) => `<optgroup label="${esc(dep)}">${list.map((p) => `<option value="${esc(p.id)}"${p.id === sel ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</optgroup>`).join('');
+  }
+  function openForm(b: any) {
+    editing = b;
+    show('ngForm');
+    $('ngFormTitle').textContent = b ? `Editar ${b.name}` : 'Registrar un negocio';
+    $('ngFormBackText').textContent = b ? b.name : 'Tus negocios';
+    ($('ngFormBack') as HTMLAnchorElement).href = b ? `#n/${encodeURIComponent(b.id)}` : '#';
+    document.title = b ? `Editar ${b.name} · Goz` : 'Registrar un negocio · Goz';
+    (document.querySelector(`input[name="category"][value="${b?.category || 'restaurante'}"]`) as HTMLInputElement | null)?.click();
+    $('fName').value = b?.name || ''; $('fDesc').value = b?.description || ''; $('fAddress').value = b?.address || '';
+    $('fWa').value = b?.whatsapp || ''; $('fPhone').value = b?.phone || ''; $('fEmail').value = b?.email || '';
+    $('fSchedule').value = b?.schedule || ''; $('fMenu').value = b?.menu || '';
+    fillPlaces(b?.placeId || '');
+    photos = b ? photosOf(b) : [];
+    point = b && Number.isFinite(Number(b.lat)) ? { lat: Number(b.lat), lng: Number(b.lng) } : null;
+    $('fConsentWrap').hidden = consentOk; ($('fConsent') as HTMLInputElement).checked = false;
+    $('fError').hidden = true;
+    const st = b ? state(b) : '';
+    $('fSubmit').textContent = !b ? 'Enviar a revisión' : st === 'rejected' ? 'Guardar y enviar otra vez' : 'Guardar cambios';
+    renderPhotos(); renderChecks();
+    setTimeout(initMap, 0);
+  }
+  function initMap() {
+    if (typeof L === 'undefined') return;
+    if (!fmap) {
+      fmap = L.map('fMap', { scrollWheelZoom: false }).setView([13.75, -88.95], 8);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(fmap);
+      fmap.on('click', (e: any) => setPoint(e.latlng.lat, e.latlng.lng, false));
+      new ResizeObserver(() => fmap.invalidateSize()).observe($('fMap'));
+    }
+    if (fmarker) { fmarker.remove(); fmarker = null; }
+    if (point) { setPoint(point.lat, point.lng, true); return; }
+    const p = places.find((x) => x.id === $('fPlace').value);
+    fmap.setView(p ? [p.lat, p.lng] : [13.75, -88.95], p ? 15 : 8);
+  }
+  function setPoint(lat: number, lng: number, pan: boolean) {
+    point = { lat: Number(lat.toFixed(6)), lng: Number(lng.toFixed(6)) };
+    if (!fmarker) {
+      fmarker = L.marker([lat, lng], { draggable: true, keyboard: true, title: 'Ubicación del negocio', icon: L.divIcon({ className: '', html: '<div style="width:24px;height:24px;border-radius:12px;background:#C2581F;border:4px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>', iconSize: [24, 24], iconAnchor: [12, 12] }) }).addTo(fmap);
+      fmarker.on('dragend', () => { const ll = fmarker.getLatLng(); setPoint(ll.lat, ll.lng, false); });
+    } else fmarker.setLatLng([lat, lng]);
+    if (pan) fmap.setView([lat, lng], Math.max(fmap.getZoom(), 16));
+    renderChecks();
+  }
+  $('fPlace').addEventListener('change', () => {
+    const p = places.find((x) => x.id === $('fPlace').value);
+    if (p && fmap && !point) fmap.setView([p.lat, p.lng], 15);
+  });
+
+  const formData = () => ({
+    name: String($('fName').value || '').trim(),
+    category: (document.querySelector('input[name="category"]:checked') as HTMLInputElement)?.value || 'otro',
+    description: String($('fDesc').value || '').trim(),
+    schedule: String($('fSchedule').value || '').trim(),
+    phone: String($('fPhone').value || '').trim(),
+    whatsapp: String($('fWa').value || '').trim(),
+    email: String($('fEmail').value || '').trim(),
+    address: String($('fAddress').value || '').trim(),
+    menu: String($('fMenu').value || '').trim(),
+    lat: point?.lat ?? 0, lng: point?.lng ?? 0,
+    coverUrl: photos[0] || '', photos: photos.slice(1),
+  });
+  function renderChecks() {
+    const f = formData();
+    $('fChecks').innerHTML = checks(f).map((c) => `<li class="${c.ok ? 'is-ok' : ''}">${esc(c.label)}<span class="sr-only">${c.ok ? ': listo' : ': falta'}</span></li>`).join('');
+    const n = f.description.length;
+    $('fDescHelp').textContent = n >= 40 ? `${n} letras` : `${n} letras. Escribí al menos 40 para que se entienda qué ofrecen.`;
+  }
+  $('bizForm').addEventListener('input', renderChecks);
+  $('bizForm').addEventListener('change', renderChecks);
+
+  function renderPhotos() {
+    $('fPhotos').innerHTML = photos.map((u, i) => `<li class="ng-photo">
+      <img src="${safeUrl(u)}" alt="Foto ${i + 1} del negocio">
+      ${i === 0 ? '<span class="ng-photo-tag">Portada</span>' : ''}
+      <span class="ng-photo-acts">${i > 0 ? `<button type="button" data-cover="${i}">Portada</button>` : ''}<button type="button" data-rm="${i}" aria-label="Quitar foto ${i + 1}">Quitar</button></span>
+    </li>`).join('');
+    renderChecks();
+  }
+  $('fPhotos').addEventListener('click', (e: Event) => {
+    const t = e.target as HTMLElement;
+    const rm = t.closest('[data-rm]') as HTMLElement | null, cv = t.closest('[data-cover]') as HTMLElement | null;
+    if (rm) photos.splice(Number(rm.dataset.rm), 1);
+    else if (cv) { const [x] = photos.splice(Number(cv.dataset.cover), 1); photos.unshift(x); }
+    else return;
+    renderPhotos();
+  });
+  async function addFiles(files: FileList | File[]) {
+    const list = [...files].filter((f) => f.type.startsWith('image/')).slice(0, 10 - photos.length);
+    if (!list.length) { $('fPhotoStatus').textContent = photos.length >= 10 ? 'Ya tenés 10 fotos, que es el máximo.' : 'Elegí fotos (JPG, PNG o HEIC).'; return; }
+    uploading += list.length;
+    $('fPhotoStatus').textContent = `Subiendo ${list.length === 1 ? 'la foto' : `${list.length} fotos`}…`;
+    $('fSubmit').disabled = true;
+    let failed = '';
+    await Promise.all(list.map(async (f) => {
+      try { photos.push(await uploadImage(f, 'businesses', user.uid)); renderPhotos(); }
+      catch (err) { failed = (err as Error).message; }
+      finally { uploading--; }
+    }));
+    $('fSubmit').disabled = uploading > 0;
+    $('fPhotoStatus').textContent = failed || (uploading ? '' : 'Listo.');
+  }
+  const drop = $('fDrop') as HTMLElement;
+  $('fFiles').addEventListener('change', (e: Event) => { const inp = e.target as HTMLInputElement; if (inp.files) addFiles(inp.files); inp.value = ''; });
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('is-over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove('is-over')));
+  drop.addEventListener('drop', (e: DragEvent) => { e.preventDefault(); if (e.dataTransfer?.files) addFiles(e.dataTransfer.files); });
+
+  function fail(msg: string, focusId?: string) {
+    $('fError').textContent = msg; $('fError').hidden = false;
+    if (focusId) { const el = $(focusId); el?.setAttribute('aria-invalid', 'true'); el?.focus(); }
+  }
+  $('bizForm').addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    document.querySelectorAll('#bizForm [aria-invalid]').forEach((x) => x.removeAttribute('aria-invalid'));
+    $('fError').hidden = true;
+    const f = formData();
+    const place = places.find((p) => p.id === $('fPlace').value);
+    if (uploading) return fail('Esperá a que terminen de subir las fotos.');
+    if (f.name.length < 3) return fail('Escribí el nombre del negocio.', 'fName');
+    if (!place) return fail('Elegí el lugar turístico más cercano.', 'fPlace');
+    const missing = checks(f).filter((c) => !c.ok);
+    if (missing.length) return fail(`Para enviarlo a revisión falta: ${missing.map((c) => c.label.toLowerCase().replace(/ \(.*\)$/, '')).join(', ')}.`);
+    if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return fail('Revisá el correo: parece que está mal escrito.', 'fEmail');
+    if (!consentOk && !($('fConsent') as HTMLInputElement).checked) return fail('Marcá la casilla para aceptar los términos y la política de privacidad.', 'fConsent');
+    const btn = $('fSubmit') as HTMLButtonElement; btn.disabled = true;
+    try {
+      if (!consentOk) {
+        await setDoc(doc(db, 'users', user.uid), { privacy: { version: LEGAL.updated, acceptedAt: serverTimestamp(), transfers: true, ageOk: true } }, { merge: true });
+        consentOk = true;
+      }
+      const data: any = { ...f, placeId: place.id, placeName: place.name };
+      if (!editing) {
+        const full = {
+          ...data, featured: false, status: 'pending', plan: 'basico', promoToday: '',
+          viewCount: 0, clickCount: 0, loves: 0, amazing: 0, recommended: 0, visitCount: 0,
+          ownerId: user.uid, ownerName: user.displayName || 'Dueño', createdAt: new Date().toISOString(),
+        };
+        const ref = await addDoc(collection(db, 'businesses'), full);
+        mine.unshift({ id: ref.id, ...full });
+        location.hash = `#n/${encodeURIComponent(ref.id)}`;
+        toast('Listo, lo enviaste a revisión. Te avisamos cuando salga en el mapa.');
+      } else {
+        if (state(editing) === 'rejected') data.status = 'pending';
+        await updateDoc(doc(db, 'businesses', editing.id), data);
+        Object.assign(editing, data);
+        location.hash = `#n/${encodeURIComponent(editing.id)}`;
+        toast(data.status === 'pending' ? 'Lo enviaste otra vez a revisión.' : 'Cambios guardados.');
+      }
+    } catch (err) {
+      console.error(err);
+      fail('No se pudo guardar. Revisá tu conexión y probá otra vez.');
+    } finally { btn.disabled = false; }
+  });
+
+  // ---------- Cupones ----------
+  let couponBiz: any = null, couponEdit: any = null;
+  const newCode = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), (n) => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[n % 32]).join('');
+  const untilPicker = datePicker($('cUntil'), { min: 'today', empty: 'Sin fecha', title: 'Vale hasta' }) as any;
+  function openCoupon(b: any, cid: string | null) {
+    couponBiz = b; couponEdit = cid ? (coupons[b.id] || []).find((c) => c.id === cid) || null : null;
+    show('ngCoupon');
+    $('cTitle').textContent = couponEdit ? 'Editar cupón' : 'Nuevo cupón';
+    $('cBackText').textContent = b.name; ($('cBack') as HTMLAnchorElement).href = `#n/${encodeURIComponent(b.id)}`;
+    $('cSubmit').textContent = couponEdit ? 'Guardar cambios' : 'Publicar cupón';
+    $('cName').value = couponEdit?.title || ''; $('cDiscount').value = couponEdit?.discount || '';
+    $('cCode').value = couponEdit?.code || newCode(); $('cDesc').value = couponEdit?.description || '';
+    $('cMax').value = String(couponEdit ? num(couponEdit.maxUses) : 50);
+    ($('cUntil') as HTMLInputElement).value = couponEdit?.validUntil ? String(couponEdit.validUntil).slice(0, 10) : '';
+    untilPicker?.refresh?.();
+    $('cError').hidden = true;
+    document.title = `${couponEdit ? 'Editar cupón' : 'Nuevo cupón'} · Goz`;
+  }
+  $('cNewCode').addEventListener('click', () => { $('cCode').value = newCode(); });
+  $('couponForm').addEventListener('submit', async (e: Event) => {
+    e.preventDefault();
+    const err = (m: string, id?: string) => { $('cError').textContent = m; $('cError').hidden = false; if (id) $(id).focus(); };
+    const title = String($('cName').value || '').trim();
+    const code = String($('cCode').value || '').trim().toUpperCase();
+    const max = Math.max(0, Math.floor(Number($('cMax').value) || 0));
+    const until = String(($('cUntil') as HTMLInputElement).value || '');
+    if (title.length < 3) return err('Escribí qué ofrece el cupón.', 'cName');
+    if (code.length < 3) return err('El código necesita al menos 3 letras o números.', 'cCode');
+    if (couponEdit && max && max < num(couponEdit.usedCount)) return err(`Ya se usó ${num(couponEdit.usedCount)} veces: el límite no puede ser menor.`, 'cMax');
+    const data: any = {
+      title, code, discount: String($('cDiscount').value || '').trim(), description: String($('cDesc').value || '').trim(),
+      maxUses: max, validUntil: until ? `${until}T23:59:59-06:00` : null,
+    };
+    const btn = $('cSubmit') as HTMLButtonElement; btn.disabled = true;
+    try {
+      if (couponEdit) {
+        await updateDoc(doc(db, 'coupons', couponEdit.id), data);
+        Object.assign(couponEdit, data);
+        toast('Cupón guardado.');
+      } else {
+        const full = { ...data, businessId: couponBiz.id, businessName: couponBiz.name, validFrom: new Date().toISOString(), usedCount: 0, active: true, createdAt: new Date().toISOString() };
+        const ref = await addDoc(collection(db, 'coupons'), full);
+        (coupons[couponBiz.id] ||= []).push({ id: ref.id, ...full });
+        toast(state(couponBiz) === 'active' ? 'Cupón publicado. Ya sale en tu ficha del mapa.' : 'Cupón listo. Sale en el mapa cuando aprobemos tu negocio.');
+      }
+      location.hash = `#n/${encodeURIComponent(couponBiz.id)}`;
+    } catch (e2) { console.error(e2); err('No se pudo guardar el cupón. Probá otra vez.'); }
+    finally { btn.disabled = false; }
+  });
+
+  // Los enlaces "#" vuelven a la lista.
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest('a[href="#"]') as HTMLAnchorElement | null;
+    if (a) { e.preventDefault(); history.pushState(null, '', location.pathname); route(); }
+  });
+</script>

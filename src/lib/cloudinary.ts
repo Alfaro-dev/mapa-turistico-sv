@@ -7,7 +7,7 @@ const CLOUD_NAME = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME || 'n6yslku2';
 const UPLOAD_PRESET = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'mapa_sv_fotos';
 const MAX_BYTES = 5 * 1024 * 1024;
 
-export type PhotoKind = 'places' | 'reviews';
+export type PhotoKind = 'places' | 'reviews' | 'businesses';
 
 // Vuelve a dibujar la foto para quitarle los datos internos (ubicación GPS, cámara, fecha).
 // Si el navegador no puede leerla (por ejemplo HEIC fuera de Safari), se sube tal cual:

@@ -252,7 +252,9 @@ service cloud.firestore {
         || (isOwner(resource.data.ownerId)
             && request.resource.data.ownerId == resource.data.ownerId
             && request.resource.data.get('featured', false) == resource.data.get('featured', false)
-            && request.resource.data.get('status', '') == resource.data.get('status', '')
+            // Si no se aprobó, el dueño lo corrige y lo vuelve a mandar a revisión.
+            && (request.resource.data.get('status', '') == resource.data.get('status', '')
+                || (resource.data.get('status', '') == 'rejected' && request.resource.data.get('status', '') == 'pending'))
             && request.resource.data.get('plan', 'basico') == resource.data.get('plan', 'basico')
             && request.resource.data.get('planUntil', null) == resource.data.get('planUntil', null))
         || (onlyChanges(['viewCount']) && bumpedByOne('viewCount'))

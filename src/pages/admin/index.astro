@@ -1070,7 +1070,7 @@ const categories = [
     const waUrl = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}.`)}` : '';
     const st = bizState(b);
     const missing = autoChecks(b).filter((c) => !c.ok);
-    const waAsk = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}. Para publicarlo en el mapa nos falta: ${missing.map((c) => c.ask).join('; ')}. Lo podés agregar desde la app. ¡Gracias!`)}` : '';
+    const waAsk = wa ? `https://wa.me/${wa.length === 8 ? '503' + wa : wa}?text=${encodeURIComponent(`Hola, te escribo de Goz sobre el registro de ${b.name}. Para publicarlo en el mapa nos falta: ${missing.map((c) => c.ask).join('; ')}. Lo podés agregar desde mapa.carlosalfaro.dev/negocios o desde la app. ¡Gracias!`)}` : '';
     $('bizDetail').innerHTML = `
       <div class="ad-biz-top">
         ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="ad-biz-photo" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="">` : '<span class="ad-biz-photo"></span>'}

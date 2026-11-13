@@ -48,6 +48,7 @@ const categories = [
     <div id="accountMenu" class="account-menu" role="menu" hidden>
       <p id="accountName" class="account-name"></p>
       <a href="/perfil" role="menuitem" class="account-item">Mi perfil e insignias</a>
+      <a href="/negocios" role="menuitem" class="account-item">Tu negocio en Goz</a>
       <a id="adminLink" href="/admin" role="menuitem" class="account-item" hidden>Panel de administrador</a>
       <button type="button" id="logoutBtn" role="menuitem" class="account-item">Salir</button>
       <p class="account-legal"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
@@ -109,7 +110,7 @@ const categories = [
             <li class="sk-row" aria-hidden="true"><span class="sk sk-thumb"></span><span class="sk-lines"><span class="sk" style={`width:${[70, 55, 80, 60, 75, 50][i]}%`}></span><span class="sk sk-sub"></span></span></li>
           ))}
         </ul>
-        <p class="list-legal"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
+        <p class="list-legal">¿Tenés un negocio? <a href="/negocios">Ponelo en el mapa</a> · <a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
       </section>
       <section id="detailView" hidden aria-live="polite"></section>
     </div>
