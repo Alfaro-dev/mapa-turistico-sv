@@ -392,7 +392,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
         <div class="ng-hero-main">
           <span class="ng-status${st === 'active' ? ' is-active' : st === 'rejected' ? ' is-rejected' : ''}">${STATE_TEXT[st]}</span>
           <h1 class="ng-h1">${esc(b.name)}</h1>
-          <p class="ng-muted">${esc(TYPES[b.category] || 'Negocio')}${near(b)} · plan ${esc(PLANS[b.plan] || PLANS.basico)}${b.planUntil && b.plan !== 'basico' ? `, pagado hasta el ${esc(dayText(b.planUntil))}` : ''}</p>
+          <p class="ng-muted">${esc(TYPES[b.category] || 'Negocio')}${near(b)} · plan ${esc(PLANS[b.plan] || PLANS.basico)}${b.planUntil && b.plan !== 'basico' ? `, pagado hasta el ${esc(dayText(b.planUntil).replace(/^./, (c) => c.toLowerCase()))}` : ''}</p>
           <div class="ng-actions"><a href="#n/${encodeURIComponent(b.id)}/editar" class="ng-btn ng-btn-outline ng-btn-sm">Editar la ficha</a></div>
         </div>
       </div>
@@ -429,7 +429,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     const why = !on ? 'Pausado' : expired ? 'Venció' : full ? 'Se acabaron' : 'Activo';
     return `<li class="ng-coupon">
       <div class="ng-coupon-main"><span class="ng-coupon-title">${esc(c.title)}${c.discount ? ` · ${esc(c.discount)}` : ''}</span>
-      <span class="ng-coupon-meta">${why} · usado ${fmtN(c.usedCount)}${num(c.maxUses) ? ` de ${fmtN(c.maxUses)}` : ''} ${num(c.usedCount) === 1 ? 'vez' : 'veces'}${c.validUntil ? ` · hasta el ${esc(dayText(String(c.validUntil).slice(0, 10)))}` : ''} · código ${esc(c.code || '')}</span></div>
+      <span class="ng-coupon-meta">${why} · usado ${fmtN(c.usedCount)}${num(c.maxUses) ? ` de ${fmtN(c.maxUses)}` : ''} ${num(c.usedCount) === 1 ? 'vez' : 'veces'}${c.validUntil ? ` · hasta el ${esc(dayText(String(c.validUntil).slice(0, 10)).replace(/^./, (ch) => ch.toLowerCase()))}` : ''} · código ${esc(c.code || '')}</span></div>
       <div class="ng-coupon-acts">
         <a class="ng-btn ng-btn-ghost ng-btn-sm" href="#n/${encodeURIComponent(b.id)}/cupon/${encodeURIComponent(c.id)}">Editar</a>
         <button type="button" class="ng-btn ng-btn-ghost ng-btn-sm" data-toggle-coupon="${esc(c.id)}">${on ? 'Pausar' : 'Activar'}</button>
@@ -471,10 +471,12 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   let point: { lat: number; lng: number } | null = null;
   let fmap: any = null, fmarker: any = null;
 
-  function fillPlaces(sel: string) {
+  function fillPlaces(sel: string, selName = '') {
     const groups = new Map<string, any[]>();
+    // Si el lugar del negocio ya no está en la lista (por ejemplo, uno de prueba), se muestra igual.
+    const extra = sel && !places.some((p) => p.id === sel) ? `<option value="${esc(sel)}" selected>${esc(selName || 'Lugar actual')}</option>` : '';
     places.forEach((p) => { const k = p.department || 'Otros'; (groups.get(k) || groups.set(k, []).get(k)!).push(p); });
-    $('fPlace').innerHTML = '<option value="">Elegí el lugar más cercano</option>'
+    $('fPlace').innerHTML = '<option value="">Elegí el lugar más cercano</option>' + extra
       + [...groups].map(([dep, list]) => `<optgroup label="${esc(dep)}">${list.map((p) => `<option value="${esc(p.id)}"${p.id === sel ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</optgroup>`).join('');
   }
   function openForm(b: any) {
@@ -488,7 +490,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     $('fName').value = b?.name || ''; $('fDesc').value = b?.description || ''; $('fAddress').value = b?.address || '';
     $('fWa').value = b?.whatsapp || ''; $('fPhone').value = b?.phone || ''; $('fEmail').value = b?.email || '';
     $('fSchedule').value = b?.schedule || ''; $('fMenu').value = b?.menu || '';
-    fillPlaces(b?.placeId || '');
+    fillPlaces(b?.placeId || '', b?.placeName || '');
     photos = b ? photosOf(b) : [];
     point = b && Number.isFinite(Number(b.lat)) ? { lat: Number(b.lat), lng: Number(b.lng) } : null;
     $('fConsentWrap').hidden = consentOk; ($('fConsent') as HTMLInputElement).checked = false;
@@ -593,12 +595,15 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     document.querySelectorAll('#bizForm [aria-invalid]').forEach((x) => x.removeAttribute('aria-invalid'));
     $('fError').hidden = true;
     const f = formData();
-    const place = places.find((p) => p.id === $('fPlace').value);
+    const place = places.find((p) => p.id === $('fPlace').value)
+      || (editing && $('fPlace').value === editing.placeId ? { id: editing.placeId, name: editing.placeName } : null);
     if (uploading) return fail('Esperá a que terminen de subir las fotos.');
     if (f.name.length < 3) return fail('Escribí el nombre del negocio.', 'fName');
     if (!place) return fail('Elegí el lugar turístico más cercano.', 'fPlace');
+    // Para mandarlo a revisión tiene que estar completo; un negocio ya publicado se puede ir corrigiendo.
+    const toReview = !editing || state(editing) === 'rejected';
     const missing = checks(f).filter((c) => !c.ok);
-    if (missing.length) return fail(`Para enviarlo a revisión falta: ${missing.map((c) => c.label.toLowerCase().replace(/ \(.*\)$/, '')).join(', ')}.`);
+    if (toReview && missing.length) return fail(`Para enviarlo a revisión falta: ${missing.map((c) => c.label.toLowerCase().replace(/ \(.*\)$/, '')).join(', ')}.`);
     if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return fail('Revisá el correo: parece que está mal escrito.', 'fEmail');
     if (!consentOk && !($('fConsent') as HTMLInputElement).checked) return fail('Marcá la casilla para aceptar los términos y la política de privacidad.', 'fConsent');
     const btn = $('fSubmit') as HTMLButtonElement; btn.disabled = true;
