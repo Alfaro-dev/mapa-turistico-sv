@@ -629,7 +629,7 @@ const categories = [
     $('sumReviews').innerHTML = reviews.slice(0, 4).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
     $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
-      <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
+      <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${placeLink(b.placeId, b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
       <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente. Los negocios nuevos no salen en el mapa hasta que los aprobés.</li>';
     renderDeletions();
     renderBizList(); renderModeration(); renderPlaceList(); renderSeason();
@@ -659,6 +659,8 @@ const categories = [
 
   // ---------- Reseñas y fotos ----------
   const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';
+  // El nombre de un lugar lleva a su página pública, en otra pestaña.
+  const placeLink = (id: string, name: string) => id && name ? `<a class="place-link" href="/lugar/${encodeURIComponent(id)}" target="_blank" rel="noopener">${esc(name)}</a>` : esc(name);
   // El nombre de quien publicó lleva a su perfil público.
   const who = (x: any) => x.userId
     ? `<a class="ad-who" href="/perfil?u=${encodeURIComponent(x.userId)}" target="_blank" rel="noopener">${esc(x.userName || 'Visitante')}</a>`
@@ -671,7 +673,7 @@ const categories = [
   function reviewRow(r: any, arch?: any) {
     return `<li class="ad-row">
       <div class="ad-row-main">
-        <p class="ad-row-title">${esc(placeName(r.placeId) || r.placeName || 'Lugar')} · ${num(r.rating)} de 5${r.verified ? ' <span class="ad-tag ad-tag-ok">Verificada</span>' : ''}</p>
+        <p class="ad-row-title">${placeLink(r.placeId, placeName(r.placeId) || r.placeName || 'Lugar')} · ${num(r.rating)} de 5${r.verified ? ' <span class="ad-tag ad-tag-ok">Verificada</span>' : ''}</p>
         ${r.comment ? `<p class="ad-row-text">${esc(r.comment)}</p>` : ''}
         ${galThumbs(r.photos || [], `Foto de ${r.userName || 'un visitante'}`)}
         <p class="ad-row-meta">${who(r)} · ${ago(r.createdAt)}</p>
@@ -706,7 +708,7 @@ const categories = [
       const notes = list.map((x) => x.note).filter(Boolean).slice(0, 3);
       const kind = type === 'review' ? 'reseña' : 'foto';
       const col = type === 'review' ? 'reviews' : 'photos';
-      const pName = esc(placeName(list[0].placeId) || target?.placeName || 'Lugar');
+      const pName = placeLink(list[0].placeId, placeName(list[0].placeId) || target?.placeName || 'Lugar');
       return `<li class="ad-row ad-report">
         ${type === 'photo' ? (target ? `<button type="button" class="ad-mini ad-mini-lg" data-gal data-src="${safeUrl(target.url)}" data-cap="Foto reportada · de ${esc(target.userName || 'un visitante')}" aria-label="Ver la foto reportada"><img src="${safeUrl(target.url)}" alt=""></button>` : '<span class="ad-thumb"></span>') : ''}
         <div class="ad-row-main">
@@ -749,7 +751,7 @@ const categories = [
       : (page('reviews', arRev, 10).map((a) => reviewRow({ ...a.data, id: a.docId }, a)).join('') || '<li class="ad-empty">No hay reseñas borradas.</li>');
     const phCard = (f: any, a?: any) => `<li>
       <button type="button" class="ad-photo-open" data-gal data-src="${safeUrl(f.url)}" data-cap="${esc(placeName(f.placeId) || f.placeName || '')} · foto de ${esc(f.userName || 'un visitante')}" aria-label="Ver la foto de ${esc(f.userName || 'un visitante')}"><img src="${safeUrl(f.url)}" alt="" loading="lazy"></button>
-      <p>${esc(placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} ${num(f.votes) === 1 ? 'voto' : 'votos'} · ${who(f)}</p>
+      <p>${placeLink(f.placeId, placeName(f.placeId) || f.placeName || '')} · ${num(f.votes)} ${num(f.votes) === 1 ? 'voto' : 'votos'} · ${who(f)}</p>
       ${a ? `<p class="ad-removed">Borrada ${ago(a.deletedAt)} · ${esc(a.reason || '')}</p><button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-restore="${esc(a.id)}">Restaurar</button>`
         : `<button type="button" class="ad-btn ad-btn-danger ad-btn-sm" data-del="photos/${esc(f.id)}">Borrar</button>`}
     </li>`;
@@ -908,7 +910,7 @@ const categories = [
         ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="ad-biz-photo" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="">` : '<span class="ad-biz-photo"></span>'}
         <div style="flex:1;min-width:220px">
           <h2 class="ad-h1" style="font-size:26px">${esc(b.name)}</h2>
-          <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
+          <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${placeLink(b.placeId, b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
           ${b.description ? `<p class="ad-row-text" style="margin-top:8px">${esc(b.description)}</p>` : ''}
           <p class="ad-row-meta" style="margin-top:6px">${[b.schedule, b.address, b.phone && `Tel. ${b.phone}`, b.whatsapp && `WhatsApp ${b.whatsapp}`, b.email].filter(Boolean).map((x) => esc(x)).join(' · ')}</p>
           <p class="ad-row-meta">Dueño: ${b.ownerId ? who({ userId: b.ownerId, userName: b.ownerName || 'ver su perfil' }) : 'sin cuenta'}${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
@@ -1213,7 +1215,7 @@ const categories = [
       const st = seasonState(x, today);
       return `<li class="ad-row"><div class="ad-row-main">
         <p class="ad-row-title">${esc(x.name)} ${a ? '' : `<span class="ad-tag${st === 'active' ? ' ad-tag-ok' : ''}">${SEASON_TAG[st]}</span>`}</p>
-        <p class="ad-row-text">${esc(placeName(x.placeId) || 'Lugar')} · del ${esc(fmtDay(x.start))} al ${esc(fmtDay(x.end))}</p>
+        <p class="ad-row-text">${placeLink(x.placeId, placeName(x.placeId) || 'Lugar')} · del ${esc(fmtDay(x.start))} al ${esc(fmtDay(x.end))}</p>
         ${x.description ? `<p class="ad-row-meta">${esc(x.description)}</p>` : ''}
         ${a ? `<p class="ad-removed">Borrada ${ago(a.deletedAt)} por ${esc(a.deletedByName || 'el admin')}</p>` : ''}
       </div>

@@ -378,14 +378,14 @@ import GozLoader from '../components/GozLoader.astro';
     const placeName = (id: string) => places.find((p) => p.id === id)?.name || '';
     $('galleryEmpty').hidden = photos.length > 0;
     $('gallery').innerHTML = photos.map((ph) => `<li>
-      <a href="/#${encodeURIComponent(ph.placeId)}"><img src="${safeUrl(ph.url)}" alt="Foto en ${esc(placeName(ph.placeId) || ph.placeName || 'un lugar')}" loading="lazy"></a>
-      <span class="pf-grid-meta"><span>${esc(placeName(ph.placeId) || ph.placeName || '')}</span><span class="pf-votes" aria-label="${num(ph.votes)} ${num(ph.votes) === 1 ? 'voto' : 'votos'}"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.6C12 6.1 13.6 5 15.6 5 19 5 21.1 8.4 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>${num(ph.votes)}</span></span>
+      <a href="/lugar/${encodeURIComponent(ph.placeId)}"><img src="${safeUrl(ph.url)}" alt="Foto en ${esc(placeName(ph.placeId) || ph.placeName || 'un lugar')}" loading="lazy"></a>
+      <span class="pf-grid-meta"><a class="place-link" href="/lugar/${encodeURIComponent(ph.placeId)}">${esc(placeName(ph.placeId) || ph.placeName || '')}</a><span class="pf-votes" aria-label="${num(ph.votes)} ${num(ph.votes) === 1 ? 'voto' : 'votos'}"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.6C12 6.1 13.6 5 15.6 5 19 5 21.1 8.4 19.6 11.8 17.5 16.4 12 21 12 21z"/></svg>${num(ph.votes)}</span></span>
     </li>`).join('');
 
     // Mis reseñas.
     $('reviewsEmpty').hidden = reviews.length > 0;
     $('myReviews').innerHTML = reviews.slice(0, 20).map((r) => `<li>
-      <a href="/#${encodeURIComponent(r.placeId)}">${esc(placeName(r.placeId) || r.placeName || 'Lugar')}</a><span class="pf-stars" aria-label="${num(r.rating)} de 5">${'★'.repeat(num(r.rating))}${'☆'.repeat(5 - num(r.rating))}</span>
+      <a href="/lugar/${encodeURIComponent(r.placeId)}">${esc(placeName(r.placeId) || r.placeName || 'Lugar')}</a><span class="pf-stars" aria-label="${num(r.rating)} de 5">${'★'.repeat(num(r.rating))}${'☆'.repeat(5 - num(r.rating))}</span>
       ${r.comment ? `<p>${esc(r.comment)}</p>` : ''}
     </li>`).join('');
   }

@@ -1255,7 +1255,7 @@ const categories = [
     if (detailSub === 'photos') {
       const list = photosByPlace[p.id] || [];
       $('detailView').innerHTML = `${back}
-        <div class="sub-head"><h2 class="detail-title sub-title" tabindex="-1" id="detailTitle">Fotos de ${esc(p.name)}</h2>
+        <div class="sub-head"><h2 class="detail-title sub-title" tabindex="-1" id="detailTitle">Fotos de ${placeLink(p.id, p.name)}</h2>
           <button type="button" class="btn btn-outline btn-sm" data-addphoto="${esc(p.id)}">Subir foto</button></div>
         <p class="section-help">${list.length} ${list.length === 1 ? 'foto' : 'fotos'}. Votá por tu favorita: la más votada queda de portada.</p>
         <input type="file" id="placePhotoInput" accept="image/*" class="sr-only" aria-label="Elegir foto para subir">
@@ -1265,7 +1265,7 @@ const categories = [
       const all = reviewsOf(p.id);
       const shown = sortedReviews(all);
       $('detailView').innerHTML = `${back}
-        <div class="sub-head"><h2 class="detail-title sub-title" tabindex="-1" id="detailTitle">Reseñas de ${esc(p.name)}</h2>
+        <div class="sub-head"><h2 class="detail-title sub-title" tabindex="-1" id="detailTitle">Reseñas de ${placeLink(p.id, p.name)}</h2>
           <button type="button" class="btn btn-outline btn-sm" data-review="${esc(p.id)}">Escribir reseña</button></div>
         ${all.length ? ratingSummary(all) : ''}
         <div class="sort-chips" role="group" aria-label="Ordenar reseñas">${SORTS.map(([k, l]) => `<button type="button" class="sort-chip" data-sort="${k}" aria-pressed="${reviewSort === k}">${l}</button>`).join('')}</div>
@@ -1304,7 +1304,7 @@ const categories = [
         Volver a la lista
       </button>` : ''}
       ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${cover.photo.userId ? `<a href="${profileHref(cover.photo.userId)}">${esc(cover.photo.userName || 'un visitante')}</a>` : esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty" aria-hidden="true">${catIcon(p.category, 40)}</div>`}
-      <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(p.name)}</h2>
+      <h2 class="detail-title" tabindex="-1" id="detailTitle">${placeLink(p.id, p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r
         ? `<p class="rating-line">${starSvg}<span><strong>${r.avg.toFixed(1)}</strong> de 5, ${r.count} ${r.count === 1 ? 'reseña' : 'reseñas'}</span></p>`
@@ -1780,7 +1780,7 @@ const categories = [
       </button>` : ''}
       ${photos[0] ? `<img class="detail-photo" src="${photos[0]}" alt="Foto de ${esc(b.name)}">` : `<div class="detail-photo biz-thumb biz-cover-empty" aria-hidden="true">${bizIcon(b.category, 48)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(b.name)}</h2>
-      <p class="detail-kicker">${esc(BIZ_NAMES[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${esc(b.placeName)}` : ''}${isFeatured(b) ? ' <span class="tag-featured">Destacado</span>' : ''}</p>
+      <p class="detail-kicker">${esc(BIZ_NAMES[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${b.placeId ? placeLink(b.placeId, b.placeName) : esc(b.placeName)}` : ''}${isFeatured(b) ? ' <span class="tag-featured">Destacado</span>' : ''}</p>
       ${b.promoToday ? `<p class="promo-banner"><strong>Promo de hoy:</strong> ${esc(b.promoToday.replace(/^\s*hoy\s*[:,-]?\s*/i, ''))}</p>` : ''}
       <div class="detail-actions">
         ${wa ? `<a class="btn btn-primary" id="waBtn" href="${wa}" target="_blank" rel="noopener">
@@ -1842,6 +1842,10 @@ const categories = [
   }
 
   // ---------- Compartir un lugar ----------
+  // El nombre de un lugar siempre lleva a su página, en otra pestaña para no perder el mapa.
+  function placeLink(id: string, name: string) {
+    return `<a class="place-link" href="/lugar/${encodeURIComponent(id)}" target="_blank" rel="noopener">${esc(name)}</a>`;
+  }
   // Comparte la página propia del lugar (/lugar/id), que se ve con foto en WhatsApp y redes.
   // Los lugares nuevos también tienen página: se arma en vivo aunque el sitio no se haya vuelto a publicar.
   $('detailView').addEventListener('click', async (e: Event) => {
