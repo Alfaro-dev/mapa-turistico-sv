@@ -293,12 +293,6 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   .ng-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
   .ng-inline { display: flex; gap: 8px; }
   .ng-inline .ng-input { flex: 1 1 auto; text-transform: uppercase; letter-spacing: .04em; }
-  .ng-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .ng-chip { position: relative; }
-  .ng-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-  .ng-chip span { display: inline-flex; align-items: center; min-height: 42px; padding: 0 16px; border-radius: 21px; border: 1.5px solid var(--border); font-weight: 700; color: var(--ink); background: var(--surface); }
-  .ng-chip input:checked + span { background: var(--rama); border-color: var(--rama); color: #FFFFFF; }
-  .ng-chip input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 2px; }
   .ng-map { height: 300px; border-radius: 16px; overflow: hidden; background: var(--photo); z-index: 0; }
   .ng-photos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
   .ng-photos:empty { display: none; }
@@ -376,16 +370,6 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   #ngForm .ng-map { height: 260px; }
   .wz-head { display: flex; flex-direction: column; gap: 6px; }
   .wz-where { margin: 0; font-size: 15px; font-weight: 700; color: var(--muted); }
-  .wz-bar { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-  .wz-bar button { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0; border: 0; background: none; font: inherit; color: var(--muted); text-align: left; cursor: pointer; }
-  .wz-bar button:disabled { cursor: default; }
-  .wz-bar button::before { content: ''; display: block; width: 100%; height: 6px; border-radius: 3px; background: var(--line); }
-  .wz-bar .is-done button::before { background: var(--turquesa); }
-  .wz-bar .is-now button::before { background: var(--plumaje); }
-  .wz-bar .is-now button { color: var(--ink); }
-  .wz-bar button:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 3px; border-radius: 4px; }
-  .wz-dot { display: none; }
-  .wz-bar-txt { font-size: 13px; font-weight: 700; line-height: 1.25; }
   .wz { display: flex; flex-direction: column; gap: 12px; }
   .wz-step[hidden] { display: none; }
   .wz-step legend:focus { outline: none; }
@@ -396,51 +380,17 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   .wz-foot .ng-btn { min-width: 132px; }
 
   /* Grupos: píldoras del mismo alto, ícono a la izquierda y el nombre en una sola línea. */
-  .wz-groups { display: flex; flex-wrap: wrap; gap: 8px; }
-  .wz-group { position: relative; }
-  .wz-group input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-  .wz-group span { height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px 0 12px; border-radius: 23px; border: 1.5px solid var(--line); background: var(--surface); color: var(--turquesa); white-space: nowrap; }
-  .wz-group svg { width: 20px; height: 20px; flex: none; }
-  .wz-group b { color: var(--ink); font-size: 15px; font-weight: 800; }
-  .wz-group input:checked + span { border-color: var(--rama); background: var(--rama); color: var(--plumaje); }
-  .wz-group input:checked + span b { color: #FFFFFF; }
-  .wz-group input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 2px; }
-  .wz-group:hover span { border-color: var(--turquesa); }
 
   .wz-geo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
   .wz-other { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .wz-select { width: auto; min-width: 220px; flex: 1 1 220px; min-height: 44px; padding: 8px 12px; font-size: 15px; }
 
-  .wz-tel { display: flex; align-items: stretch; }
-  .wz-tel > span { display: flex; align-items: center; padding: 0 12px; border: 1.5px solid var(--border); border-right: 0; border-radius: 14px 0 0 14px; background: var(--neblina); color: var(--muted); font-weight: 800; font-size: 15px; }
-  .wz-tel .ng-input { border-radius: 0 14px 14px 0; min-width: 0; }
   .wz-check { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; font-size: 14px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
   .wz-check input { width: 18px; height: 18px; accent-color: var(--turquesa); margin: 0; }
   .wz-try { align-self: flex-start; color: var(--turquesa); font-weight: 800; }
   .ng-input:disabled { background: var(--neblina); color: var(--muted); }
 
-  .wz-seg { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; border-radius: 22px; background: var(--neblina); width: fit-content; max-width: 100%; }
-  .wz-seg label { position: relative; }
-  .wz-seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-  .wz-seg span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 20px; font-weight: 700; font-size: 14px; color: var(--ink-2); }
-  .wz-seg input:checked + span { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(20,48,47,0.16); }
-  .wz-seg input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 1px; }
 
-  .wz-days { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; }
-  .wz-day { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 8px 0; border-top: 1px solid var(--line); }
-  .wz-day:first-child { border-top: 0; }
-  .wz-switch { display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer; flex: 1 1 200px; }
-  .wz-switch input { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; margin: 0; border-radius: 13px; background: var(--line); position: relative; cursor: pointer; flex: none; transition: background .15s; }
-  .wz-switch input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
-  .wz-switch input:checked { background: var(--turquesa); }
-  .wz-switch input:checked::after { transform: translateX(18px); }
-  .wz-switch input:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
-  .wz-day-name { font-weight: 800; color: var(--ink); min-width: 86px; }
-  .wz-state { font-size: 14px; color: var(--muted); }
-  .wz-day.is-closed .wz-day-name { color: var(--muted); }
-  .wz-times { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 700; }
-  .wz-times[hidden] { display: none; }
-  .wz-times .ng-input { width: 132px; min-height: 44px; padding: 8px 10px; }
 
   .wz-levels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 560px; }
   .wz-level { position: relative; }
@@ -487,7 +437,6 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   .pv-menu li { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 4px; }
 
   @media (max-width: 760px) {
-    .wz-bar-txt { display: none; }
     .wz-review { grid-template-columns: 1fr; }
     .wz-item { grid-template-columns: minmax(0, 1fr) 104px 40px; }
     .wz-idesc { grid-column: 1 / 3; grid-row: 2; }
@@ -496,9 +445,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   @media (max-width: 560px) {
     .wz-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .wz-foot .ng-btn { min-width: 0; flex: 1 1 0; }
-    .wz-times .ng-input { width: 118px; }
   }
-  @media (prefers-reduced-motion: reduce) { .wz-switch input, .wz-switch input::after { transition: none; } }
 </style>
 
 <script>

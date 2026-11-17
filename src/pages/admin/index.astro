@@ -210,13 +210,13 @@ const categories = [
           <a id="placeOnMap" class="ad-btn ad-btn-outline ad-btn-sm" href="/" target="_blank" rel="noopener" hidden>Ver en el mapa</a>
         </div>
         <ul id="placeIssues" class="ad-issues"></ul>
-        <ol class="pw-bar" id="pwBar" aria-label="Pasos"></ol>
+        <div class="pw-head"><p class="pw-where" id="pwWhere"></p><ol class="wz-bar" id="pwBar" aria-label="Pasos" style="--wz-steps: 6"></ol></div>
         <form id="placeForm" class="ad-form" novalidate>
           <!-- 1. Qué es -->
           <section class="ad-card ad-form-card pw-step" data-title="Qué es">
             <h2 class="ad-h2" tabindex="-1">¿Qué lugar es?</h2>
             <div class="ad-field"><span class="ad-field-label" id="lblPcat">Categoría</span>
-              <div class="pw-pills" id="pCats" role="radiogroup" aria-labelledby="lblPcat"></div></div>
+              <div class="wz-groups" id="pCats" role="radiogroup" aria-labelledby="lblPcat"></div></div>
             <div class="ad-field"><label for="pName">Nombre</label><input id="pName" type="text" maxlength="90" required></div>
             <div class="ad-field"><label for="pDesc">Cómo es</label><textarea id="pDesc" rows="4" maxlength="800" placeholder="Qué lo hace especial, qué se ve, qué se puede hacer."></textarea><span class="ad-muted" id="pDescHelp"></span></div>
             <div class="ad-field"><label for="pRecInput">Qué hacer <span class="ad-opt">(escribí y tocá Enter)</span></label>
@@ -240,10 +240,10 @@ const categories = [
           <!-- 3. Cómo llegar -->
           <section class="ad-card ad-form-card pw-step" data-title="Cómo llegar" hidden>
             <h2 class="ad-h2" tabindex="-1">¿Cómo se llega?</h2>
-            <div class="ad-field"><span class="ad-field-label" id="lblModes">Se puede llegar</span><div class="pw-pills" id="pModes" role="group" aria-labelledby="lblModes"></div></div>
-            <div class="ad-field"><span class="ad-field-label" id="lblRoad">El camino</span><div class="pw-pills" id="pRoad" role="radiogroup" aria-labelledby="lblRoad"></div></div>
-            <div class="ad-field"><span class="ad-field-label" id="lblPark">Parqueo</span><div class="pw-pills" id="pPark" role="radiogroup" aria-labelledby="lblPark"></div>
-              <div class="pw-money" id="pParkCostWrap" hidden><span aria-hidden="true">$</span><input id="pParkCost" type="number" min="0" step="0.25" inputmode="decimal" aria-label="Costo del parqueo"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblModes">Se puede llegar</span><div class="ng-chips" id="pModes" role="group" aria-labelledby="lblModes"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblRoad">El camino</span><div class="ng-chips" id="pRoad" role="radiogroup" aria-labelledby="lblRoad"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblPark">Parqueo</span><div class="ng-chips" id="pPark" role="radiogroup" aria-labelledby="lblPark"></div>
+              <div class="wz-tel wz-money" id="pParkCostWrap" hidden><span aria-hidden="true">$</span><input id="pParkCost" type="number" min="0" step="0.25" inputmode="decimal" aria-label="Costo del parqueo"></div></div>
             <div class="ad-field"><label for="pAccessNotes">Indicaciones <span class="ad-opt">(opcional)</span></label><textarea id="pAccessNotes" rows="2" maxlength="300" placeholder="Por ejemplo: desde la carretera a Comalapa, tomar el desvío a la derecha y seguir 3 km."></textarea></div>
           </section>
 
@@ -252,10 +252,10 @@ const categories = [
             <h2 class="ad-h2" tabindex="-1">Horario y entrada</h2>
             <div id="pHours"></div>
             <div class="ad-field"><span class="ad-field-label" id="lblEntry">Entrada</span>
-              <div class="pw-pills" id="pEntry" role="radiogroup" aria-labelledby="lblEntry"></div></div>
+              <div class="ng-chips" id="pEntry" role="radiogroup" aria-labelledby="lblEntry"></div></div>
             <div class="ad-grid2" id="pEntryCost" hidden>
-              <div class="ad-field"><label for="pEntryLocal">Nacionales</label><div class="pw-money"><span aria-hidden="true">$</span><input id="pEntryLocal" type="number" min="0" step="0.25" inputmode="decimal"></div></div>
-              <div class="ad-field"><label for="pEntryForeign">Extranjeros <span class="ad-opt">(si es distinto)</span></label><div class="pw-money"><span aria-hidden="true">$</span><input id="pEntryForeign" type="number" min="0" step="0.25" inputmode="decimal"></div></div>
+              <div class="ad-field"><label for="pEntryLocal">Nacionales</label><div class="wz-tel wz-money"><span aria-hidden="true">$</span><input id="pEntryLocal" type="number" min="0" step="0.25" inputmode="decimal"></div></div>
+              <div class="ad-field"><label for="pEntryForeign">Extranjeros <span class="ad-opt">(si es distinto)</span></label><div class="wz-tel wz-money"><span aria-hidden="true">$</span><input id="pEntryForeign" type="number" min="0" step="0.25" inputmode="decimal"></div></div>
             </div>
             <div class="ad-field"><label for="pEntryNote">Nota de la entrada <span class="ad-opt">(opcional)</span></label><input id="pEntryNote" type="text" maxlength="120" placeholder="Por ejemplo: niños menores de 5 años no pagan"></div>
           </section>
@@ -263,11 +263,11 @@ const categories = [
           <!-- 5. La visita -->
           <section class="ad-card ad-form-card pw-step" data-title="La visita" hidden>
             <h2 class="ad-h2" tabindex="-1">La visita</h2>
-            <div class="ad-field"><span class="ad-field-label" id="lblDiff">Dificultad <span class="ad-opt">(para volcanes, senderos y aventura)</span></span><div class="pw-pills" id="pDiff" role="radiogroup" aria-labelledby="lblDiff"></div></div>
-            <div class="ad-field"><span class="ad-field-label" id="lblDur">Cuánto tiempo lleva</span><div class="pw-pills" id="pDur" role="radiogroup" aria-labelledby="lblDur"></div></div>
-            <div class="ad-field"><span class="ad-field-label" id="lblSeason">Mejor época</span><div class="pw-pills" id="pSeason" role="group" aria-labelledby="lblSeason"></div></div>
-            <div class="ad-field"><span class="ad-field-label" id="lblTime">Mejor hora</span><div class="pw-pills" id="pTime" role="group" aria-labelledby="lblTime"></div></div>
-            <div class="ad-field"><span class="ad-field-label" id="lblAmen">Qué hay</span><div class="pw-pills" id="pAmen" role="group" aria-labelledby="lblAmen"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblDiff">Dificultad <span class="ad-opt">(para volcanes, senderos y aventura)</span></span><div class="ng-chips" id="pDiff" role="radiogroup" aria-labelledby="lblDiff"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblDur">Cuánto tiempo lleva</span><div class="ng-chips" id="pDur" role="radiogroup" aria-labelledby="lblDur"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblSeason">Mejor época</span><div class="ng-chips" id="pSeason" role="group" aria-labelledby="lblSeason"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblTime">Mejor hora</span><div class="ng-chips" id="pTime" role="group" aria-labelledby="lblTime"></div></div>
+            <div class="ad-field"><span class="ad-field-label" id="lblAmen">Qué hay</span><div class="ng-chips" id="pAmen" role="group" aria-labelledby="lblAmen"></div></div>
           </section>
 
           <!-- 6. Fotos -->
@@ -489,7 +489,7 @@ const categories = [
   .ad-span2 { grid-column: span 2; }
   .ad-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .ad-field label, .ad-field-label { font-size: 14px; font-weight: 800; margin: 0; }
-  .ad-field input, .ad-field select, .ad-field textarea { min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); width: 100%; }
+  .ad-field input, .ad-field select, .ad-field textarea { min-height: 44px; padding: 8px 12px; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 14px; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); width: 100%; }
   .ad-thumbs { display: flex; flex-wrap: wrap; gap: 10px; }
   .ad-thumbs:empty { display: none; }
   .ad-thumbs .ph { position: relative; width: 120px; height: 84px; }
@@ -535,41 +535,19 @@ const categories = [
     .ad-grid2 { grid-template-columns: 1fr; }
     .ad-span2 { grid-column: auto; }
   }
-  /* Formulario de lugar por pasos */
-  .pw-bar { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
-  .pw-bar button { min-height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .pw-bar .is-now button { background: var(--rama); border-color: var(--rama); color: #FFFFFF; }
-  .pw-bar button:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  /* Formulario de lugar por pasos: usa las mismas piezas que /negocios (styles/wizard.css). */
+  .pw-head { display: flex; flex-direction: column; gap: 6px; margin: 0 0 14px; }
+  .pw-where { margin: 0; font-size: 15px; font-weight: 700; color: var(--muted); }
   .pw-step[hidden] { display: none; }
   .pw-step .ad-h2:focus { outline: none; }
-  .pw-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .pw-pill { position: relative; }
-  .pw-pill input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-  .pw-pill span { display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px; border-radius: 19px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font-size: 14px; font-weight: 700; }
-  .pw-pill input:checked + span { background: var(--rama); border-color: var(--rama); color: #FFFFFF; }
-  .pw-pill input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  .pw-step .ng-chip span { min-height: 40px; padding: 0 14px; }
   .pw-tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .pw-tags:empty { display: none; }
-  .pw-tag { display: inline-flex; align-items: center; gap: 4px; padding: 0 4px 0 12px; min-height: 32px; border-radius: 16px; background: #FCEFCB; color: var(--rama); font-size: 14px; font-weight: 700; }
-  .pw-tag button { width: 26px; height: 26px; border: 0; border-radius: 13px; background: transparent; color: var(--rama); font-size: 16px; cursor: pointer; }
-  .pw-money { display: flex; align-items: stretch; max-width: 200px; }
-  .pw-money span { display: flex; align-items: center; padding: 0 10px; border: 1px solid var(--border, #6F8E8A); border-right: 0; border-radius: 10px 0 0 10px; background: var(--neblina); font-weight: 800; color: var(--muted); }
-  .pw-money input { border-radius: 0 10px 10px 0 !important; min-width: 0; }
-  .pw-days { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-  .pw-days li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 6px 0; border-top: 1px solid var(--line); }
-  .pw-days li:first-child { border-top: 0; }
-  .pw-switch { display: flex; align-items: center; gap: 10px; min-height: 40px; cursor: pointer; }
-  .pw-switch input { appearance: none; -webkit-appearance: none; width: 40px; height: 24px; margin: 0; border-radius: 12px; background: var(--line); position: relative; cursor: pointer; }
-  .pw-switch input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
-  .pw-switch input:checked { background: var(--turquesa); }
-  .pw-switch input:checked::after { transform: translateX(16px); }
-  .pw-switch input:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
-  .pw-switch span { font-weight: 800; min-width: 84px; }
-  .pw-switch small { color: var(--muted); font-size: 13px; }
-  .pw-times { display: flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 700; }
-  .pw-times input { width: 124px; }
+  .pw-tag { display: inline-flex; align-items: center; gap: 4px; padding: 0 4px 0 12px; min-height: 34px; border-radius: 17px; background: #FCEFCB; color: var(--rama); font-size: 14px; font-weight: 700; }
+  .pw-tag button { width: 28px; height: 28px; border: 0; border-radius: 14px; background: transparent; color: var(--rama); font-size: 18px; cursor: pointer; }
+  .pw-tag button:focus-visible { outline: 3px solid var(--turquesa); }
   .pw-gap { flex: 1 1 auto; }
-  @media (prefers-reduced-motion: reduce) { .pw-switch input::after { transition: none; } }
+  .ad-field .wz-tel input { border-radius: 0 14px 14px 0; }
 </style>
 
 <script>
@@ -581,6 +559,7 @@ const categories = [
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
   import { bizKind, priceSummary, paymentLabel, amenityLabel } from '../../lib/bizData';
+  import { catIcon } from '../../lib/placeData';
   import { DAYS, emptyHours, scheduleText, DEPARTMENTS, ACCESS_MODES, ROADS, PARKING, DIFFICULTY, DURATION, SEASONS, BEST_TIMES, PLACE_AMENITIES, entryText, type Hours } from '../../lib/placeInfo';
 
   // Aviso breve abajo de la pantalla, para confirmar lo que se hizo.
@@ -1382,7 +1361,8 @@ const categories = [
   function pwGo(n: number) {
     pwStep = Math.max(1, Math.min(pwSteps().length, n));
     pwSteps().forEach((el, i) => (el.hidden = i + 1 !== pwStep));
-    $('pwBar').innerHTML = pwSteps().map((el, i) => `<li class="${i + 1 === pwStep ? 'is-now' : ''}"><button type="button" data-pw="${i + 1}" aria-current="${i + 1 === pwStep ? 'step' : 'false'}">${esc(el.dataset.title || '')}</button></li>`).join('');
+    $('pwBar').innerHTML = pwSteps().map((el, i) => { const n = i + 1; return `<li class="${n < pwStep ? 'is-done' : n === pwStep ? 'is-now' : ''}"><button type="button" data-pw="${n}" aria-current="${n === pwStep ? 'step' : 'false'}"><span class="wz-bar-txt">${esc(el.dataset.title || '')}</span><span class="sr-only">Paso ${n}</span></button></li>`; }).join('');
+    $('pwWhere').textContent = `Paso ${pwStep} de ${pwSteps().length} · ${pwSteps()[pwStep - 1].dataset.title}`;
     $('pwPrev').disabled = pwStep === 1; $('pwNext').disabled = pwStep === pwSteps().length;
     if (pwStep === 2) setTimeout(() => { initPicker(); picker?.invalidateSize(); }, 0);
     (pwSteps()[pwStep - 1].querySelector('.ad-h2') as HTMLElement)?.focus({ preventScroll: true });
@@ -1393,7 +1373,7 @@ const categories = [
 
   // Píldoras: una (radio) o varias (checkbox).
   function pills(id: string, list: { id: string; label: string }[], value: string | string[], multi: boolean, name: string) {
-    $(id).innerHTML = list.map((o) => `<label class="pw-pill"><input type="${multi ? 'checkbox' : 'radio'}" name="${name}" value="${esc(o.id)}" ${(multi ? (value as string[]).includes(o.id) : value === o.id) ? 'checked' : ''}><span>${esc(o.label)}</span></label>`).join('');
+    $(id).innerHTML = list.map((o) => `<label class="ng-chip"><input type="${multi ? 'checkbox' : 'radio'}" name="${name}" value="${esc(o.id)}" ${(multi ? (value as string[]).includes(o.id) : value === o.id) ? 'checked' : ''}><span>${esc(o.label)}</span></label>`).join('');
   }
   const picked = (id: string) => [...$(id).querySelectorAll('input:checked')].map((x: any) => x.value as string);
   // Las de una sola opción se pueden desmarcar tocándolas otra vez.
@@ -1435,16 +1415,20 @@ const categories = [
   // Horario: sin horario (abierto siempre), por días, 24 horas o con reservación.
   function renderHours() {
     const mode = pHours ? pHours.mode : 'libre';
-    $('pHours').innerHTML = `<div class="ad-field"><span class="ad-field-label">Horario</span>
-      <div class="pw-pills" role="radiogroup" aria-label="Tipo de horario">
-        ${[['libre', 'Sin horario (se entra cuando sea)'], ['dias', 'Por días'], ['24h', 'Abierto 24 horas'], ['reservacion', 'Solo con reservación']].map(([v, l]) => `<label class="pw-pill"><input type="radio" name="phmode" value="${v}" ${mode === v ? 'checked' : ''}><span>${l}</span></label>`).join('')}
+    $('pHours').innerHTML = `<div class="ad-field"><span class="ad-field-label" id="lblPhMode">Horario</span>
+      <div class="wz-seg" role="radiogroup" aria-labelledby="lblPhMode">
+        ${[['libre', 'Sin horario'], ['dias', 'Por días'], ['24h', 'Abierto 24 horas'], ['reservacion', 'Solo con reservación']].map(([v, l]) => `<label><input type="radio" name="phmode" value="${v}" ${mode === v ? 'checked' : ''}><span>${l}</span></label>`).join('')}
       </div></div>
-      ${pHours?.mode === 'dias' ? `<ul class="pw-days">${DAYS.map((d) => { const h = pHours!.days[d.id]; return `<li class="${h.open ? '' : 'is-closed'}">
-        <label class="pw-switch"><input type="checkbox" data-pday="${d.id}" ${h.open ? 'checked' : ''}><span>${d.label}</span><small>${h.open ? 'Abierto' : 'Cerrado'}</small></label>
-        ${h.open ? `<span class="pw-times"><input type="time" step="900" data-pfrom="${d.id}" value="${h.from}" aria-label="${d.label}, abre"><span>a</span><input type="time" step="900" data-pto="${d.id}" value="${h.to}" aria-label="${d.label}, cierra"></span>` : ''}</li>`; }).join('')}</ul>
+      ${pHours?.mode === 'dias' ? `<ul class="wz-days">${DAYS.map((d) => { const h = pHours!.days[d.id]; return `<li class="wz-day${h.open ? '' : ' is-closed'}">
+        <label class="wz-switch"><input type="checkbox" data-pday="${d.id}" ${h.open ? 'checked' : ''}><span class="wz-day-name">${d.label}</span><span class="wz-state">${h.open ? 'Abierto' : 'Cerrado'}</span></label>
+        <span class="wz-times" ${h.open ? '' : 'hidden'}>
+          <label><span class="sr-only">${d.label}, abre a las</span><input type="time" data-pfrom="${d.id}" value="${h.from}" step="900"></label>
+          <span aria-hidden="true">a</span>
+          <label><span class="sr-only">${d.label}, cierra a las</span><input type="time" data-pto="${d.id}" value="${h.to}" step="900"></label>
+        </span></li>`; }).join('')}</ul>
         <button type="button" class="ad-btn ad-btn-outline ad-btn-sm" data-pcopy>Usar el mismo horario en todos los días abiertos</button>` : ''}
       ${pHours ? `<div class="ad-field"><label for="pHoursNote">Nota del horario <span class="ad-opt">(opcional)</span></label><input id="pHoursNote" type="text" maxlength="120" value="${esc(pHours.note || '')}" placeholder="Por ejemplo: cerrado en Semana Santa"></div>` : ''}
-      <p class="ad-muted">${pHours ? `Se va a ver así: ${esc(scheduleText(pHours))}` : 'No se muestra horario.'}</p>`;
+      <p class="ad-muted" aria-live="polite">${pHours ? `Se va a ver así: ${esc(scheduleText(pHours))}` : 'Para playas, miradores y lugares abiertos: no se muestra horario.'}</p>`;
   }
   $('pHours').addEventListener('change', (e: Event) => {
     const t = e.target as HTMLInputElement;
@@ -1452,7 +1436,8 @@ const categories = [
     if (t.dataset.pday && pHours) pHours.days[t.dataset.pday].open = t.checked;
     if (t.dataset.pfrom && pHours) pHours.days[t.dataset.pfrom].from = t.value;
     if (t.dataset.pto && pHours) pHours.days[t.dataset.pto].to = t.value;
-    renderHours();
+    if (t.name === 'phmode' || t.dataset.pday) renderHours();
+    else { const pv = $('pHours').querySelector('[aria-live]'); if (pv && pHours) pv.textContent = `Se va a ver así: ${scheduleText(pHours)}`; }
   });
   $('pHours').addEventListener('input', (e: Event) => { const t = e.target as HTMLInputElement; if (t.id === 'pHoursNote' && pHours) pHours.note = t.value; });
   $('pHours').addEventListener('click', (e: Event) => {
@@ -1476,7 +1461,7 @@ const categories = [
     $('placeIssues').innerHTML = real.map((x) => `<li>${esc(x)}</li>`).join('');
     $('placeIssues').hidden = !real.length;
     pCat = p?.category || 'playa';
-    $('pCats').innerHTML = CAT_LIST.map(([v, l]) => `<label class="pw-pill"><input type="radio" name="pcat" value="${v}" ${v === pCat ? 'checked' : ''}><span>${l}</span></label>`).join('');
+    $('pCats').innerHTML = CAT_LIST.map(([v, l]) => `<label class="wz-group"><input type="radio" name="pcat" value="${v}" ${v === pCat ? 'checked' : ''}><span>${catIcon(v, 20)}<b>${l}</b></span></label>`).join('');
     $('pName').value = p?.name ?? ''; $('pDesc').value = p?.description ?? ''; $('pDesc').dispatchEvent(new Event('input'));
     pRecsList = [...(p?.recommendations || [])]; renderRecs(); $('pRecInput').value = '';
     $('pDepartment').innerHTML = '<option value="">Elegí el departamento</option>' + DEPARTMENTS.map((d) => `<option ${d === p?.department ? 'selected' : ''}>${d}</option>`).join('')
