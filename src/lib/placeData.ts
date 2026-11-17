@@ -27,6 +27,8 @@ export const CAT_ICON: Record<string, string> = {
   gastronomía: '<path d="M7 3v8M5 3v5a2 2 0 004 0V3M7 11v10M16 3c-1.7 0-3 2-3 5s1.3 4 3 4v9"></path>',
   other: '<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle>',
 };
+// Tono para los lugares sin foto: agua, cerro o pueblo.
+export const catTone = (c: string) => (['playa', 'lago', 'río'].includes(c) ? 'tone-agua' : ['montaña', 'mirador', 'aventura'].includes(c) ? 'tone-cerro' : 'tone-pueblo');
 export const catIcon = (c: string, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c] || CAT_ICON.other}</svg>`;
 
 export interface SitePlace {
@@ -163,15 +165,15 @@ export function renderPlace(p: SitePlace, all: SitePlace[]): string {
     <button type="button" class="lp-ph-open" data-gal data-src="${esc(cld(g.url, 'q_auto,f_auto,w_1600'))}" data-cap="${esc(g.userName ? `Foto de ${g.userName}` : p.name)}" aria-label="Ver foto ${i + 1}"><img src="${esc(cld(g.url, 'c_fill,g_auto,w_400,h_300,q_auto,f_auto'))}" alt="" loading="lazy" width="400" height="300" /></button>
     ${g.id ? `<span class="lp-ph-bar"><button type="button" class="lp-vote" data-vote="${esc(g.id)}" aria-pressed="false" aria-label="Votar por esta foto, ${g.votes} ${g.votes === 1 ? 'voto' : 'votos'}">${heart}<span>${g.votes}</span></button><button type="button" class="lp-link-btn" data-report="photo" data-target="${esc(g.id)}" data-owner="${esc(g.userId)}">Reportar</button></span>` : ''}
   </li>`).join('');
-  const near = nearby(p, all).map(({ x, km }) => `<li><a href="${placeUrl(x.id)}" class="lp-near-card">${x.cover
+  const near = nearby(p, all).map(({ x, km }) => `<li><a href="${placeUrl(x.id)}" class="lp-near-card${x.cover ? '' : ' is-noimg'}">${x.cover
     ? `<img src="${esc(cld(x.cover, 'c_fill,g_auto,w_320,h_220,q_auto,f_auto'))}" alt="" loading="lazy" width="320" height="220" />`
-    : `<span class="lp-near-empty" aria-hidden="true">${catIcon(x.category, 30)}</span>`}<span class="lp-near-name">${esc(x.name)}</span><span class="lp-near-meta">${CATEGORY_NAMES[x.category] || 'Lugar'} · a ${fmtKm(km)}</span></a></li>`).join('');
+    : `<span class="lp-near-empty ${catTone(x.category)}" aria-hidden="true">${catIcon(x.category, 24)}</span>`}<span class="lp-near-name">${esc(x.name)}</span><span class="lp-near-meta">${CATEGORY_NAMES[x.category] || 'Lugar'} · a ${fmtKm(km)}</span></a></li>`).join('');
 
   return `<nav class="lp-crumbs" aria-label="Estás en"><a href="/lugares">Lugares</a><span aria-hidden="true">›</span><a href="/lugares#${esc(p.category)}">${CATEGORY_PLURAL[p.category] || 'Lugares'}</a><span aria-hidden="true">›</span><span aria-current="page">${esc(p.name)}</span></nav>
 <article class="lp-main">
 ${p.cover
     ? `<figure class="lp-cover"><img src="${esc(cld(p.cover, 'c_fill,g_auto,w_1400,h_700,q_auto,f_auto'))}" alt="Foto de ${esc(p.name)}" width="1400" height="700" fetchpriority="high" /></figure>`
-    : `<div class="lp-cover-empty" aria-hidden="true">${catIcon(p.category, 44)}</div>`}
+    : `<div class="lp-cover-empty ${catTone(p.category)}" aria-hidden="true">${catIcon(p.category, 32)}</div>`}
 <header class="lp-head">
 <p class="lp-cat">${cat}${where ? ` · ${esc(where)}` : ''}</p>
 <h1 class="lp-h1">${esc(p.name)}</h1>

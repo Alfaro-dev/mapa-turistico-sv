@@ -77,3 +77,8 @@ button, input, select, textarea { font-family: inherit; }
 .place-link:hover { text-decoration-color: currentColor; }
 .place-link:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; border-radius: 4px; }
 h1 .place-link, h2 .place-link, .ad-row-title .place-link { color: inherit; font-weight: inherit; }
+
+/* Lugares sin foto: un tono por tipo de lugar (agua, cerro, pueblo) en vez de un recuadro gris. */
+.tone-agua { background: #DDEFEE !important; color: #0B6665 !important; }
+.tone-cerro { background: #FBEBC2 !important; color: #6B4B05 !important; }
+.tone-pueblo { background: #F8E3D6 !important; color: #8A3A10 !important; }

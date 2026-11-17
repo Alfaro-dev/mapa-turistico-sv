@@ -2,7 +2,7 @@
 // Índice de todos los lugares por categoría: ayuda a Google a encontrar cada página.
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import { loadPlaces, catIcon, CATEGORY_NAMES, CATEGORY_PLURAL, placeUrl, shareImage } from '../lib/siteData';
+import { loadPlaces, catIcon, catTone, CATEGORY_NAMES, CATEGORY_PLURAL, placeUrl, shareImage } from '../lib/siteData';
 
 const places = await loadPlaces();
 const ORDER = ['playa', 'montaña', 'lago', 'río', 'mirador', 'pueblo', 'histórico', 'cultura', 'aventura', 'gastronomía', 'other'];
@@ -23,8 +23,8 @@ const thumb = (u: string) => (u.includes('res.cloudinary.com/') ? u.replace('/up
       <section class="lx-sec" id={g.c} aria-labelledby={`h-${g.c}`}>
         <h2 class="lx-h2" id={`h-${g.c}`}>{CATEGORY_PLURAL[g.c]}</h2>
         <ul class="lx-grid">{g.list.map((p) => (
-          <li><a class="lx-card" href={placeUrl(p.id)}>
-            {p.cover ? <img src={thumb(p.cover)} alt="" loading="lazy" width="320" height="220" /> : <span class="lx-empty" aria-hidden="true" set:html={catIcon(p.category, 30)}></span>}
+          <li><a class:list={['lx-card', !p.cover && 'is-noimg']} href={placeUrl(p.id)}>
+            {p.cover ? <img src={thumb(p.cover)} alt="" loading="lazy" width="320" height="220" /> : <span class:list={['lx-empty', catTone(p.category)]} aria-hidden="true" set:html={catIcon(p.category, 24)}></span>}
             <span class="lx-name">{p.name}</span>
             <span class="lx-meta">{[p.municipality, p.department].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ') || CATEGORY_NAMES[p.category]}</span>
           </a></li>))}</ul>
@@ -48,15 +48,21 @@ const thumb = (u: string) => (u.includes('res.cloudinary.com/') ? u.replace('/up
   .lx-jump span { color: var(--muted); font-variant-numeric: tabular-nums; }
   .lx-sec { background: var(--surface); border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 14px; scroll-margin-top: 80px; }
   .lx-h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; color: var(--ink); }
-  .lx-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .lx-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 16px; }
   .lx-card { display: flex; flex-direction: column; gap: 4px; color: var(--ink); text-decoration: none; }
   .lx-card img, .lx-empty { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; border-radius: 14px; background: var(--photo); display: block; }
   .lx-empty { display: flex; align-items: center; justify-content: center; background: #E3EFEE; color: var(--turquesa); }
   .lx-name { font-weight: 800; line-height: 1.3; }
+  /* Sin foto: fila compacta con el ícono, para que la lista no sea una pared de recuadros vacíos. */
+  .lx-card.is-noimg { display: grid; grid-template-columns: 48px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 10px; border-radius: 14px; background: var(--neblina); }
+  .lx-card.is-noimg .lx-empty { grid-row: 1 / span 2; width: 48px; height: 48px; aspect-ratio: auto; border-radius: 12px; }
+  .lx-card.is-noimg .lx-name { align-self: end; }
+  .lx-card.is-noimg .lx-meta { align-self: start; }
+  .lx-card.is-noimg:focus-visible, .lx-card:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; border-radius: 14px; }
   .lx-card:hover .lx-name { color: var(--turquesa); text-decoration: underline; }
   .lx-meta { font-size: 13px; color: var(--muted); }
   .lp-foot { max-width: 1040px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-left)) 40px; font-size: 14px; color: var(--muted); }
   .lp-foot p { margin: 4px 0; }
   .lp-foot a { color: var(--turquesa); font-weight: 700; }
-  @media (max-width: 640px) { .lx-h1 { font-size: 30px; } .lx-sec { padding: 18px; } .lx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+  @media (max-width: 640px) { .lx-h1 { font-size: 30px; } .lx-sec { padding: 18px; } .lx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .lx-grid:has(.is-noimg) { grid-template-columns: 1fr; gap: 8px; } }
 </style>

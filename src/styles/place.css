@@ -7,7 +7,7 @@
   .lp-main { background: var(--surface); border-radius: 24px; overflow: hidden; }
   .lp-cover { margin: 0; aspect-ratio: 2 / 1; background: var(--photo); }
   .lp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .lp-cover-empty { height: 120px; display: flex; align-items: center; justify-content: center; background: #E3EFEE; color: var(--turquesa); }
+  .lp-cover-empty { height: 72px; display: flex; align-items: center; justify-content: center; background: #E3EFEE; color: var(--turquesa); }
   .lp-head, .lp-facts, .lp-sec { padding: 0 28px; }
   .lp-head { padding-top: 24px; display: flex; flex-direction: column; gap: 8px; }
   .lp-cat { margin: 0; font-size: 15px; font-weight: 700; color: var(--muted); }
@@ -44,6 +44,7 @@
   .lp-review-meta:empty { display: none; }
   .lp-verified { color: var(--turquesa); font-weight: 800; }
   .lp-near { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .lp-near:has(.is-noimg) { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
   .lp-near-card { display: flex; flex-direction: column; gap: 4px; color: var(--ink); text-decoration: none; }
   .lp-near-card img, .lp-near-empty { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; border-radius: 14px; background: var(--photo); display: block; }
   .lp-near-empty { display: flex; align-items: center; justify-content: center; background: #E3EFEE; color: var(--turquesa); }
@@ -59,6 +60,7 @@
     .lp-cover { aspect-ratio: 4 / 3; }
     .lp-btn { flex: 1 1 auto; }
     .lp-near { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .lp-near:has(.is-noimg) { grid-template-columns: 1fr; gap: 8px; }
   }
 
 /* Fotos, votos, reseñas y reportes en la página del lugar */
@@ -86,3 +88,9 @@
   .lp-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .lp-sec-head .lp-btn { flex: 0 0 auto; }
 }
+
+/* Lugar cercano sin foto: fila compacta con el ícono a la izquierda. */
+.lp-near-card.is-noimg { display: grid; grid-template-columns: 48px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 12px; align-items: center; padding: 10px; border-radius: 14px; background: var(--neblina); }
+.lp-near-card.is-noimg .lp-near-empty { grid-row: 1 / span 2; width: 48px; height: 48px; aspect-ratio: auto; border-radius: 12px; }
+.lp-near-card.is-noimg .lp-near-name { align-self: end; }
+.lp-near-card.is-noimg .lp-near-meta { align-self: start; }

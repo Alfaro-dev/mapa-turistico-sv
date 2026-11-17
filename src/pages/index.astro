@@ -256,7 +256,7 @@ const categories = [
   .place-rating { margin-left: auto; font-size: 14px; color: var(--ink-2); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 
   .back-btn { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 4px; margin: 0 0 8px -4px; border: 0; background: transparent; color: var(--link); font-size: 15px; font-weight: 700; cursor: pointer; }
-  .detail-photo.photo-empty { display: flex; align-items: center; justify-content: center; height: 120px; color: #8FB3AF; }
+  .detail-photo.photo-empty { display: flex; align-items: center; justify-content: center; height: 72px; }
   .thumb-icon { display: flex; align-items: center; justify-content: center; color: #7FA5A1; }
   .empty-card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 8px; padding: 14px 16px; border-radius: 14px; background: var(--neblina); }
   .empty-card p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
@@ -475,6 +475,8 @@ const categories = [
     other: '<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle>',
   };
   const catIcon = (c: string, size = 22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c] || CAT_ICON.other}</svg>`;
+  // Tono para los lugares sin foto: agua, cerro o pueblo (igual que en la página de cada lugar).
+  const catTone = (c: string) => (['playa', 'lago', 'río'].includes(c) ? 'tone-agua' : ['montaña', 'mirador', 'aventura'].includes(c) ? 'tone-cerro' : 'tone-pueblo');
   // Horario o precio que no dicen nada concreto no se muestran.
   const VAGUE = /^(todo el d[ií]a|de d[ií]a|abierto todo el d[ií]a|todos los d[ií]as|abierto|consult[aá].*|var[ií]a.*|n\/a|-)$/i;
   const specific = (v?: string) => !!v && !VAGUE.test(v.trim());
@@ -767,7 +769,7 @@ const categories = [
       const r = ratingOf(p.id);
       const extra = userPos ? fmtKm(distanceKm(userPos, [p.lat, p.lng])) : (r ? `${starSvg}${r.avg.toFixed(1)}` : '');
       return `<li><button type="button" class="place-row" data-id="${esc(p.id)}">
-        ${photo ? `<img class="place-thumb" src="${photo}" alt="" loading="lazy">` : `<span class="place-thumb thumb-icon" aria-hidden="true">${catIcon(p.category)}</span>`}
+        ${photo ? `<img class="place-thumb" src="${photo}" alt="" loading="lazy">` : `<span class="place-thumb thumb-icon ${catTone(p.category)}" aria-hidden="true">${catIcon(p.category)}</span>`}
         <span style="min-width:0">
           <p class="place-name">${esc(p.name)}</p>
           <p class="place-meta">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
@@ -1091,7 +1093,7 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a la lista
       </button>` : ''}
-      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${cover.photo.userId ? `<a href="${profileHref(cover.photo.userId)}">${esc(cover.photo.userName || 'un visitante')}</a>` : esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty" aria-hidden="true">${catIcon(p.category, 40)}</div>`}
+      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${cover.photo.userId ? `<a href="${profileHref(cover.photo.userId)}">${esc(cover.photo.userName || 'un visitante')}</a>` : esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty ${catTone(p.category)}" aria-hidden="true">${catIcon(p.category, 32)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${placeLink(p.id, p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r
@@ -1150,7 +1152,7 @@ const categories = [
       </div>`}
 
       ${near.length ? `<h3 class="section-title">Cerca de aquí</h3><ul class="near-list">${near.map(({ x, d }) => { const ph = coverOf(x).url; return `<li><button type="button" class="near-row" data-id="${esc(x.id)}">
-          ${ph ? `<img class="place-thumb" src="${ph}" alt="" loading="lazy">` : `<span class="place-thumb thumb-icon" aria-hidden="true">${catIcon(x.category)}</span>`}
+          ${ph ? `<img class="place-thumb" src="${ph}" alt="" loading="lazy">` : `<span class="place-thumb thumb-icon ${catTone(x.category)}" aria-hidden="true">${catIcon(x.category)}</span>`}
           <span class="near-text"><span class="near-name">${esc(x.name)}</span><span class="place-meta">${esc(CATEGORY_NAMES[x.category] || 'Lugar')}</span></span>
           <span class="near-km">${fmtKm(d)}</span>
         </button></li>`; }).join('')}</ul>` : ''}
