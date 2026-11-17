@@ -49,13 +49,18 @@
 .wz-day.is-closed .wz-day-name { color: var(--muted); }
 .wz-times { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 700; }
 .wz-times[hidden] { display: none; }
-.wz-times .ng-input { width: 132px; min-height: 44px; padding: 8px 10px; }
+.wz-times .ng-input { width: 148px; min-height: 44px; padding: 8px 10px; }
 /* Entradas de hora y de dinero con el mismo estilo en cualquier formulario. */
 :where(.wz-times, .wz-tel) input { min-height: 44px; padding: 8px 10px; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
-:where(.wz-times) input { width: 132px; }
+:where(.wz-times) input { width: 148px; }
 :where(.wz-tel) input { border-radius: 0 14px 14px 0; min-width: 0; width: 100%; }
 .wz-tel input:focus-visible, .wz-times input:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
 .wz-money { max-width: 200px; }
 @media (prefers-reduced-motion: reduce) { .wz-switch input, .wz-switch input::after { transition: none; } }
 @media (max-width: 760px) { .wz-bar-txt { display: none; } }
-@media (max-width: 560px) { .wz-times input, .wz-times .ng-input { width: 118px; } }
+@media (max-width: 560px) { .wz-times input, .wz-times .ng-input { width: 132px; padding: 8px 6px; font-size: 15px; } }
+/* En celular, el selector de tipo queda en cuadrícula pareja en vez de partirse. */
+@media (max-width: 560px) {
+  .wz-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; box-sizing: border-box; border-radius: 18px; }
+  .wz-seg span { width: 100%; justify-content: center; text-align: center; box-sizing: border-box; border-radius: 14px; padding: 0 8px; }
+}

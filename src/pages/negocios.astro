@@ -1072,7 +1072,8 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   }
   document.getElementById('bizForm')!.addEventListener('input', saveDraft);
   const readDraft = () => { try { const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); return d && d.uid === user?.uid ? d : null; } catch { return null; } };
-  const clearDraft = () => { try { localStorage.removeItem(DRAFT_KEY); } catch { /* nada */ } };
+  // Cancela también un guardado que estaba por salir, para que el borrador no vuelva después de enviar.
+  const clearDraft = () => { clearTimeout(draftTimer); try { localStorage.removeItem(DRAFT_KEY); } catch { /* nada */ } };
 
   function openForm(b: any) {
     editing = b;

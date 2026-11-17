@@ -104,8 +104,8 @@ const range = (d: DayHours) => `${hour12(d.from)} a ${hour12(d.to)}`;
 // Texto corto para la app y el admin: "Martes a domingo, 8:00 a. m. a 6:00 p. m." (agrupa días seguidos con el mismo horario).
 export function scheduleText(h?: Hours | null): string {
   if (!h) return '';
-  if (h.mode === '24h') return 'Abierto las 24 horas';
-  if (h.mode === 'reservacion') return `Solo con reservación${h.note ? `. ${h.note}` : ''}`;
+  if (h.mode === '24h') return withNote('Abierto las 24 horas', h.note);
+  if (h.mode === 'reservacion') return withNote('Solo con reservación', h.note);
   const parts: string[] = [];
   let i = 0;
   while (i < DAYS.length) {
@@ -118,8 +118,10 @@ export function scheduleText(h?: Hours | null): string {
     i = j + 1;
   }
   const txt = parts.length ? parts.join('; ') : 'Cerrado';
-  return `${txt.charAt(0).toUpperCase()}${txt.slice(1)}${h.note ? `. ${h.note}` : ''}`;
+  return withNote(`${txt.charAt(0).toUpperCase()}${txt.slice(1)}`, h.note);
 }
+// Pega una nota al final sin dejar dos puntos seguidos ("6:00 p. m.. Nota").
+export const withNote = (txt: string, note?: string) => (note?.trim() ? `${txt.replace(/\.$/, '')}. ${note.trim()}` : txt);
 // ¿Está abierto ahora? (hora de El Salvador). Devuelve el texto para mostrar.
 export function openNow(h?: Hours | null): { open: boolean; text: string } | null {
   if (!h) return null;

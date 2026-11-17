@@ -1,6 +1,7 @@
 // Datos ordenados de los lugares turísticos (los llena el admin por pasos) y cómo se muestran
 // en el mapa y en la página de cada lugar. El horario usa lo mismo que los negocios (bizData).
-export { DAYS, emptyHours, scheduleText, openNow, hour12, type Hours } from './bizData';
+import { withNote } from './bizData';
+export { DAYS, emptyHours, scheduleText, openNow, hour12, withNote, type Hours } from './bizData';
 
 export const DEPARTMENTS = ['Ahuachapán', 'Cabañas', 'Chalatenango', 'Cuscatlán', 'La Libertad', 'La Paz', 'La Unión', 'Morazán', 'San Miguel', 'San Salvador', 'San Vicente', 'Santa Ana', 'Sonsonate', 'Usulután'];
 
@@ -42,16 +43,16 @@ const money = (n?: number) => (Number(n) > 0 ? `$${Number(n).toFixed(Number(n) %
 // "Gratis" o "$3 nacionales · $5 extranjeros". Sirve también como texto de siempre (campo price).
 export function entryText(e?: Entry | null): string {
   if (!e?.type) return '';
-  if (e.type === 'gratis') return `Gratis${e.note ? `. ${e.note}` : ''}`;
+  if (e.type === 'gratis') return withNote('Gratis', e.note);
   const parts = [money(e.local) && `${money(e.local)}${money(e.foreign) ? ' nacionales' : ''}`, money(e.foreign) && `${money(e.foreign)} extranjeros`].filter(Boolean);
-  return `${parts.join(' · ') || 'Con costo'}${e.note ? `. ${e.note}` : ''}`;
+  return withNote(parts.join(' · ') || 'Con costo', e.note);
 }
 
 export interface Access { modes?: string[]; road?: string; parking?: string; parkingCost?: number; notes?: string }
 export function accessLines(a?: Access | null): string[] {
   if (!a) return [];
   return [
-    labs(ACCESS_MODES, a.modes).join(', '),
+    labs(ACCESS_MODES, a.modes).map((x, i) => (i ? x.charAt(0).toLowerCase() + x.slice(1) : x)).join(', '),
     lab(ROADS, a.road || ''),
     a.parking === 'costo' && money(a.parkingCost) ? `Parqueo ${money(a.parkingCost)}` : lab(PARKING, a.parking || ''),
     (a.notes || '').trim(),
