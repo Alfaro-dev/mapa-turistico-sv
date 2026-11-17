@@ -274,6 +274,13 @@ const categories = [
   .star { color: var(--star); }
   .detail-actions { display: flex; gap: 8px; margin: 16px 0 0; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
   .detail-actions .btn { flex: 1; }
+  .place-more { margin: 12px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .place-more div { background: var(--neblina); border-radius: 12px; padding: 8px 12px; min-width: 0; }
+  .place-more div:first-child, .place-more div:last-child:nth-child(even) { grid-column: 1 / -1; }
+  .place-more dt { font-size: 12px; font-weight: 800; color: var(--muted); }
+  .place-more dd { margin: 1px 0 0; font-size: 14px; color: var(--ink); overflow-wrap: anywhere; }
+  .detail-facts .is-open { color: var(--turquesa); }
+  .detail-facts .is-closed { color: var(--canela-ink); }
   .biz-now { margin: 6px 0 0; font-size: 14px; font-weight: 800; }
   .biz-now .is-open { color: var(--turquesa); }
   .biz-now .is-closed { color: var(--canela-ink); }
@@ -453,6 +460,7 @@ const categories = [
   import { db, auth, googleProvider } from '../lib/firebase';
   import { uploadImage } from '../lib/cloudinary';
   import { esc, safeUrl, num } from '../lib/escape';
+  import { entryText, accessLines, visitFacts, placeAmenityLabels } from '../lib/placeInfo';
   import { datePicker } from '../lib/datePicker';
   import { LEGAL } from '../lib/legal';
   import { bizKind, openNow, priceSummary, paymentLabel, amenityLabel, scheduleText, DAYS, hour12, igUrl, fbUrl } from '../lib/bizData';
@@ -1098,6 +1106,12 @@ const categories = [
     $('placePhotoInput')?.addEventListener('change', (e: Event) => uploadPlacePhoto(p, e.target as HTMLInputElement));
   }
 
+  // Cómo llegar, datos de la visita y qué hay (los llena el admin por pasos).
+  function placeMore(p: any) {
+    const acc = accessLines(p.access), vf = visitFacts(p), am = placeAmenityLabels(p.amenities);
+    if (!acc.length && !vf.length && !am.length) return '';
+    return `<dl class="place-more">${acc.length ? `<div><dt>Cómo llegar</dt><dd>${acc.map(esc).join('. ')}</dd></div>` : ''}${vf.map((x) => `<div><dt>${x.label}</dt><dd>${esc(x.value)}</dd></div>`).join('')}${am.length ? `<div><dt>Qué hay</dt><dd>${am.map(esc).join(', ')}</dd></div>` : ''}</dl>`;
+  }
   function renderDetail(p: Place) {
     if (detailSub) { renderDetailAll(p); return; }
     const photos = (p.photos || []).map((u) => safeUrl(u)).filter(Boolean);
@@ -1135,11 +1149,12 @@ const categories = [
       <p id="shareStatus" class="share-status" role="status"></p>
       ${p.description ? `<p class="detail-desc">${esc(p.description)}</p>` : ''}
       <ul class="detail-facts">
-        ${specific(p.schedule) ? `<li>${icoClock}<span>${esc(p.schedule!)}</span></li>` : ''}
-        ${specific(p.price) ? `<li>${icoTicket}<span>${esc(priceText(p.price!.trim()))}</span></li>` : ''}
+        ${(p as any).hours?.days ? `<li>${icoClock}<span>${(() => { const on = openNow((p as any).hours); return on ? `<strong class="${on.open ? 'is-open' : 'is-closed'}">${esc(on.text)}</strong><br>` : ''; })()}${esc(scheduleText((p as any).hours))}</span></li>` : specific(p.schedule) ? `<li>${icoClock}<span>${esc(p.schedule!)}</span></li>` : ''}
+        ${(p as any).entry?.type ? `<li>${icoTicket}<span>Entrada: ${esc(entryText((p as any).entry))}</span></li>` : specific(p.price) ? `<li>${icoTicket}<span>${esc(priceText(p.price!.trim()))}</span></li>` : ''}
         ${/^https?:\/\//i.test(p.website || '') && safeUrl(p.website) ? `<li>${icoLink}<a href="${safeUrl(p.website)}" target="_blank" rel="noopener" style="color:var(--link)">Sitio web</a></li>` : ''}
       </ul>
       ${p.recommendations?.length ? `<div class="tags">${p.recommendations.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+      ${placeMore(p)}
 
       <div class="section-head">
         <h3 class="section-title">Fotos de quienes fueron</h3>

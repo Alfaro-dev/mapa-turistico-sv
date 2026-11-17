@@ -1,5 +1,6 @@
 // Datos de lugares que sirven igual al compilar y en el navegador: lectura de Firestore por REST y formato.
 // Firestore se lee sin clave: las reglas dejan leer lugares, reseñas y fotos a cualquiera.
+import { scheduleText, openNow, entryText, accessLines, visitFacts, placeAmenityLabels } from './placeInfo';
 export const SITE = 'https://mapa.carlosalfaro.dev';
 const BASE = 'https://firestore.googleapis.com/v1/projects/mapsv-1776175535/databases/(default)/documents';
 
@@ -35,6 +36,7 @@ export interface SitePlace {
   id: string; name: string; category: string; lat: number; lng: number;
   description: string; municipality: string; department: string; schedule: string; price: string; website: string;
   recommendations: string[]; photos: string[]; visitCount: number;
+  hours: any; entry: any; access: any; difficulty: string; duration: string; seasons: string[]; bestTimes: string[]; amenities: string[];
   cover: string; rating: number; reviewCount: number; reviews: SiteReview[]; photoCount: number; gallery: SitePhoto[];
 }
 // Foto de la galería: las de turistas (se votan) y después las del lugar.
@@ -87,6 +89,8 @@ export function buildPlaces(places: any[], photos: any[], reviews: any[]): SiteP
         description: p.description || '', municipality: p.municipality || '', department: p.department || '',
         schedule: p.schedule || '', price: p.price || '', website: /^https?:\/\//.test(p.website || '') ? p.website : '',
         recommendations: p.recommendations || [], photos: p.photos || [], visitCount: Number(p.visitCount) || 0,
+        hours: p.hours?.days ? p.hours : null, entry: p.entry?.type ? p.entry : null, access: p.access || null,
+        difficulty: p.difficulty || '', duration: p.duration || '', seasons: p.seasons || [], bestTimes: p.bestTimes || [], amenities: p.amenities || [],
         cover, photoCount: ph.length + (p.photos || []).length,
         rating: rated.length ? rated.reduce((s, x) => s + Number(x.rating), 0) / rated.length : 0,
         reviewCount: rv.length,
@@ -146,13 +150,29 @@ export function nearby(p: SitePlace, all: SitePlace[]) {
   return all.filter((x) => x.id !== p.id).map((x) => ({ x, km: distanceKm([p.lat, p.lng], [x.lat, x.lng]) })).sort((a, b) => a.km - b.km).slice(0, 4);
 }
 
+// "Abierto ahora" solo en el navegador (en la página ya generada quedaría viejo).
+function openLine(h: any) {
+  if (typeof window === 'undefined') return '';
+  const on = openNow(h);
+  return on ? `<span class="lp-now ${on.open ? 'is-open' : 'is-closed'}">${esc(on.text)}</span>` : '';
+}
+// Cómo llegar, datos de la visita y qué hay en el lugar.
+function visitHtml(p: SitePlace) {
+  const acc = accessLines(p.access), vf = visitFacts(p), am = placeAmenityLabels(p.amenities);
+  return [
+    acc.length && `<section class="lp-sec"><h2 class="lp-h2">Cómo llegar</h2><ul class="lp-list">${acc.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`,
+    vf.length && `<section class="lp-sec"><h2 class="lp-h2">La visita</h2><dl class="lp-facts lp-facts-in">${vf.map((x) => `<div><dt>${x.label}</dt><dd>${esc(x.value)}</dd></div>`).join('')}</dl></section>`,
+    am.length && `<section class="lp-sec"><h2 class="lp-h2">Qué hay</h2><ul class="lp-chips lp-chips-soft">${am.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>`,
+  ].filter(Boolean).join('\n');
+}
+
 export function renderPlace(p: SitePlace, all: SitePlace[]): string {
   const cat = CATEGORY_NAMES[p.category] || 'Lugar';
   const where = placeWhere(p);
   const mapHref = `/#${encodeURIComponent(p.id)}`;
   const facts = [
-    specific(p.schedule) && `<div><dt>Horario</dt><dd>${esc(p.schedule)}</dd></div>`,
-    specific(p.price) && `<div><dt>${/gratis|costo|\$|\d/i.test(p.price) ? 'Entrada' : 'Cómo se entra'}</dt><dd>${esc(priceText(p.price).replace(/^Entrada /, '').replace(/^./, (c) => c.toUpperCase()))}</dd></div>`,
+    p.hours ? `<div><dt>Horario</dt><dd>${openLine(p.hours)}${esc(scheduleText(p.hours))}</dd></div>` : specific(p.schedule) && `<div><dt>Horario</dt><dd>${esc(p.schedule)}</dd></div>`,
+    p.entry ? `<div><dt>Entrada</dt><dd>${esc(entryText(p.entry))}</dd></div>` : specific(p.price) && `<div><dt>${/gratis|costo|\$|\d/i.test(p.price) ? 'Entrada' : 'Cómo se entra'}</dt><dd>${esc(priceText(p.price).replace(/^Entrada /, '').replace(/^./, (c) => c.toUpperCase()))}</dd></div>`,
     p.website && `<div><dt>Sitio web</dt><dd><a href="${esc(p.website)}" target="_blank" rel="noopener nofollow">${esc(p.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></dd></div>`,
   ].filter(Boolean).join('');
   const reviews = p.reviews.map((r) => {
@@ -185,6 +205,7 @@ ${p.reviewCount > 0 && p.rating > 0
 </header>
 ${facts ? `<dl class="lp-facts">${facts}</dl>` : ''}
 ${p.description ? `<section class="lp-sec"><h2 class="lp-h2">Cómo es</h2><p class="lp-text">${esc(p.description)}</p></section>` : ''}
+${visitHtml(p)}
 ${p.recommendations.length ? `<section class="lp-sec"><h2 class="lp-h2">Qué hacer</h2><ul class="lp-chips">${p.recommendations.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></section>` : ''}
 <section class="lp-sec"><div class="lp-sec-head"><h2 class="lp-h2">Fotos de quienes fueron</h2><button type="button" class="lp-btn lp-btn-outline lp-btn-sm" data-add-photo>Subir foto</button></div>
 ${gallery ? `<p class="lp-muted lp-help">Votá por tu favorita: la más votada queda de portada.</p><ul class="lp-gallery" data-gal-group>${gallery}</ul>` : '<p class="lp-muted">Nadie ha subido fotos de aquí todavía. ¿Tenés una?</p>'}
