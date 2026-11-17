@@ -117,7 +117,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
           </div>
           <div id="fDaysWrap">
             <ul class="wz-days" id="fDays"></ul>
-            <button type="button" class="ng-btn ng-btn-ghost ng-btn-sm" id="fCopyDays">Copiar el horario del primer día abierto a todos los abiertos</button>
+            <button type="button" class="ng-btn ng-btn-ghost ng-btn-sm" id="fCopyDays">Usar el mismo horario en todos los días abiertos</button>
           </div>
           <label class="ng-field"><span class="ng-label">Nota del horario <span class="ng-opt">(opcional)</span></span><input id="fHoursNote" class="ng-input" maxlength="120" placeholder="Por ejemplo: cerramos el 24 y 25 de diciembre" /></label>
           <p class="ng-help" id="fHoursPreview" aria-live="polite"></p>
@@ -709,7 +709,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   };
 
   let editing: any = null;
-  let step = 1;
+  let step = 1, maxStep = 1;
   let group = '', btype = '';
   let photos: string[] = [];
   let menuPhotos: string[] = [];
@@ -728,12 +728,13 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   function renderBar() {
     $('wzBar').innerHTML = stepEls().map((el, i) => {
       const n = i + 1, st = n < step ? 'is-done' : n === step ? 'is-now' : '';
-      return `<li class="${st}"><button type="button" data-go="${n}" ${n < step || (editing && n !== step) ? '' : 'disabled'} aria-current="${n === step ? 'step' : 'false'}"><span class="wz-dot">${n}</span><span class="wz-bar-txt">${esc(el.dataset.title || '')}</span></button></li>`;
+      return `<li class="${st}"><button type="button" data-go="${n}" ${n !== step && (n <= maxStep || editing) ? '' : 'disabled'} aria-current="${n === step ? 'step' : 'false'}"><span class="wz-dot">${n}</span><span class="wz-bar-txt">${esc(el.dataset.title || '')}</span></button></li>`;
     }).join('');
     $('wzWhere').textContent = `Paso ${step} de ${STEPS} · ${stepEls()[step - 1].dataset.title}`;
   }
-  function goStep(n: number, focus = true) {
+  function goStep(n: number, focus = true, save = true) {
     step = Math.max(1, Math.min(STEPS, n));
+    maxStep = Math.max(maxStep, step);
     stepEls().forEach((el, i) => (el.hidden = i + 1 !== step));
     $('fPrev').hidden = step === 1;
     $('fNext').hidden = step === STEPS;
@@ -743,13 +744,13 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     if (step === 2) setTimeout(initMap, 0);
     if (step === 7) renderReview();
     if (focus) { window.scrollTo({ top: 0 }); (stepEls()[step - 1].querySelector('legend') as HTMLElement)?.setAttribute('tabindex', '-1'); (stepEls()[step - 1].querySelector('legend') as HTMLElement)?.focus({ preventScroll: true }); }
-    saveDraft();
+    if (save) saveDraft();
   }
   $('wzBar').addEventListener('click', (e: Event) => {
     const b = (e.target as HTMLElement).closest('[data-go]') as HTMLButtonElement | null;
     if (!b || b.disabled) return;
     const n = Number(b.dataset.go);
-    if (n > step && !validate(step)) return;
+    if (n > step) { for (let k = step; k < n; k++) if (!validate(k)) { if (k !== step) goStep(k); validate(k); return; } }
     goStep(n);
   });
   $('fPrev').addEventListener('click', () => goStep(step - 1));
@@ -794,7 +795,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     if (!fmap) {
       fmap = L.map('fMap', { scrollWheelZoom: false }).setView([13.75, -88.95], 8);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(fmap);
-      fmap.on('click', (e: any) => setPoint(e.latlng.lat, e.latlng.lng, false));
+      fmap.on('click', (e: any) => setPoint(e.latlng.lat, e.latlng.lng, fmap.getZoom() < 14));
       new ResizeObserver(() => fmap.invalidateSize()).observe($('fMap'));
     }
     fmap.invalidateSize();
@@ -1101,7 +1102,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     clearTimeout(draftTimer);
     draftTimer = setTimeout(() => {
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ uid: user.uid, step, group, btype, photos, menuPhotos, menuSections, hours, priceLevel, payments, amenities, point, placeId,
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ uid: user.uid, step, maxStep, group, btype, photos, menuPhotos, menuSections, hours, priceLevel, payments, amenities, point, placeId,
           f: Object.fromEntries(['fName', 'fDesc', 'fAddress', 'fWa', 'fPhone', 'fEmail', 'fWeb', 'fIg', 'fFb', 'fHoursNote', 'fFrom', 'fMenuUrl'].map((id) => [id, $(id).value])),
           same: ($('fSame') as HTMLInputElement).checked, mm: menuMode() }));
         $('fSaved').textContent = 'Borrador guardado en este navegador';
@@ -1146,7 +1147,8 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     $('fSaved').textContent = d ? 'Seguís donde te quedaste' : '';
     const st = b ? state(b) : '';
     $('fSubmit').textContent = !b ? 'Enviar a revisión' : st === 'rejected' ? 'Guardar y enviar otra vez' : 'Guardar cambios';
-    goStep(b ? 1 : d?.step || 1, false);
+    maxStep = b ? STEPS : d?.maxStep || d?.step || 1;
+    goStep(b ? 1 : d?.step || 1, false, false);
   }
 
   $('bizForm').addEventListener('submit', async (e: Event) => {
