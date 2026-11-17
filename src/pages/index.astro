@@ -163,6 +163,8 @@ const categories = [
 
   /* ---------- Buscador flotante ---------- */
   .searchbox { position: fixed; z-index: 1100; top: 16px; left: 16px; width: 376px; height: 52px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 8px; background: var(--surface); border-radius: 26px; box-shadow: 0 2px 10px rgba(20,48,47,0.2); transition: background .2s, box-shadow .2s; }
+  .searchbox input { align-self: stretch; height: 100%; }
+  .searchbox { cursor: text; }
   .searchbox:focus-within { box-shadow: 0 0 0 3px var(--turquesa), 0 2px 10px rgba(20,48,47,0.2); }
   body.panel-open .searchbox { background: var(--neblina); box-shadow: none; }
   .search-mark { width: 36px; height: 36px; border-radius: 18px; background: var(--plumaje); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -234,7 +236,7 @@ const categories = [
   .small { font-size: 14px; margin: 4px 0 8px; }
   .empty { margin: 16px 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
 
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 23px; font-size: 15px; font-weight: 800; text-decoration: none; cursor: pointer; border: 2px solid transparent; white-space: nowrap; box-sizing: border-box; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 24px; font-size: 15px; font-weight: 800; text-decoration: none; cursor: pointer; border: 2px solid transparent; white-space: nowrap; box-sizing: border-box; }
   .btn-primary { background: var(--primary); color: var(--on-primary); }
   .btn-outline { background: transparent; color: var(--link); border-color: var(--link); }
 
@@ -268,10 +270,11 @@ const categories = [
   .detail-kicker { margin: 4px 0 0; font-size: 14px; font-weight: 600; color: var(--muted); }
   .rating-line { margin: 8px 0 0; display: flex; align-items: center; gap: 6px; font-size: 15px; color: var(--ink-2); }
   .rating-line strong { color: var(--ink); }
-  .rating-line.is-empty { color: var(--star); font-weight: 700; font-size: 14px; }
+  .rating-line.is-empty { color: var(--canela-ink); font-weight: 700; font-size: 14px; }
   .star { color: var(--star); }
   .detail-actions { display: flex; gap: 8px; margin: 16px 0 0; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
   .detail-actions .btn { flex: 1; }
+  .detail-actions .btn-icon { flex: 0 0 48px; width: 48px; min-width: 48px; }
   .detail-desc { margin: 16px 0 0; font-size: 15px; line-height: 1.6; color: var(--ink-2); }
   .detail-facts { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: var(--ink-2); }
   .detail-facts li { display: flex; gap: 10px; align-items: center; }
@@ -352,7 +355,7 @@ const categories = [
   .review-date { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
   .review { position: relative; }
   .report-link { display: block; margin: 6px 0 0 auto; padding: 6px 2px; border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .report-link:hover { color: var(--canela); text-decoration: underline; text-underline-offset: 2px; }
+  .report-link:hover { color: var(--canela-ink); text-decoration: underline; text-underline-offset: 2px; }
   .report-link:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; border-radius: 6px; }
   .review-text { margin: 6px 0 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); }
   .review-photos { display: flex; gap: 6px; margin-top: 8px; }
@@ -1406,6 +1409,10 @@ const categories = [
   });
 
   // ---------- Filtros ----------
+  // Tocar cualquier parte de la barra (fuera de sus botones) enfoca el buscador.
+  document.querySelector('.searchbox')!.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('a, button, input')) ($('searchInput') as HTMLInputElement).focus();
+  });
   $('searchInput').addEventListener('input', (e: Event) => {
     currentQuery = (e.target as HTMLInputElement).value;
     if (currentQuery.trim().length >= 2) loadAllPlaces();

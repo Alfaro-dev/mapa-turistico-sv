@@ -390,7 +390,7 @@ const categories = [
   .ad-mini:focus-visible, .ad-photo-open:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
   .ad-photo-open { padding: 0; border: 0; background: var(--photo); width: 100%; aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: zoom-in; }
   .ad-report { align-items: flex-start; }
-  .ad-report-why { margin: 6px 0 0; font-size: 14px; font-weight: 800; color: var(--canela); }
+  .ad-report-why { margin: 6px 0 0; font-size: 14px; font-weight: 800; color: var(--canela-ink); }
   .ad-report-note { margin: 4px 0 0; padding-left: 10px; border-left: 3px solid var(--line); font-size: 14px; color: var(--ink-2); }
   .ad-report-actions { display: flex; gap: 8px; align-items: center; flex: none; }
   @media (max-width: 640px) { .ad-report { flex-wrap: wrap; } .ad-report-actions { flex-direction: row; width: 100%; } .ad-report-actions .ad-btn { flex: 1; } }
@@ -696,7 +696,7 @@ const categories = [
     const pro = active.filter((b) => b.plan === 'pro').length;
     $('stBizPlans').textContent = active.length ? `${dest} ${dest === 1 ? 'Destacado' : 'Destacados'} · ${pro} Pro` : '';
     $('stReviews').textContent = reviews.length; $('stPhotos').textContent = photos.length;
-    $('sumReviews').innerHTML = reviews.slice(0, 4).map(reviewRow).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
+    $('sumReviews').innerHTML = reviews.slice(0, 4).map((r) => reviewRow(r)).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
     $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
       <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${placeLink(b.placeId, b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>

@@ -10,6 +10,7 @@
   --plumaje: #F2C14E;     /* amarillo de marca */
   --turquesa: #0E7C7B;
   --canela: #C2581F;
+  --canela-ink: #B54F1A;  /* canela para textos chicos (5.1:1 sobre blanco) */
   --neblina: #F4F8F7;
   --rama: #14302F;
 
@@ -76,7 +77,8 @@ button, input, select, textarea { font-family: inherit; }
 .place-link { color: var(--turquesa); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
 .place-link:hover { text-decoration-color: currentColor; }
 .place-link:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; border-radius: 4px; }
-h1 .place-link, h2 .place-link, .ad-row-title .place-link { color: inherit; font-weight: inherit; }
+h1 .place-link, h2 .place-link, .ad-row-title .place-link { color: inherit; font-weight: inherit; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--line); }
+h1 .place-link:hover, h2 .place-link:hover { text-decoration-color: var(--plumaje); }
 
 /* Lugares sin foto: un tono por tipo de lugar (agua, cerro, pueblo) en vez de un recuadro gris. */
 .tone-agua { background: #DDEFEE !important; color: #0B6665 !important; }

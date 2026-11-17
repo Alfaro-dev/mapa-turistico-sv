@@ -152,7 +152,7 @@ export function renderPlace(p: SitePlace, all: SitePlace[]): string {
   const mapHref = `/#${encodeURIComponent(p.id)}`;
   const facts = [
     specific(p.schedule) && `<div><dt>Horario</dt><dd>${esc(p.schedule)}</dd></div>`,
-    specific(p.price) && `<div><dt>Entrada</dt><dd>${esc(priceText(p.price).replace(/^Entrada /, '').replace(/^./, (c) => c.toUpperCase()))}</dd></div>`,
+    specific(p.price) && `<div><dt>${/gratis|costo|\$|\d/i.test(p.price) ? 'Entrada' : 'Cómo se entra'}</dt><dd>${esc(priceText(p.price).replace(/^Entrada /, '').replace(/^./, (c) => c.toUpperCase()))}</dd></div>`,
     p.website && `<div><dt>Sitio web</dt><dd><a href="${esc(p.website)}" target="_blank" rel="noopener nofollow">${esc(p.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></dd></div>`,
   ].filter(Boolean).join('');
   const reviews = p.reviews.map((r) => {
