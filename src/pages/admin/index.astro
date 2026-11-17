@@ -504,6 +504,7 @@ const categories = [
   import { enableGalleries } from '../../lib/gallery';
   import { db, auth, googleProvider } from '../../lib/firebase';
   import { uploadImage } from '../../lib/cloudinary';
+  import { bizKind, priceSummary, paymentLabel, amenityLabel } from '../../lib/bizData';
 
   // Aviso breve abajo de la pantalla, para confirmar lo que se hizo.
   function toast(msg: string) {
@@ -699,7 +700,7 @@ const categories = [
     $('sumReviews').innerHTML = reviews.slice(0, 4).map((r) => reviewRow(r)).join('') || '<li class="ad-empty">Todavía no hay reseñas.</li>';
     $('sumBiz').innerHTML = pendingBiz.slice(0, 4).map((b) => `<li class="ad-row">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
-      <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${placeLink(b.placeId, b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
+      <div class="ad-row-main"><p class="ad-row-title">${esc(b.name)}</p><p class="ad-row-meta">${esc(bizKind(b).label)}${b.placeName ? ` · ${placeLink(b.placeId, b.placeName)}` : ''} · ${ago(b.createdAt)}</p></div>
       <a class="ad-btn ad-btn-primary ad-btn-sm" href="#negocios" data-open-biz="${esc(b.id)}">Revisar</a></li>`).join('') || '<li class="ad-empty">Nada pendiente. Los negocios nuevos no salen en el mapa hasta que los aprobés.</li>';
     renderDeletions();
     renderBizList(); renderModeration(); renderPlaceList(); renderSeason(); renderVisits(); renderErrors();
@@ -1040,7 +1041,7 @@ const categories = [
     $('bizList').innerHTML = list.map((b) => `<li><button type="button" class="ad-item${b.id === selBiz ? ' is-active' : ''}" data-biz="${esc(b.id)}">
       ${safeUrl(b.coverUrl) ? `<img class="ad-thumb" src="${safeUrl(b.coverUrl)}" alt="">` : '<span class="ad-thumb"></span>'}
       <span class="ad-item-main"><span class="ad-item-title">${esc(b.name)}</span>
-      <span class="ad-item-meta">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · ${esc(b.placeName)}` : ''}${ago(b.createdAt) ? ` · ${ago(b.createdAt)}` : ''}</span>
+      <span class="ad-item-meta">${esc(bizKind(b).label)}${b.placeName ? ` · ${esc(b.placeName)}` : ''}${ago(b.createdAt) ? ` · ${ago(b.createdAt)}` : ''}</span>
       ${bizFilter !== 'pending' ? `<span class="ad-tags"><span class="ad-tag${isPaidPlan(b) && planDays(b) > 7 ? ' ad-tag-ok' : ''}">${esc(planLabel(b))}</span></span>` : ''}</span>
     </button></li>`).join('') || `<li class="ad-empty">${bizFilter === 'pending' ? 'No hay negocios esperando aprobación.' : 'No hay negocios aquí.'}</li>`;
     $('bizList').querySelectorAll('[data-biz]').forEach((el: HTMLElement) => el.addEventListener('click', () => { selBiz = el.dataset.biz!; renderBizList(); renderBizDetail(); }));
@@ -1049,6 +1050,21 @@ const categories = [
   // Fotos del negocio sin repetir (portada + galería).
   const bizPhotos = (b: any) => [...new Set([b.coverUrl, ...(b.photos || [])].map((x: string) => safeUrl(x || '')).filter(Boolean))];
   const MIN_BIZ_PHOTOS = 2;
+  // Datos nuevos del formulario por pasos: precios, pago, servicios, redes y menú.
+  function bizExtra(b: any) {
+    const bits = [
+      priceSummary(b) && `Precio: ${priceSummary(b)}`,
+      (b.payments || []).length && `Pago: ${b.payments.map(paymentLabel).join(', ')}`,
+      (b.amenities || []).length && `Servicios: ${b.amenities.map(amenityLabel).join(', ')}`,
+      b.instagram && `Instagram @${b.instagram}`,
+      b.facebook && `Facebook ${b.facebook}`,
+      b.website && b.website,
+      b.menuMode === 'aqui' && `Menú armado: ${(b.menuSections || []).reduce((n: number, sec: any) => n + (sec.items || []).length, 0)} cosas`,
+      b.menuMode === 'fotos' && `Menú en ${(b.menuPhotos || []).length} fotos`,
+    ].filter(Boolean) as string[];
+    const menuPh = (b.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);
+    return (bits.length ? `<p class="ad-row-meta">${bits.map((x) => esc(x)).join(' · ')}</p>` : '') + (menuPh.length ? `<p class="ad-field-label" style="margin-top:8px">Fotos del menú</p>${galThumbs(menuPh, `Menú de ${b.name}`)}` : '');
+  }
   // Revisiones automáticas: si alguna falla, no se puede aprobar.
   function autoChecks(b: any) {
     const n = bizPhotos(b).length;
@@ -1076,9 +1092,10 @@ const categories = [
         ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="ad-biz-photo" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="">` : '<span class="ad-biz-photo"></span>'}
         <div style="flex:1;min-width:220px">
           <h2 class="ad-h1" style="font-size:26px">${esc(b.name)}</h2>
-          <p class="ad-muted">${esc(BIZ[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${placeLink(b.placeId, b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
+          <p class="ad-muted">${esc(bizKind(b).label)}${b.placeName ? ` · cerca de ${placeLink(b.placeId, b.placeName)}` : ''} · plan ${esc((PLANS[b.plan] || PLANS.basico).label)}</p>
           ${b.description ? `<p class="ad-row-text" style="margin-top:8px">${esc(b.description)}</p>` : ''}
           <p class="ad-row-meta" style="margin-top:6px">${[b.schedule, b.address, b.phone && `Tel. ${b.phone}`, b.whatsapp && `WhatsApp ${b.whatsapp}`, b.email].filter(Boolean).map((x) => esc(x)).join(' · ')}</p>
+          ${bizExtra(b)}
           <p class="ad-row-meta">Dueño: ${b.ownerId ? who({ userId: b.ownerId, userName: b.ownerName || 'ver su perfil' }) : 'sin cuenta'}${safeUrl(b.menu) ? ` · <a href="${safeUrl(b.menu)}" target="_blank" rel="noopener">menú</a>` : ''}</p>
         </div>
       </div>

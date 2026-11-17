@@ -274,6 +274,20 @@ const categories = [
   .star { color: var(--star); }
   .detail-actions { display: flex; gap: 8px; margin: 16px 0 0; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
   .detail-actions .btn { flex: 1; }
+  .biz-now { margin: 6px 0 0; font-size: 14px; font-weight: 800; }
+  .biz-now .is-open { color: var(--turquesa); }
+  .biz-now .is-closed { color: var(--canela-ink); }
+  .biz-price { color: var(--ink-2); }
+  .biz-hours summary { cursor: pointer; }
+  .biz-hours ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+  .biz-hours li { display: flex; justify-content: space-between; gap: 12px; }
+  .biz-hours p { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+  .biz-amen { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .biz-amen li { padding: 4px 10px; border-radius: 12px; background: var(--neblina); font-size: 13px; font-weight: 700; color: var(--rama); }
+  .biz-menu-sec { margin: 10px 0 4px; font-weight: 800; color: var(--ink); }
+  .biz-menu { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .biz-menu li { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
+  .biz-menu small { display: block; color: var(--muted); font-size: 13px; }
   .detail-actions .btn-icon { flex: 0 0 48px; width: 48px; min-width: 48px; }
   /* En celulares angostos los tres botones caben en una fila: textos un poco más compactos y sin el ícono de ruta. */
   @media (max-width: 420px) {
@@ -441,6 +455,7 @@ const categories = [
   import { esc, safeUrl, num } from '../lib/escape';
   import { datePicker } from '../lib/datePicker';
   import { LEGAL } from '../lib/legal';
+  import { bizKind, openNow, priceSummary, paymentLabel, amenityLabel, scheduleText, DAYS, hour12, igUrl, fbUrl } from '../lib/bizData';
   import { acts, initPlaceActions, login, readyToPost, ensureConsent, openReview as openReviewDialog, openReport, votePhoto as votePhotoShared, uploadPlacePhoto as uploadPlacePhotoShared } from '../lib/placeActions';
   import { GOZ_PIN_SVG } from '../lib/gozPin';
 
@@ -1146,7 +1161,7 @@ const categories = [
             ${safeUrl(b.coverUrl || b.photos?.[0]) ? `<img class="place-thumb" src="${safeUrl(b.coverUrl || b.photos?.[0])}" alt="" loading="lazy">` : `<span class="place-thumb biz-thumb" aria-hidden="true">${bizIcon(b.category, 22)}</span>`}
             <span style="min-width:0">
               <span class="biz-name">${esc(b.name)}${isFeatured(b) ? ' <span class="tag-featured">Destacado</span>' : ''}</span>
-              <span class="place-meta">${esc(BIZ_NAMES[b.category] || 'Negocio')} · a ${fmtKm(d)}</span>
+              <span class="place-meta">${esc(bizKind(b).label)} · a ${fmtKm(d)}</span>
               ${b.promoToday ? `<span class="biz-promo">Hoy: ${esc(b.promoToday.replace(/^\s*hoy\s*[:,-]?\s*/i, ''))}</span>` : ''}
             </span>
           </button></li>`).join('')}</ul>` : '';
@@ -1273,6 +1288,13 @@ const categories = [
     const wa = waLink(b);
     const phone = String(b.phone || '').replace(/[^\d+]/g, '');
     const directions = `https://www.google.com/maps/dir/?api=1&destination=${num(b.lat)},${num(b.lng)}`;
+    const bx: any = b;
+    const on = openNow(bx.hours), price = priceSummary(bx);
+    const ig = bx.instagram ? igUrl(bx.instagram) : '', fb = bx.facebook ? fbUrl(bx.facebook) : '', web = safeUrl(bx.website || '');
+    const days = bx.hours?.mode === 'dias' ? DAYS.map((d) => { const h = bx.hours.days?.[d.id]; return `<li><span>${d.label}</span><span>${h?.open ? `${hour12(h.from)} a ${hour12(h.to)}` : 'Cerrado'}</span></li>`; }).join('') : '';
+    const menuItems = (bx.menuSections || []).map((sec: any) => `${sec.name ? `<p class="biz-menu-sec">${esc(sec.name)}</p>` : ''}<ul class="biz-menu">${(sec.items || []).map((it: any) => `<li><span><b>${esc(it.name)}</b>${it.desc ? `<small>${esc(it.desc)}</small>` : ''}</span><span>${Number(it.price) ? `$${Number(it.price).toFixed(2)}` : ''}</span></li>`).join('')}</ul>`).join('');
+    const menuPhotos = (bx.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);
+    const menuUrl = safeUrl(bx.menuUrl || (/^https?:\/\//.test(b.menu || '') ? b.menu : ''));
     $('detailView').innerHTML = `
       ${from ? `<button type="button" class="back-btn" id="backBtn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
@@ -1280,7 +1302,8 @@ const categories = [
       </button>` : ''}
       ${photos[0] ? `<img class="detail-photo" src="${photos[0]}" alt="Foto de ${esc(b.name)}">` : `<div class="detail-photo biz-thumb biz-cover-empty" aria-hidden="true">${bizIcon(b.category, 48)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(b.name)}</h2>
-      <p class="detail-kicker">${esc(BIZ_NAMES[b.category] || 'Negocio')}${b.placeName ? ` · cerca de ${b.placeId ? placeLink(b.placeId, b.placeName) : esc(b.placeName)}` : ''}${isFeatured(b) ? ' <span class="tag-featured">Destacado</span>' : ''}</p>
+      <p class="detail-kicker">${esc(bizKind(b).label)}${b.placeName ? ` · cerca de ${b.placeId ? placeLink(b.placeId, b.placeName) : esc(b.placeName)}` : ''}${isFeatured(b) ? ' <span class="tag-featured">Destacado</span>' : ''}</p>
+      ${on || price ? `<p class="biz-now">${on ? `<span class="${on.open ? 'is-open' : 'is-closed'}">${esc(on.text)}</span>` : ''}${on && price ? ' · ' : ''}${price ? `<span class="biz-price">${esc(price)}</span>` : ''}</p>` : ''}
       ${b.promoToday ? `<p class="promo-banner"><strong>Promo de hoy:</strong> ${esc(b.promoToday.replace(/^\s*hoy\s*[:,-]?\s*/i, ''))}</p>` : ''}
       <div class="detail-actions">
         ${wa ? `<a class="btn btn-primary" id="waBtn" href="${wa}" target="_blank" rel="noopener">
@@ -1290,11 +1313,18 @@ const categories = [
       </div>
       ${b.description ? `<p class="detail-desc">${esc(b.description)}</p>` : ''}
       <ul class="detail-facts">
-        ${b.schedule ? `<li>${icoClock}<span>${esc(b.schedule)}</span></li>` : ''}
+        ${days ? `<li>${icoClock}<details class="biz-hours"><summary>${esc(bx.schedule || scheduleText(bx.hours))}</summary><ul>${days}</ul>${bx.hours.note ? `<p>${esc(bx.hours.note)}</p>` : ''}</details></li>` : b.schedule ? `<li>${icoClock}<span>${esc(b.schedule)}</span></li>` : ''}
+        ${(bx.payments || []).length ? `<li>${icoTicket}<span>Pago: ${esc(bx.payments.map(paymentLabel).join(', '))}</span></li>` : ''}
         ${b.address ? `<li>${icoPin}<span>${esc(b.address)}</span></li>` : ''}
         ${phone ? `<li>${icoPhone}<a href="tel:${esc(phone)}" style="color:var(--link)">${esc(b.phone || '')}</a></li>` : ''}
-        ${safeUrl(b.menu) ? `<li>${icoLink}<a href="${safeUrl(b.menu)}" target="_blank" rel="noopener" style="color:var(--link)">Ver el menú</a></li>` : ''}
+        ${menuUrl ? `<li>${icoLink}<a href="${menuUrl}" target="_blank" rel="noopener" style="color:var(--link)">Ver el menú</a></li>` : ''}
+        ${ig ? `<li>${icoLink}<a href="${safeUrl(ig)}" target="_blank" rel="noopener" style="color:var(--link)">Instagram @${esc(bx.instagram)}</a></li>` : ''}
+        ${fb ? `<li>${icoLink}<a href="${safeUrl(fb)}" target="_blank" rel="noopener" style="color:var(--link)">Facebook</a></li>` : ''}
+        ${web ? `<li>${icoLink}<a href="${web}" target="_blank" rel="noopener" style="color:var(--link)">${esc(String(bx.website).replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''))}</a></li>` : ''}
       </ul>
+      ${(bx.amenities || []).length ? `<ul class="biz-amen">${bx.amenities.map((a: string) => `<li>${esc(amenityLabel(a))}</li>`).join('')}</ul>` : ''}
+      ${menuItems ? `<h3 class="section-title">Menú</h3>${menuItems}` : ''}
+      ${menuPhotos.length ? `<h3 class="section-title">Menú</h3><div class="gallery" data-lb-group>${menuPhotos.map((u: string, k: number) => `<a href="${u}" data-lb="grp" data-i="${k}"><img src="${u}" alt="Página ${k + 1} del menú" loading="lazy"></a>`).join('')}</div>` : ''}
       ${(couponsByBiz[b.id] || []).filter(couponOk).length ? `<h3 class="section-title">Cupones</h3>
         <ul class="coupons">${(couponsByBiz[b.id] || []).filter(couponOk).map((c) => {
           const mine = myRedemptions.has(c.id);
