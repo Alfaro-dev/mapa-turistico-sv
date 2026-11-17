@@ -41,7 +41,8 @@ export async function uploadImage(file: File, kind: PhotoKind, uid: string, opts
 
   const form = new FormData();
   form.append('file', pdf ? file : await cleanPhoto(file), file.name);
-  form.append('upload_preset', UPLOAD_PRESET);
+  // Los PDF van con su propio preset (mapa_sv_menus): solo acepta PDF y no los convierte a foto.
+  form.append('upload_preset', pdf ? 'mapa_sv_menus' : UPLOAD_PRESET);
   // Etiquetas para poder filtrar y moderar desde el panel de Cloudinary.
   form.append('tags', `${kind},uid_${uid}`);
 
