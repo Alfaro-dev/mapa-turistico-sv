@@ -27,7 +27,7 @@ const jsonLd = {
 ---
 <Layout title={placeTitle(p)} description={metaDesc} image={img} canonical={placeUrl(p.id)} type="place">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')}></script>
-  <SiteHeader id={`lp-${p.id}`} />
+  <SiteHeader id={`lp-${p.id}`} current="lugares" />
   <main class="lp" id="lp" data-id={p.id} data-name={p.name} data-lat={p.lat} data-lng={p.lng} set:html={renderPlace(p, all)}></main>
   <PlaceDialogs />
   <footer class="lp-foot">

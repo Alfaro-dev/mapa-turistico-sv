@@ -1,8 +1,15 @@
 ---
-// Cabecera de las páginas públicas (lugares e índice): marca, índice y mapa.
+// Barra de arriba de todas las páginas públicas: marca, secciones (Mapa, Lugares, Negocios) y la cuenta.
+// La cuenta es la misma que en el mapa: avatar con menú (perfil, negocio, admin, salir) o "Entrar".
+// La sección actual se marca con las dos plumas de la cola del torogoz (turquesa y canela).
 import GozMark from './GozMark.astro';
-interface Props { id: string; current?: 'lugares' }
+interface Props { id: string; current?: 'mapa' | 'lugares' | 'negocios' }
 const { id, current } = Astro.props;
+const links = [
+  { key: 'mapa', href: '/', label: 'Mapa' },
+  { key: 'lugares', href: '/lugares', label: 'Lugares' },
+  { key: 'negocios', href: '/negocios', label: 'Negocios' },
+];
 ---
 <header class="sh">
   <a href="/" class="sh-brand" aria-label="Goz, ir al mapa">
@@ -10,20 +17,120 @@ const { id, current } = Astro.props;
     <span class="sh-word">Goz</span>
   </a>
   <nav class="sh-nav" aria-label="Secciones">
-    <a href="/lugares" aria-current={current === 'lugares' ? 'page' : undefined}>Lugares</a>
-    <a href="/" class="sh-map">Ver el mapa</a>
+    {links.map((l) => <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>{l.label}</a>)}
   </nav>
+  <div class="sh-account" data-sh-account>
+    <button type="button" class="sh-acc-btn" aria-haspopup="menu" aria-expanded="false" aria-label="Entrar con Google" data-sh-btn>
+      <span class="sh-avatar" aria-hidden="true" data-sh-avatar>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>
+      </span>
+      <span class="sh-acc-label" data-sh-label>Entrar</span>
+    </button>
+    <div class="sh-menu" role="menu" hidden data-sh-menu>
+      <p class="sh-menu-name" data-sh-name></p>
+      <a href="/perfil" role="menuitem" class="sh-item">Mi perfil e insignias</a>
+      <a href="/negocios" role="menuitem" class="sh-item">Tu negocio en Goz</a>
+      <a href="/admin" role="menuitem" class="sh-item" hidden data-sh-admin>Panel de administrador</a>
+      <button type="button" role="menuitem" class="sh-item" data-sh-logout>Salir</button>
+      <p class="sh-menu-legal"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a></p>
+    </div>
+  </div>
 </header>
+
 <style is:global>
-  .sh { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--line); padding: 10px max(16px, env(safe-area-inset-left)); }
-  .sh-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); text-decoration: none; }
+  .sh { position: sticky; top: 0; z-index: 900; display: flex; align-items: center; gap: 18px; background: var(--surface); border-bottom: 1px solid var(--line); padding: 8px max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left)); }
+  .sh-brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--ink); text-decoration: none; flex: none; border-radius: 22px; }
   .sh-mark { width: 34px; height: 34px; border-radius: 17px; background: var(--plumaje); display: flex; align-items: center; justify-content: center; }
   .sh-word { font-family: var(--font-display); font-weight: 800; font-size: 22px; }
-  .sh-nav { display: flex; gap: 6px; align-items: center; }
-  .sh-nav a { min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 20px; color: var(--ink); font-weight: 700; text-decoration: none; }
-  .sh-nav a:hover { background: var(--neblina); }
-  .sh-nav a[aria-current="page"] { box-shadow: inset 0 -3px 0 var(--plumaje); border-radius: 20px 20px 4px 4px; }
-  .sh-nav a:focus-visible, .sh-brand:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
-  .sh-nav .sh-map { background: var(--primary); color: #FFFFFF; }
-  .sh-nav .sh-map:hover { background: var(--turquesa); }
+  .sh-nav { display: flex; align-items: center; gap: 2px; flex: 1 1 auto; min-width: 0; }
+  .sh-nav a { position: relative; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 22px; color: var(--ink-2); font-weight: 700; font-size: 15px; text-decoration: none; white-space: nowrap; }
+  .sh-nav a:hover { background: var(--neblina); color: var(--ink); }
+  .sh-nav a[aria-current="page"] { color: var(--ink); font-weight: 800; }
+  /* Las dos plumas de la cola del torogoz marcan dónde estás. */
+  .sh-nav a[aria-current="page"]::before, .sh-nav a[aria-current="page"]::after { content: ''; position: absolute; bottom: 4px; width: 6px; height: 8px; border-radius: 50%; }
+  .sh-nav a[aria-current="page"]::before { left: calc(50% - 7px); background: var(--turquesa); }
+  .sh-nav a[aria-current="page"]::after { left: calc(50% + 1px); background: var(--canela); }
+  .sh-account { position: relative; flex: none; margin-left: auto; }
+  .sh-acc-btn { height: 44px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); color: var(--ink); display: flex; align-items: center; gap: 8px; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+  .sh-acc-btn:hover, .sh-acc-btn[aria-expanded="true"] { border-color: var(--turquesa); }
+  .sh-avatar { width: 32px; height: 32px; border-radius: 16px; background: var(--neblina); color: var(--turquesa); display: flex; align-items: center; justify-content: center; overflow: hidden; flex: none; font-family: var(--font-display); font-weight: 800; font-size: 15px; }
+  .sh-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .sh-menu { position: absolute; right: 0; top: 52px; min-width: 232px; padding: 8px; border-radius: 16px; background: var(--surface); box-shadow: 0 8px 24px rgba(20,48,47,0.22); display: flex; flex-direction: column; }
+  .sh-menu[hidden] { display: none; }
+  .sh-menu-name { margin: 4px 10px 8px; font-size: 14px; font-weight: 800; color: var(--ink); }
+  .sh-menu-name:empty { display: none; }
+  .sh-item { display: flex; align-items: center; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 700; text-decoration: none; text-align: left; cursor: pointer; }
+  .sh-item:hover { background: var(--neblina); }
+  .sh-item[hidden] { display: none; }
+  .sh-menu-legal { margin: 6px 0 0; padding: 8px 10px 2px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .sh-menu-legal a { color: var(--turquesa); font-weight: 700; }
+  .sh a:focus-visible, .sh button:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+  @media (max-width: 640px) {
+    .sh { gap: 6px; }
+    /* Con sesión, en el celular queda solo el avatar; sin sesión se lee "Entrar". */
+    .sh-acc-btn.is-in .sh-acc-label { display: none; }
+    .sh-acc-btn.is-in { width: 44px; padding: 0; justify-content: center; }
+    .sh-acc-btn:not(.is-in) { padding-right: 12px; }
+    .sh-nav a { padding: 0 9px; }
+  }
+  @media (max-width: 430px) {
+    .sh-word { display: none; }
+    .sh-acc-btn:not(.is-in) .sh-acc-label { display: none; }
+    .sh-acc-btn:not(.is-in) { width: 44px; padding: 0; justify-content: center; }
+    .sh-nav { gap: 0; }
+    .sh-nav a { padding: 0 8px; font-size: 14px; }
+  }
 </style>
+
+<script>
+  import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+  import { doc, getDoc } from 'firebase/firestore';
+  import { auth, db, googleProvider } from '../lib/firebase';
+
+  const root = document.querySelector('[data-sh-account]') as HTMLElement | null;
+  if (root) {
+    const q = <T extends HTMLElement>(s: string) => root.querySelector(s) as T;
+    const btn = q<HTMLButtonElement>('[data-sh-btn]'), menu = q<HTMLElement>('[data-sh-menu]');
+    const personSvg = q<HTMLElement>('[data-sh-avatar]').innerHTML;
+    let user: any = null;
+    const setOpen = (open: boolean, focus = false) => {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      if (open && focus) (menu.querySelector('.sh-item:not([hidden])') as HTMLElement | null)?.focus();
+    };
+    btn.addEventListener('click', async () => {
+      if (!user) { try { await signInWithPopup(auth, googleProvider); } catch { /* la persona cerró la ventana */ } return; }
+      setOpen(menu.hidden, true);
+    });
+    document.addEventListener('click', (e) => { if (!root.contains(e.target as Node)) setOpen(false); });
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); }
+      if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !menu.hidden) {
+        e.preventDefault();
+        const items = [...menu.querySelectorAll('.sh-item:not([hidden])')] as HTMLElement[];
+        const i = items.indexOf(document.activeElement as HTMLElement);
+        items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+      }
+    });
+    q<HTMLButtonElement>('[data-sh-logout]').addEventListener('click', async () => { setOpen(false); await signOut(auth); });
+
+    onAuthStateChanged(auth, async (u) => {
+      user = u;
+      const first = (u?.displayName || '').split(' ')[0] || 'Mi cuenta';
+      const pic = u?.photoURL && /^https:\/\//.test(u.photoURL) ? u.photoURL : '';
+      const av = q<HTMLElement>('[data-sh-avatar]');
+      if (!u) av.innerHTML = personSvg;
+      else if (pic) { av.innerHTML = ''; const img = document.createElement('img'); img.src = pic; img.alt = ''; img.referrerPolicy = 'no-referrer'; av.appendChild(img); }
+      else av.textContent = first.charAt(0).toUpperCase();
+      q<HTMLElement>('[data-sh-label]').textContent = u ? first : 'Entrar';
+      btn.classList.toggle('is-in', !!u);
+      btn.setAttribute('aria-label', u ? `Cuenta de ${u.displayName || 'usuario'}` : 'Entrar con Google');
+      btn.setAttribute('aria-haspopup', u ? 'menu' : 'false');
+      q<HTMLElement>('[data-sh-name]').textContent = u ? (u.displayName || '') : '';
+      const admin = q<HTMLElement>('[data-sh-admin]');
+      admin.hidden = true;
+      if (!u) { setOpen(false); return; }
+      try { admin.hidden = !(await getDoc(doc(db, 'admins', u.uid))).exists(); } catch { /* no es admin */ }
+    });
+  }
+</script>
