@@ -275,6 +275,11 @@ const categories = [
   .detail-actions { display: flex; gap: 8px; margin: 16px 0 0; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
   .detail-actions .btn { flex: 1; }
   .detail-actions .btn-icon { flex: 0 0 48px; width: 48px; min-width: 48px; }
+  /* En celulares angostos los tres botones caben en una fila: textos un poco más compactos y sin el ícono de ruta. */
+  @media (max-width: 420px) {
+    .detail-actions .btn:not(.btn-icon) { flex: 1 1 auto; min-width: 0; padding: 0 12px; font-size: 14px; }
+    .detail-actions .btn:not(.btn-icon) svg { display: none; }
+  }
   .detail-desc { margin: 16px 0 0; font-size: 15px; line-height: 1.6; color: var(--ink-2); }
   .detail-facts { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: var(--ink-2); }
   .detail-facts li { display: flex; gap: 10px; align-items: center; }
