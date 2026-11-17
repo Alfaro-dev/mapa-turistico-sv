@@ -12,7 +12,7 @@ const img = places.find((p) => p.cover)?.cover;
 const thumb = (u: string) => (u.includes('res.cloudinary.com/') ? u.replace('/upload/', '/upload/c_fill,g_auto,w_320,h_220,q_auto,f_auto/') : u);
 ---
 <Layout title="Lugares turísticos de El Salvador · Goz" description={`${places.length} playas, volcanes, lagos, pueblos y miradores de El Salvador, con cómo llegar y reseñas de quienes ya fueron.`} image={img ? shareImage(img) : ''} canonical="/lugares">
-  <SiteHeader id="lugares" />
+  <SiteHeader id="lugares" current="lugares" />
   <main class="lx">
     <h1 class="lx-h1">Lugares turísticos de El Salvador</h1>
     <p class="lx-lead">{places.length} lugares para conocer, de la playa al volcán. Tocá uno para ver cómo llegar, el horario y lo que dicen quienes ya fueron.</p>
