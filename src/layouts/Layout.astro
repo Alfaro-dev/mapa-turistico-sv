@@ -13,6 +13,7 @@ interface Props {
   canonical?: string;  // ruta propia de la página, ej. /lugar/playa-el-tunco
   noindex?: boolean;   // páginas privadas (perfil, admin) no salen en Google
   type?: string;
+  cluster?: boolean;   // el mapa agrupa los puntos cercanos (Leaflet.markercluster)
 }
 
 const SITE = 'https://mapa.carlosalfaro.dev';
@@ -23,6 +24,7 @@ const {
   canonical,
   noindex = false,
   type = 'website',
+  cluster = false,
 } = Astro.props;
 const url = canonical ? new URL(canonical, SITE).href : new URL(Astro.url.pathname, SITE).href;
 ---
@@ -56,6 +58,7 @@ const url = canonical ? new URL(canonical, SITE).href : new URL(Astro.url.pathna
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {cluster && <script is:inline src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>}
   </head>
   <body>
     <slot />
