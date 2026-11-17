@@ -28,16 +28,19 @@ async function cleanPhoto(file: File): Promise<Blob> {
 }
 
 /** Sube una imagen y devuelve su URL https. Lanza Error con un mensaje en español. */
-export async function uploadImage(file: File, kind: PhotoKind, uid: string): Promise<string> {
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Ese archivo no es una foto. Elegí una imagen JPG, PNG o HEIC.');
+// El menú de un negocio también puede ser un PDF (hasta 10 MB).
+export const isPdf = (url: string) => /\.pdf($|\?)/i.test(url || '');
+export async function uploadImage(file: File, kind: PhotoKind, uid: string, opts: { pdf?: boolean } = {}): Promise<string> {
+  const pdf = !!opts.pdf && file.type === 'application/pdf';
+  if (!file.type.startsWith('image/') && !pdf) {
+    throw new Error(opts.pdf ? 'Ese archivo no es una foto ni un PDF. Elegí una imagen o un PDF.' : 'Ese archivo no es una foto. Elegí una imagen JPG, PNG o HEIC.');
   }
-  if (file.size > MAX_BYTES) {
-    throw new Error('La foto pesa más de 5 MB. Elegí otra o tomala con menos resolución.');
+  if (file.size > (pdf ? 10 * 1024 * 1024 : MAX_BYTES)) {
+    throw new Error(pdf ? 'El PDF pesa más de 10 MB. Probá con uno más liviano o subí fotos del menú.' : 'La foto pesa más de 5 MB. Elegí otra o tomala con menos resolución.');
   }
 
   const form = new FormData();
-  form.append('file', await cleanPhoto(file), file.name);
+  form.append('file', pdf ? file : await cleanPhoto(file), file.name);
   form.append('upload_preset', UPLOAD_PRESET);
   // Etiquetas para poder filtrar y moderar desde el panel de Cloudinary.
   form.append('tags', `${kind},uid_${uid}`);

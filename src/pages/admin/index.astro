@@ -1062,8 +1062,11 @@ const categories = [
       b.menuMode === 'aqui' && `Menú armado: ${(b.menuSections || []).reduce((n: number, sec: any) => n + (sec.items || []).length, 0)} cosas`,
       b.menuMode === 'fotos' && `Menú en ${(b.menuPhotos || []).length} fotos`,
     ].filter(Boolean) as string[];
-    const menuPh = (b.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);
-    return (bits.length ? `<p class="ad-row-meta">${bits.map((x) => esc(x)).join(' · ')}</p>` : '') + (menuPh.length ? `<p class="ad-field-label" style="margin-top:8px">Fotos del menú</p>${galThumbs(menuPh, `Menú de ${b.name}`)}` : '');
+    const files = (b.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);
+    const pdfs = files.filter((u: string) => /\.pdf($|\?)/i.test(u)), menuPh = files.filter((u: string) => !/\.pdf($|\?)/i.test(u));
+    return (bits.length ? `<p class="ad-row-meta">${bits.map((x) => esc(x)).join(' · ')}</p>` : '')
+      + (pdfs.length ? `<p class="ad-row-meta">${pdfs.map((u: string, i: number) => `<a href="${u}" target="_blank" rel="noopener">Menú en PDF${pdfs.length > 1 ? ` ${i + 1}` : ''}</a>`).join(' · ')}</p>` : '')
+      + (menuPh.length ? `<p class="ad-field-label" style="margin-top:8px">Fotos del menú</p>${galThumbs(menuPh, `Menú de ${b.name}`)}` : '');
   }
   // Revisiones automáticas: si alguna falla, no se puede aprobar.
   function autoChecks(b: any) {

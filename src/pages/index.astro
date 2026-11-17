@@ -1293,7 +1293,8 @@ const categories = [
     const ig = bx.instagram ? igUrl(bx.instagram) : '', fb = bx.facebook ? fbUrl(bx.facebook) : '', web = safeUrl(bx.website || '');
     const days = bx.hours?.mode === 'dias' ? DAYS.map((d) => { const h = bx.hours.days?.[d.id]; return `<li><span>${d.label}</span><span>${h?.open ? `${hour12(h.from)} a ${hour12(h.to)}` : 'Cerrado'}</span></li>`; }).join('') : '';
     const menuItems = (bx.menuSections || []).map((sec: any) => `${sec.name ? `<p class="biz-menu-sec">${esc(sec.name)}</p>` : ''}<ul class="biz-menu">${(sec.items || []).map((it: any) => `<li><span><b>${esc(it.name)}</b>${it.desc ? `<small>${esc(it.desc)}</small>` : ''}</span><span>${Number(it.price) ? `$${Number(it.price).toFixed(2)}` : ''}</span></li>`).join('')}</ul>`).join('');
-    const menuPhotos = (bx.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);
+    const menuFiles = (bx.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);
+    const menuPdfs = menuFiles.filter((u: string) => /\.pdf($|\?)/i.test(u)), menuPhotos = menuFiles.filter((u: string) => !/\.pdf($|\?)/i.test(u));
     const menuUrl = safeUrl(bx.menuUrl || (/^https?:\/\//.test(b.menu || '') ? b.menu : ''));
     $('detailView').innerHTML = `
       ${from ? `<button type="button" class="back-btn" id="backBtn">
@@ -1317,6 +1318,7 @@ const categories = [
         ${(bx.payments || []).length ? `<li>${icoTicket}<span>Pago: ${esc(bx.payments.map(paymentLabel).join(', '))}</span></li>` : ''}
         ${b.address ? `<li>${icoPin}<span>${esc(b.address)}</span></li>` : ''}
         ${phone ? `<li>${icoPhone}<a href="tel:${esc(phone)}" style="color:var(--link)">${esc(b.phone || '')}</a></li>` : ''}
+        ${menuPdfs.map((u: string, k: number) => `<li>${icoLink}<a href="${u}" target="_blank" rel="noopener" style="color:var(--link)">Ver el menú en PDF${menuPdfs.length > 1 ? ` (${k + 1})` : ''}</a></li>`).join('')}
         ${menuUrl ? `<li>${icoLink}<a href="${menuUrl}" target="_blank" rel="noopener" style="color:var(--link)">Ver el menú</a></li>` : ''}
         ${ig ? `<li>${icoLink}<a href="${safeUrl(ig)}" target="_blank" rel="noopener" style="color:var(--link)">Instagram @${esc(bx.instagram)}</a></li>` : ''}
         ${fb ? `<li>${icoLink}<a href="${safeUrl(fb)}" target="_blank" rel="noopener" style="color:var(--link)">Facebook</a></li>` : ''}

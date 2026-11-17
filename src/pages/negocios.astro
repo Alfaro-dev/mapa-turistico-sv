@@ -144,7 +144,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
             <div class="wz-seg" role="radiogroup" aria-labelledby="lblMenu">
               <label><input type="radio" name="mmode" value="" checked /><span>Sin menú</span></label>
               <label><input type="radio" name="mmode" value="link" /><span>Enlace</span></label>
-              <label><input type="radio" name="mmode" value="fotos" /><span>Fotos del menú</span></label>
+              <label><input type="radio" name="mmode" value="fotos" /><span>PDF o fotos</span></label>
               <label><input type="radio" name="mmode" value="aqui" /><span>Armarlo aquí</span></label>
             </div>
           </div>
@@ -152,8 +152,8 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
           <div class="ng-field" id="fMenuPhotosWrap" hidden>
             <label class="dropzone is-compact" id="fMenuDrop">
               <span class="dz-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"></path><path d="M9 9h6M9 13h6M9 17h4"></path></svg></span>
-              <span class="dz-text"><strong>Subí fotos del menú</strong><span>Una por página, hasta 6</span></span>
-              <input type="file" id="fMenuFiles" accept="image/*" multiple class="sr-only" />
+              <span class="dz-text"><strong>Subí el menú</strong><span>En PDF o en fotos, una por página, hasta 6</span></span>
+              <input type="file" id="fMenuFiles" accept="image/*,application/pdf" multiple class="sr-only" />
             </label>
             <p class="ng-help" id="fMenuPhotoStatus" aria-live="polite"></p>
             <ul id="fMenuPhotos" class="ng-photos"></ul>
@@ -363,7 +363,18 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   @media (prefers-reduced-motion: reduce) { .ng-toast { transition: none; } }
 
   /* ---------- Formulario por pasos ---------- */
-  .wz-head { display: flex; flex-direction: column; gap: 8px; }
+  /* El formulario es más angosto y con menos aire que el resto de la página. */
+  #ngForm { max-width: 760px; margin: 0 auto; width: 100%; gap: 12px; }
+  #ngForm .ng-h1 { font-size: 30px; }
+  #ngForm .ng-card { padding: 18px 20px; gap: 12px; }
+  #ngForm .ng-card > legend { margin-bottom: 0; }
+  #ngForm .ng-field { gap: 4px; }
+  #ngForm .ng-label { font-size: 14px; }
+  #ngForm .ng-row { gap: 12px; }
+  #ngForm .ng-chips { gap: 6px; }
+  #ngForm .ng-chip span { min-height: 40px; padding: 0 14px; }
+  #ngForm .ng-map { height: 260px; }
+  .wz-head { display: flex; flex-direction: column; gap: 6px; }
   .wz-where { margin: 0; font-size: 15px; font-weight: 700; color: var(--muted); }
   .wz-bar { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
   .wz-bar button { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0; border: 0; background: none; font: inherit; color: var(--muted); text-align: left; cursor: pointer; }
@@ -375,7 +386,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   .wz-bar button:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 3px; border-radius: 4px; }
   .wz-dot { display: none; }
   .wz-bar-txt { font-size: 13px; font-weight: 700; line-height: 1.25; }
-  .wz { display: flex; flex-direction: column; gap: 18px; }
+  .wz { display: flex; flex-direction: column; gap: 12px; }
   .wz-step[hidden] { display: none; }
   .wz-step legend:focus { outline: none; }
   .wz-foot { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--neblina) 75%, transparent); }
@@ -384,11 +395,13 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   .wz-saved:empty { display: none; }
   .wz-foot .ng-btn { min-width: 132px; }
 
-  .wz-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+  /* Grupos: píldoras del mismo alto, ícono a la izquierda y el nombre en una sola línea. */
+  .wz-groups { display: flex; flex-wrap: wrap; gap: 8px; }
   .wz-group { position: relative; }
   .wz-group input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-  .wz-group span { min-height: 92px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 14px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface); color: var(--turquesa); }
-  .wz-group b { color: var(--ink); font-size: 15px; line-height: 1.25; }
+  .wz-group span { height: 46px; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px 0 12px; border-radius: 23px; border: 1.5px solid var(--line); background: var(--surface); color: var(--turquesa); white-space: nowrap; }
+  .wz-group svg { width: 20px; height: 20px; flex: none; }
+  .wz-group b { color: var(--ink); font-size: 15px; font-weight: 800; }
   .wz-group input:checked + span { border-color: var(--rama); background: var(--rama); color: var(--plumaje); }
   .wz-group input:checked + span b { color: #FFFFFF; }
   .wz-group input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 2px; }
@@ -438,6 +451,8 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   .wz-level input:checked + span b { color: var(--plumaje); }
   .wz-level input:focus-visible + span { outline: 3px solid var(--turquesa); outline-offset: 2px; }
 
+  .wz-pdf { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; aspect-ratio: 4 / 3; border-radius: 12px; background: #F6E3D6; color: var(--canela-ink); font-family: var(--font-display); font-weight: 800; font-size: 22px; text-decoration: none; }
+  .wz-pdf small { font-family: var(--font-body, inherit); font-size: 12px; font-weight: 700; }
   .wz-menu { display: flex; flex-direction: column; gap: 14px; }
   .wz-sec { padding: 14px; border-radius: 16px; background: var(--neblina); display: flex; flex-direction: column; gap: 10px; }
   .wz-sec-head { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
@@ -479,7 +494,6 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     .wz-item .wz-x { grid-row: 1; grid-column: 3; }
   }
   @media (max-width: 560px) {
-    .wz-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .wz-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .wz-foot .ng-btn { min-width: 0; flex: 1 1 0; }
     .wz-times .ng-input { width: 118px; }
@@ -492,7 +506,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   import { collection, getDocs, getDoc, addDoc, doc, updateDoc, setDoc, query, where, serverTimestamp, documentId } from 'firebase/firestore';
   import { db, auth, googleProvider } from '../lib/firebase';
   import { esc, safeUrl, num } from '../lib/escape';
-  import { uploadImage } from '../lib/cloudinary';
+  import { uploadImage, isPdf } from '../lib/cloudinary';
   import { datePicker, dayText } from '../lib/datePicker';
   import { LEGAL } from '../lib/legal';
   import { GROUPS, typeOf, groupOf, bizKind, amenitiesFor, amenityLabel, PAYMENTS, paymentLabel, PRICE_LEVELS, priceSummary, DAYS, emptyHours, scheduleText, openNow, phoneDigits, phoneFormat, phoneValid, mobileValid, waUrl, igHandle, igUrl, fbUrl, type Hours } from '../lib/bizData';
@@ -957,7 +971,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     saveDraft();
   });
   const photoList = (list: string[], kind: 'biz' | 'menu') => list.map((u, i) => `<li class="ng-photo">
-      <img src="${safeUrl(u)}" alt="${kind === 'menu' ? `Página ${i + 1} del menú` : `Foto ${i + 1} del negocio`}">
+      ${isPdf(u) ? `<a class="wz-pdf" href="${safeUrl(u)}" target="_blank" rel="noopener">PDF<small>Ver el menú</small></a>` : `<img src="${safeUrl(u)}" alt="${kind === 'menu' ? `Página ${i + 1} del menú` : `Foto ${i + 1} del negocio`}">`}
       ${kind === 'biz' && i === 0 ? '<span class="ng-photo-tag">Portada</span>' : ''}
       <span class="ng-photo-acts">${kind === 'biz' && i > 0 ? `<button type="button" data-cover="${i}">Portada</button>` : ''}<button type="button" data-rm="${i}" aria-label="Quitar la foto ${i + 1}">Quitar</button></span>
     </li>`).join('');
@@ -975,13 +989,13 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   }
   photoActs('fPhotos', () => photos, renderPhotos);
   photoActs('fMenuPhotos', () => menuPhotos, renderMenuPhotos);
-  async function upload(files: FileList | File[], list: string[], max: number, statusId: string, render: () => void) {
-    const pick = [...files].filter((f) => f.type.startsWith('image/')).slice(0, Math.max(0, max - list.length));
-    if (!pick.length) { $(statusId).textContent = list.length >= max ? `Ya tenés ${max}, que es el máximo.` : 'Elegí fotos (JPG, PNG o HEIC).'; return; }
+  async function upload(files: FileList | File[], list: string[], max: number, statusId: string, render: () => void, pdf = false) {
+    const pick = [...files].filter((f) => f.type.startsWith('image/') || (pdf && f.type === 'application/pdf')).slice(0, Math.max(0, max - list.length));
+    if (!pick.length) { $(statusId).textContent = list.length >= max ? `Ya tenés ${max}, que es el máximo.` : pdf ? 'Elegí un PDF o fotos (JPG, PNG o HEIC).' : 'Elegí fotos (JPG, PNG o HEIC).'; return; }
     uploading += pick.length; $(statusId).textContent = `Subiendo ${pick.length === 1 ? 'la foto' : `${pick.length} fotos`}…`;
     let failed = '';
     await Promise.all(pick.map(async (f) => {
-      try { list.push(await uploadImage(f, 'businesses', user.uid)); render(); }
+      try { list.push(await uploadImage(f, 'businesses', user.uid, { pdf })); render(); }
       catch (err) { failed = (err as Error).message; }
       finally { uploading--; }
     }));
@@ -996,7 +1010,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     drop.addEventListener('drop', (e: DragEvent) => { e.preventDefault(); if (e.dataTransfer?.files) onFiles(e.dataTransfer.files); });
   }
   dropzone('fDrop', 'fFiles', (f) => upload(f, photos, 10, 'fPhotoStatus', renderPhotos));
-  dropzone('fMenuDrop', 'fMenuFiles', (f) => upload(f, menuPhotos, 6, 'fMenuPhotoStatus', renderMenuPhotos));
+  dropzone('fMenuDrop', 'fMenuFiles', (f) => upload(f, menuPhotos, 6, 'fMenuPhotoStatus', renderMenuPhotos, true));
 
   // ----- Todo junto -----
   function formData() {
@@ -1057,7 +1071,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     if (n === 5) {
       if (!priceLevel) return fail('Elegí qué tan caro es, de $ a $$$$. Sirve para que los turistas comparen.', 'fLevels');
       if (menuMode() === 'link' && !/^https?:\/\/\S+\.\S+/.test(f.menuUrl)) return fail('Pegá el enlace completo del menú, que empiece con https://', 'fMenuUrl');
-      if (menuMode() === 'fotos' && !menuPhotos.length) return fail('Subí al menos una foto del menú, o elegí "Sin menú".', 'fMenuFiles');
+      if (menuMode() === 'fotos' && !menuPhotos.length) return fail('Subí el menú en PDF o en fotos, o elegí "Sin menú".', 'fMenuFiles');
       if (menuMode() === 'aqui' && !f.menuSections.length) return fail('Agregá al menos una cosa al menú con su nombre, o elegí "Sin menú".');
     }
     if (n === 6) {
@@ -1089,7 +1103,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
         ${f.instagram ? `<li><b>Instagram</b>@${esc(f.instagram)}</li>` : ''}
       </ul>
       ${amen.length ? `<ul class="pv-chips">${amen.map((a) => `<li>${esc(a)}</li>`).join('')}</ul>` : ''}
-      ${items.length ? `<p class="pv-sub">Menú</p><ul class="pv-menu">${items.map((i) => `<li><span>${esc(i.name)}</span><b>${i.price ? `$${i.price.toFixed(2)}` : ''}</b></li>`).join('')}</ul>` : f.menuMode === 'link' ? '<p class="pv-sub">Ver el menú (enlace)</p>' : f.menuMode === 'fotos' ? `<p class="pv-sub">Menú en ${menuPhotos.length} ${menuPhotos.length === 1 ? 'foto' : 'fotos'}</p>` : ''}
+      ${items.length ? `<p class="pv-sub">Menú</p><ul class="pv-menu">${items.map((i) => `<li><span>${esc(i.name)}</span><b>${i.price ? `$${i.price.toFixed(2)}` : ''}</b></li>`).join('')}</ul>` : f.menuMode === 'link' ? '<p class="pv-sub">Ver el menú (enlace)</p>' : f.menuMode === 'fotos' ? `<p class="pv-sub">Menú en ${menuPhotos.length} ${menuPhotos.length === 1 ? 'archivo' : 'archivos'}</p>` : ''}
     </article>`;
     $('fChecks').innerHTML = checks(f).map((c) => `<li class="${c.ok ? 'is-ok' : ''}">${esc(c.label)}<span class="sr-only">${c.ok ? ': listo' : ': falta'}</span></li>`).join('');
     $('fConsentWrap').hidden = consentOk;
