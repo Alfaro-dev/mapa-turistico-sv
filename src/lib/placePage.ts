@@ -1,5 +1,6 @@
 // La página de un lugar en el navegador: lee los datos en vivo y deja escribir reseñas, subir y votar fotos,
 // y reportar, con los mismos diálogos que el mapa.
+import { reportError } from './telemetry';
 import { loadPlaceLive, renderPlace, placeTitle, wireShare, type SitePlace } from './placeData';
 import { acts, initPlaceActions, openReview, openReport, votePhoto, uploadPlacePhoto, readyToPost } from './placeActions';
 import { enableGalleries } from './gallery';
@@ -30,7 +31,11 @@ export function startPlacePage(root: HTMLElement, placeId: string, opts: { onMis
       if (html !== root.innerHTML) root.innerHTML = html;
       document.title = placeTitle(live.place);
       paint();
-    } catch { if (first && !place) opts.onMissing?.(); }
+    } catch (err) {
+      console.error('No se pudo mostrar el lugar:', err);
+      reportError(`Página del lugar: ${(err as Error)?.message || err}`, 'lugar');
+      if (first && !place) opts.onMissing?.();
+    }
   }
 
   // Si todavía no llegaron los datos en vivo, se usan los que ya trae la página.
