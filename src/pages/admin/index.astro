@@ -1124,7 +1124,7 @@ const categories = [
       b.instagram && `Instagram @${b.instagram}`,
       b.facebook && `Facebook ${b.facebook}`,
       b.website && b.website,
-      b.menuMode === 'aqui' && `Menú armado: ${(b.menuSections || []).reduce((n: number, sec: any) => n + (sec.items || []).length, 0)} cosas`,
+      b.menuMode === 'aqui' && ((n: number) => `Menú armado: ${n} ${n === 1 ? 'producto' : 'productos'}`)((b.menuSections || []).reduce((n: number, sec: any) => n + (sec.items || []).length, 0)),
       b.menuMode === 'fotos' && `Menú en ${(b.menuPhotos || []).length} ${(b.menuPhotos || []).length === 1 ? 'archivo' : 'archivos'}`,
     ].filter(Boolean) as string[];
     const files = (b.menuPhotos || []).map((u: string) => safeUrl(u)).filter(Boolean);

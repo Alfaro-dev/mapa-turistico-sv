@@ -62,6 +62,7 @@ export function startPlacePage(root: HTMLElement, placeId: string, opts: { onMis
     if (v) {
       const g = place?.gallery.find((x) => x.id === v.dataset.vote);
       if (!g) return;
+      if (acts.voted.has(g.id)) { status('Ya votaste por esta foto. Cada persona da un voto por foto.'); return; }
       v.disabled = true;
       const ok = await votePhoto({ id: g.id, placeId: p.id, url: g.url, votes: g.votes });
       v.disabled = false;

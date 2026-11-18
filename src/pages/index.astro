@@ -1418,6 +1418,7 @@ const categories = [
   async function votePhoto(photoId: string) {
     const ph = Object.values(photosByPlace).flat().find((x) => x.id === photoId);
     if (!ph) return;
+    const already = acts.voted.has(ph.id);
     const ok = await votePhotoShared(ph as any);
     if (ok === null) return;
     if (ok) sortPhotos(photosByPlace[ph.placeId]);
@@ -1425,7 +1426,7 @@ const categories = [
     const sp = allPlaces.find((x) => x.id === ph.placeId);
     if (sp && selectedId === sp.id) {
       renderDetail(sp);
-      if (!ok && $('photoStatus')) $('photoStatus').textContent = 'No se pudo contar tu voto. Puede que ya hayás votado por esta foto.';
+      if (!ok && $('photoStatus')) $('photoStatus').textContent = already ? 'Ya votaste por esta foto. Cada persona da un voto por foto.' : 'No se pudo contar tu voto. Revisá tu conexión e intentá otra vez.';
     }
   }
 
