@@ -3,6 +3,5 @@ Allow: /
 Disallow: /admin
 Disallow: /perfil
 Disallow: /insignias
-Disallow: /app-prueba
 
 Sitemap: https://mapa.carlosalfaro.dev/sitemap.xml
