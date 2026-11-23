@@ -73,15 +73,13 @@ export async function list(col: string) {
 const VAGUE = /^(todo el d[ií]a|de d[ií]a|abierto todo el d[ií]a|todos los d[ií]as|abierto|consult[aá].*|var[ií]a.*|n\/a|-)$/i;
 export const specific = (v?: string) => !!v && !VAGUE.test(v.trim());
 export const priceText = (v: string) => /^gratis$/i.test(v) ? 'Entrada gratis' : /^con costo$/i.test(v) ? 'Entrada con costo' : v;
-// Los lugares de prueba no se publican como páginas.
-const isDemo = (p: any) => p.demo === true || /^demo-/.test(p.id) || /\(prueba\)/i.test(p.name || '');
 
 
 // Arma los lugares con su portada, nota y reseñas recientes.
 export function buildPlaces(places: any[], photos: any[], reviews: any[]): SitePlace[] {
-  return places.filter((p) => !isDemo(p) && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))).map((p) => {
-      const ph = photos.filter((x) => x.placeId === p.id && x.url && !x.demo).sort((a, b) => (b.votes || 0) - (a.votes || 0));
-      const rv = reviews.filter((x) => x.placeId === p.id && !x.demo);
+  return places.filter((p) => Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lng))).map((p) => {
+      const ph = photos.filter((x) => x.placeId === p.id && x.url).sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      const rv = reviews.filter((x) => x.placeId === p.id);
       const rated = rv.filter((x) => Number(x.rating) > 0);
       const cover = (ph[0]?.votes > 0 ? ph[0].url : '') || (p.photos || [])[0] || ph[0]?.url || '';
       return {

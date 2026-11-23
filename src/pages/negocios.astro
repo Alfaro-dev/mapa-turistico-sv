@@ -512,7 +512,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
       getDoc(doc(db, 'users', user.uid)).catch(() => null),
     ]);
     mine = bs.sort((a: any, b: any) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-    if (ps) places = (ps as any[]).filter((p) => !p.demo && !/^demo-/.test(p.id) && Number.isFinite(Number(p.lat))).map((p) => ({ ...p, lat: Number(p.lat), lng: Number(p.lng) }))
+    if (ps) places = (ps as any[]).filter((p) => Number.isFinite(Number(p.lat))).map((p) => ({ ...p, lat: Number(p.lat), lng: Number(p.lng) }))
       .sort((a, b) => String(a.department || '').localeCompare(String(b.department || ''), 'es') || String(a.name).localeCompare(String(b.name), 'es'));
     consentOk = (us as any)?.data?.()?.privacy?.version === LEGAL.updated;
     coupons = {};
