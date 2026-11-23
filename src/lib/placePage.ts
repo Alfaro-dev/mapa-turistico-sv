@@ -4,6 +4,8 @@ import { reportError } from './telemetry';
 import { loadPlaceLive, renderPlace, placeTitle, wireShare, type SitePlace } from './placeData';
 import { acts, initPlaceActions, openReview, openReport, votePhoto, uploadPlacePhoto, readyToPost } from './placeActions';
 import { enableGalleries } from './gallery';
+import { enableCarousels } from './carousel';
+import '../styles/carousel.css';
 
 export function startPlacePage(root: HTMLElement, placeId: string, opts: { onMissing?: () => void } = {}) {
   let place: SitePlace | null = null;
@@ -29,6 +31,7 @@ export function startPlacePage(root: HTMLElement, placeId: string, opts: { onMis
       place = live.place;
       const html = renderPlace(live.place, live.all);
       if (html !== root.innerHTML) root.innerHTML = html;
+      enableCarousels(root);
       document.title = placeTitle(live.place);
       paint();
     } catch (err) {
@@ -76,6 +79,7 @@ export function startPlacePage(root: HTMLElement, placeId: string, opts: { onMis
 
   wireShare(root);
   enableGalleries(root);
+  enableCarousels(root);
   initPlaceActions({ onReview: () => refresh(), onUser: () => paint() });
   refresh(true);
 }

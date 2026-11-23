@@ -1,5 +1,6 @@
 // Datos de lugares que sirven igual al compilar y en el navegador: lectura de Firestore por REST y formato.
 // Firestore se lee sin clave: las reglas dejan leer lugares, reseñas y fotos a cualquiera.
+import { carouselHtml } from './carousel';
 import { scheduleText, openNow, entryText, accessLines, visitFacts, placeAmenityLabels } from './placeInfo';
 export const SITE = 'https://mapa.carlosalfaro.dev';
 const BASE = 'https://firestore.googleapis.com/v1/projects/mapsv-1776175535/databases/(default)/documents';
@@ -37,7 +38,7 @@ export interface SitePlace {
   description: string; municipality: string; department: string; schedule: string; price: string; website: string;
   recommendations: string[]; photos: string[]; visitCount: number;
   hours: any; entry: any; access: any; difficulty: string; duration: string; seasons: string[]; bestTimes: string[]; amenities: string[];
-  cover: string; rating: number; reviewCount: number; reviews: SiteReview[]; photoCount: number; gallery: SitePhoto[];
+  cover: string; ownPhotos: string[]; rating: number; reviewCount: number; reviews: SiteReview[]; photoCount: number; gallery: SitePhoto[];
 }
 // Foto de la galería: las de turistas (se votan) y después las del lugar.
 export interface SitePhoto { id: string; url: string; votes: number; userId: string; userName: string }
@@ -81,7 +82,9 @@ export function buildPlaces(places: any[], photos: any[], reviews: any[]): SiteP
       const ph = photos.filter((x) => x.placeId === p.id && x.url).sort((a, b) => (b.votes || 0) - (a.votes || 0));
       const rv = reviews.filter((x) => x.placeId === p.id);
       const rated = rv.filter((x) => Number(x.rating) > 0);
-      const cover = (ph[0]?.votes > 0 ? ph[0].url : '') || (p.photos || [])[0] || ph[0]?.url || '';
+      // Portada: las fotos propias del lugar (carrusel); si no tiene, la de visitantes más votada.
+      const ownPhotos = (p.photos || []).filter((u: string) => /^https?:\/\//.test(u || ''));
+      const cover = ownPhotos[0] || (ph[0]?.votes > 0 ? ph[0].url : '') || '';
       return {
         id: p.id, name: p.name || 'Lugar', category: p.category || 'other', lat: Number(p.lat), lng: Number(p.lng),
         description: p.description || '', municipality: p.municipality || '', department: p.department || '',
@@ -89,12 +92,11 @@ export function buildPlaces(places: any[], photos: any[], reviews: any[]): SiteP
         recommendations: p.recommendations || [], photos: p.photos || [], visitCount: Number(p.visitCount) || 0,
         hours: p.hours?.days ? p.hours : null, entry: p.entry?.type ? p.entry : null, access: p.access || null,
         difficulty: p.difficulty || '', duration: p.duration || '', seasons: p.seasons || [], bestTimes: p.bestTimes || [], amenities: p.amenities || [],
-        cover, photoCount: ph.length + (p.photos || []).length,
+        cover, ownPhotos, photoCount: ph.length,
         rating: rated.length ? rated.reduce((s, x) => s + Number(x.rating), 0) / rated.length : 0,
         reviewCount: rv.length,
         gallery: [
           ...ph.map((x) => ({ id: x.id, url: String(x.url), votes: Number(x.votes) || 0, userId: x.userId || '', userName: x.userName || '' })),
-          ...(p.photos || []).filter((u: string) => /^https?:\/\//.test(u || '')).map((u: string) => ({ id: '', url: u, votes: 0, userId: '', userName: '' })),
         ].slice(0, 24),
         reviews: rv.filter((x) => x.comment).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0, 10)
           .map((x) => ({ id: x.id, userId: x.userId || '', userName: x.userName || 'Visitante', rating: Number(x.rating) || 0, comment: String(x.comment), visitDate: x.visitDate || '', verified: !!x.verified, created: x.createdAt || '' })),
@@ -189,7 +191,9 @@ export function renderPlace(p: SitePlace, all: SitePlace[]): string {
 
   return `<nav class="lp-crumbs" aria-label="Estás en"><a href="/lugares">Lugares</a><span aria-hidden="true">›</span><a href="/lugares#${esc(p.category)}">${CATEGORY_PLURAL[p.category] || 'Lugares'}</a><span aria-hidden="true">›</span><span aria-current="page">${esc(p.name)}</span></nav>
 <article class="lp-main">
-${p.cover
+${p.ownPhotos.length > 1
+    ? carouselHtml(p.ownPhotos.map((u) => cld(u, 'c_fill,g_auto,w_1400,h_700,q_auto,f_auto')), `Fotos de ${p.name}`, 'lp-cover')
+    : p.cover
     ? `<figure class="lp-cover"><img src="${esc(cld(p.cover, 'c_fill,g_auto,w_1400,h_700,q_auto,f_auto'))}" alt="Foto de ${esc(p.name)}" width="1400" height="700" fetchpriority="high" /></figure>`
     : `<div class="lp-cover-empty ${catTone(p.category)}" aria-hidden="true">${catIcon(p.category, 32)}</div>`}
 <header class="lp-head">

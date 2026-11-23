@@ -6,6 +6,7 @@ import SiteHeader from '../../components/SiteHeader.astro';
 import PlaceDialogs from '../../components/PlaceDialogs.astro';
 import { loadPlaces, SITE, placeUrl, shareImage, renderPlace, placeShort, placeTitle, type SitePlace } from '../../lib/siteData';
 import '../../styles/place.css';
+import '../../styles/carousel.css';
 
 export async function getStaticPaths() {
   const places = await loadPlaces();

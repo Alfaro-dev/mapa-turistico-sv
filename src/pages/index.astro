@@ -466,6 +466,8 @@ const categories = [
   import { bizKind, openNow, priceSummary, paymentLabel, amenityLabel, scheduleText, DAYS, hour12, igUrl, fbUrl } from '../lib/bizData';
   import { acts, initPlaceActions, login, readyToPost, ensureConsent, openReview as openReviewDialog, openReport, votePhoto as votePhotoShared, uploadPlacePhoto as uploadPlacePhotoShared } from '../lib/placeActions';
   import { GOZ_PIN_SVG } from '../lib/gozPin';
+  import { carouselHtml, enableCarousels } from '../lib/carousel';
+  import '../styles/carousel.css';
 
   // Foto que no carga: se cambia por el recuadro vacío de la misma forma, sin el ícono roto del navegador.
   document.addEventListener('error', (e) => {
@@ -526,10 +528,14 @@ const categories = [
   let photosByPlace: Record<string, CPhoto[]> = {};
   const sortPhotos = (list: CPhoto[]) => list.sort((a, b) => num(b.votes) - num(a.votes) || (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
   // Portada: la foto de turista con más votos (si tiene al menos 1); si no, la foto que cargó Goz.
+  // Portada: las fotos propias del lugar (en carrusel); si no tiene, la de visitantes más votada.
+  const ownPhotos = (p: Place) => (p.photos || []).map((u) => safeUrl(u)).filter(Boolean);
   function coverOf(p: Place): { url: string; photo?: CPhoto } {
+    const own = ownPhotos(p);
+    if (own.length) return { url: own[0] };
     const top = photosByPlace[p.id]?.[0];
     if (top && num(top.votes) > 0 && safeUrl(top.url)) return { url: safeUrl(top.url), photo: top };
-    return { url: safeUrl(p.photos?.[0]) };
+    return { url: '' };
   }
   let currentCategory = 'all';
   let currentQuery = '';
@@ -1131,7 +1137,7 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a la lista
       </button>` : ''}
-      ${cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${cover.photo.userId ? `<a href="${profileHref(cover.photo.userId)}">${esc(cover.photo.userName || 'un visitante')}</a>` : esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty ${catTone(p.category)}" aria-hidden="true">${catIcon(p.category, 32)}</div>`}
+      ${photos.length > 1 ? carouselHtml(photos, `Fotos de ${p.name}`, 'detail-photo') : cover.url ? `<figure class="cover"><img class="detail-photo" src="${cover.url}" alt="Foto de ${esc(p.name)}" data-lb-cover role="button" tabindex="0" style="cursor:zoom-in">${cover.photo ? `<figcaption class="cover-credit">Portada de ${cover.photo.userId ? `<a href="${profileHref(cover.photo.userId)}">${esc(cover.photo.userName || 'un visitante')}</a>` : esc(cover.photo.userName || 'un visitante')} · ${num(cover.photo.votes)} ${num(cover.photo.votes) === 1 ? 'voto' : 'votos'}</figcaption>` : ''}</figure>` : `<div class="detail-photo photo-empty ${catTone(p.category)}" aria-hidden="true">${catIcon(p.category, 32)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${placeLink(p.id, p.name)}</h2>
       <p class="detail-kicker">${esc(CATEGORY_NAMES[p.category] || 'Lugar')}${placeMeta(p) ? ` · ${esc(placeMeta(p))}` : ''}</p>
       ${r
@@ -1160,14 +1166,13 @@ const categories = [
         <h3 class="section-title">Fotos de quienes fueron</h3>
         ${community.length ? `<button type="button" class="btn btn-outline btn-sm" data-addphoto="${esc(p.id)}">Subir foto</button>` : ''}
       </div>
-      ${community.length ? '<p class="section-help">Votá por tu favorita: la más votada queda de portada.</p>' : ''}
+      ${community.length ? `<p class="section-help">Votá por tu favorita: la más votada ${photos.length ? 'sale primero' : 'queda de portada'}.</p>` : ''}
       <input type="file" id="placePhotoInput" accept="image/*" class="sr-only" aria-label="Elegir foto para subir">
       <p id="photoStatus" class="field-help" aria-live="polite"></p>
       ${community.length ? photoGridPreview(p, community) : `<div class="empty-card">
         <p>Nadie ha subido fotos de aquí todavía.</p>
         <button type="button" class="btn btn-primary btn-sm" data-addphoto="${esc(p.id)}">Subí la primera</button>
       </div>`}
-      ${photos.length > 1 ? `<div class="gallery" data-lb-group>${photos.slice(1, 7).map((u, k) => `<a href="${u}" data-lb="grp" data-i="${k}"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
 
       ${(() => {
         const nb = nearbyBusinesses(p);
@@ -1196,6 +1201,7 @@ const categories = [
           <span class="near-km">${fmtKm(d)}</span>
         </button></li>`; }).join('')}</ul>` : ''}
     `;
+    enableCarousels($('detailView'));
     $('listView').hidden = true;
     $('detailView').hidden = false;
     $('panelBody').scrollTop = 0;
@@ -1316,7 +1322,7 @@ const categories = [
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
         Volver a ${esc(from.name)}
       </button>` : ''}
-      ${photos[0] ? `<img class="detail-photo" src="${photos[0]}" alt="Foto de ${esc(b.name)}">` : `<div class="detail-photo biz-thumb biz-cover-empty" aria-hidden="true">${bizIcon(b.category, 48)}</div>`}
+      ${photos.length > 1 ? carouselHtml(photos, `Fotos de ${b.name}`, 'detail-photo') : photos[0] ? `<img class="detail-photo" src="${photos[0]}" alt="Foto de ${esc(b.name)}">` : `<div class="detail-photo biz-thumb biz-cover-empty" aria-hidden="true">${bizIcon(b.category, 48)}</div>`}
       <h2 class="detail-title" tabindex="-1" id="detailTitle">${esc(b.name)}</h2>
       <p class="detail-kicker">${esc(bizKind(b).label)}${b.placeName ? ` · cerca de ${b.placeId ? placeLink(b.placeId, b.placeName) : esc(b.placeName)}` : ''}${isFeatured(b) ? ' <span class="tag-featured">Destacado</span>' : ''}</p>
       ${on || price ? `<p class="biz-now">${on ? `<span class="${on.open ? 'is-open' : 'is-closed'}">${esc(on.text)}</span>` : ''}${on && price ? ' · ' : ''}${price ? `<span class="biz-price">${esc(price)}</span>` : ''}</p>` : ''}
@@ -1357,8 +1363,8 @@ const categories = [
               : `<button type="button" class="btn btn-primary btn-sm" data-coupon="${esc(c.id)}">Obtener cupón</button>`}
           </li>`;
         }).join('')}</ul><p id="couponStatus" class="field-help" aria-live="polite"></p>` : ''}
-      ${photos.length > 1 ? `<div class="gallery" data-lb-group>${photos.slice(1, 7).map((u, k) => `<a href="${u}" data-lb="grp" data-i="${k}"><img src="${u}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
     `;
+    enableCarousels($('detailView'));
     $('listView').hidden = true;
     $('detailView').hidden = false;
     $('panelBody').scrollTop = 0;
