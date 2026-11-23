@@ -51,6 +51,14 @@
   .lp-review-meta { margin: 0; font-size: 13px; color: var(--muted); }
   .lp-review-meta:empty { display: none; }
   .lp-verified { color: var(--turquesa); font-weight: 800; }
+  .lp-bizlist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .lp-biz { display: flex; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--line, #E5E2DA); border-radius: 14px; color: var(--ink); text-decoration: none; background: #fff; }
+  .lp-biz:hover .lp-biz-name { color: var(--turquesa); text-decoration: underline; }
+  .lp-biz img, .lp-biz-empty { width: 64px; height: 64px; flex: none; object-fit: cover; border-radius: 10px; background: var(--photo, #E3EFEE); display: block; }
+  .lp-biz-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lp-biz-name { font-weight: 800; line-height: 1.3; }
+  .lp-biz-tag { display: inline-block; font-size: 11px; font-weight: 800; color: #8A5A00; background: #FFF1CC; border-radius: 6px; padding: 1px 6px; vertical-align: 1px; }
+  .lp-biz-promo { font-size: 13px; color: var(--turquesa); font-weight: 700; }
   .lp-near { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
   .lp-near:has(.is-noimg) { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
   .lp-near-card { display: flex; flex-direction: column; gap: 4px; color: var(--ink); text-decoration: none; }

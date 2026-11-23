@@ -29,7 +29,7 @@ export function startPlacePage(root: HTMLElement, placeId: string, opts: { onMis
       const live = await loadPlaceLive(placeId);
       if (!live) { if (first) opts.onMissing?.(); return; }
       place = live.place;
-      const html = renderPlace(live.place, live.all);
+      const html = renderPlace(live.place, live.all, live.businesses);
       if (html !== root.innerHTML) root.innerHTML = html;
       enableCarousels(root);
       document.title = placeTitle(live.place);

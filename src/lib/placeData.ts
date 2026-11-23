@@ -2,6 +2,7 @@
 // Firestore se lee sin clave: las reglas dejan leer lugares, reseñas y fotos a cualquiera.
 import { carouselHtml } from './carousel';
 import { scheduleText, openNow, entryText, accessLines, visitFacts, placeAmenityLabels } from './placeInfo';
+import { bizKind } from './bizData';
 export const SITE = 'https://mapa.carlosalfaro.dev';
 const BASE = 'https://firestore.googleapis.com/v1/projects/mapsv-1776175535/databases/(default)/documents';
 
@@ -124,15 +125,26 @@ async function byPlace(col: string, id: string) {
   return ((await res.json()) as any[]).filter((r) => r.document).map((r) => fields(r.document));
 }
 // Trae el lugar con sus reseñas y fotos de hoy, y los demás lugares para "Cerca de aquí".
-export async function loadPlaceLive(id: string): Promise<{ place: SitePlace; all: SitePlace[] } | null> {
-  const [doc, photos, reviews, places] = await Promise.all([
+export async function loadPlaceLive(id: string): Promise<{ place: SitePlace; all: SitePlace[]; businesses: any[] } | null> {
+  const [doc, photos, reviews, places, businesses] = await Promise.all([
     fetch(`${BASE}/places/${encodeURIComponent(id)}`).then((r) => (r.ok ? r.json() : null)),
-    byPlace('photos', id), byPlace('reviews', id), list('places').catch(() => []),
+    byPlace('photos', id), byPlace('reviews', id), list('places').catch(() => []), list('businesses').catch(() => []),
   ]);
   if (!doc) return null;
   const place = buildPlaces([fields(doc)], photos, reviews)[0];
   if (!place) return null;
-  return { place, all: buildPlaces(places, [], []).map((x) => (x.id === id ? place : x)) };
+  return { place, all: buildPlaces(places, [], []).map((x) => (x.id === id ? place : x)), businesses };
+}
+
+// Negocios aprobados a 3 km o menos (o puestos en este lugar): primero los destacados, después los más cerca.
+const bizFeatured = (b: any) => (!b.planUntil || b.planUntil >= new Date().toLocaleDateString('en-CA')) && (!!b.featured || b.plan === 'destacado' || b.plan === 'pro');
+export function nearbyBusinesses(p: SitePlace, businesses: any[]) {
+  return businesses
+    .filter((b) => b.status !== 'pending' && b.status !== 'rejected' && Number.isFinite(Number(b.lat)) && Number.isFinite(Number(b.lng)))
+    .map((b) => ({ b, km: distanceKm([p.lat, p.lng], [Number(b.lat), Number(b.lng)]) }))
+    .filter(({ b, km }) => b.placeId === p.id || km <= 3)
+    .sort((x, y) => Number(bizFeatured(y.b)) - Number(bizFeatured(x.b)) || x.km - y.km)
+    .slice(0, 6);
 }
 
 // ---------- Cómo se ve la página de un lugar (la misma al compilar y en vivo) ----------
@@ -166,7 +178,7 @@ function visitHtml(p: SitePlace) {
   ].filter(Boolean).join('\n');
 }
 
-export function renderPlace(p: SitePlace, all: SitePlace[]): string {
+export function renderPlace(p: SitePlace, all: SitePlace[], businesses: any[] = []): string {
   const cat = CATEGORY_NAMES[p.category] || 'Lugar';
   const where = placeWhere(p);
   const mapHref = `/#${encodeURIComponent(p.id)}`;
@@ -188,6 +200,14 @@ export function renderPlace(p: SitePlace, all: SitePlace[]): string {
   const near = nearby(p, all).map(({ x, km }) => `<li><a href="${placeUrl(x.id)}" class="lp-near-card${x.cover ? '' : ' is-noimg'}">${x.cover
     ? `<img src="${esc(cld(x.cover, 'c_fill,g_auto,w_320,h_220,q_auto,f_auto'))}" alt="" loading="lazy" width="320" height="220" />`
     : `<span class="lp-near-empty ${catTone(x.category)}" aria-hidden="true">${catIcon(x.category, 24)}</span>`}<span class="lp-near-name">${esc(x.name)}</span><span class="lp-near-meta">${CATEGORY_NAMES[x.category] || 'Lugar'} · a ${fmtKm(km)}</span></a></li>`).join('');
+
+  const biz = nearbyBusinesses(p, businesses).map(({ b, km }) => {
+    const img = [b.coverUrl, ...(Array.isArray(b.photos) ? b.photos : [])].find((u) => typeof u === 'string' && /^https:\/\//.test(u));
+    const promo = String(b.promoToday || '').replace(/^\s*hoy\s*[:,-]?\s*/i, '');
+    return `<li><a href="/#b-${encodeURIComponent(b.id)}" class="lp-biz">${img
+      ? `<img src="${esc(cld(img, 'c_fill,g_auto,w_160,h_160,q_auto,f_auto'))}" alt="" loading="lazy" width="64" height="64" />`
+      : '<span class="lp-biz-empty" aria-hidden="true"></span>'}<span class="lp-biz-txt"><span class="lp-biz-name">${esc(b.name)}${bizFeatured(b) ? ' <span class="lp-biz-tag">Destacado</span>' : ''}</span><span class="lp-near-meta">${esc(bizKind(b).label)} · a ${fmtKm(km)}</span>${promo ? `<span class="lp-biz-promo">Hoy: ${esc(promo)}</span>` : ''}</span></a></li>`;
+  }).join('');
 
   return `<nav class="lp-crumbs" aria-label="Estás en"><a href="/lugares">Lugares</a><span aria-hidden="true">›</span><a href="/lugares#${esc(p.category)}">${CATEGORY_PLURAL[p.category] || 'Lugares'}</a><span aria-hidden="true">›</span><span aria-current="page">${esc(p.name)}</span></nav>
 <article class="lp-main">
@@ -215,6 +235,7 @@ ${gallery ? `<p class="lp-muted lp-help">Votá por tu favorita: la más votada q
 <section class="lp-sec"><div class="lp-sec-head"><h2 class="lp-h2">Lo que dicen quienes ya fueron</h2><button type="button" class="lp-btn lp-btn-primary lp-btn-sm" data-write-review>Escribir reseña</button></div>
 ${reviews ? `<ul class="lp-reviews">${reviews}</ul>` : '<p class="lp-muted">Nadie ha contado su visita todavía. Sé la primera persona.</p>'}
 ${p.reviewCount > p.reviews.length ? `<a class="lp-btn lp-btn-outline" href="${mapHref}">Ver las ${p.reviewCount} reseñas en el mapa</a>` : ''}</section>
+${biz ? `<section class="lp-sec"><h2 class="lp-h2">Para comer y dormir cerca</h2><ul class="lp-bizlist">${biz}</ul></section>` : ''}
 ${near ? `<section class="lp-sec"><h2 class="lp-h2">Cerca de aquí</h2><ul class="lp-near">${near}</ul></section>` : ''}
 </article>`;
 }
