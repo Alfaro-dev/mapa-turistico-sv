@@ -1,0 +1,20 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mapsv.mapa_turistico_app",
+      "sha256_cert_fingerprints": [
+        "71:87:F8:4F:AB:B0:49:CE:FF:A3:5C:A1:C5:6C:09:AA:FC:58:4C:1D:FD:11:52:D4:54:AB:FE:30:8D:28:17:42"
+      ]
+    },
+    "relation_extensions": {
+      "delegate_permission/common.handle_all_urls": {
+        "dynamic_app_link_components": [
+          { "/": "/lugar/*" },
+          { "/": "/", "#": "b-*" }
+        ]
+      }
+    }
+  }
+]
