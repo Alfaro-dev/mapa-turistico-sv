@@ -664,7 +664,7 @@ const categories = [
 
   async function loadAll() {
     const [p, b, r, f, s, rp, ar, dl, st, er] = await Promise.all(['places', 'businesses', 'reviews', 'photos', 'seasonalBadges', 'reports', 'archive', 'accountDeletions', 'stats', 'errors']
-      .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[])));
+      .map((c) => getDocs(collection(db, c)).then((snap) => snap.docs.map((d) => ({ ...d.data(), id: d.id }))).catch(() => [] as any[])));
     places = p.map((x: any) => ({ ...x, lat: Number(x.lat), lng: Number(x.lng) })).sort((a: any, b2: any) => String(a.name).localeCompare(String(b2.name), 'es'));
     businesses = b.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));
     reviews = r.sort((a: any, b2: any) => ms(b2.createdAt) - ms(a.createdAt));

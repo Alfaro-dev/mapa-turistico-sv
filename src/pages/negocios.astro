@@ -507,8 +507,8 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
 
   async function loadMine() {
     const [bs, ps, us] = await Promise.all([
-      getDocs(query(collection(db, 'businesses'), where('ownerId', '==', user.uid))).then((s) => s.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[]),
-      places.length ? Promise.resolve(null) : getDocs(collection(db, 'places')).then((s) => s.docs.map((d) => ({ id: d.id, ...d.data() }))).catch(() => [] as any[]),
+      getDocs(query(collection(db, 'businesses'), where('ownerId', '==', user.uid))).then((s) => s.docs.map((d) => ({ ...d.data(), id: d.id }))).catch(() => [] as any[]),
+      places.length ? Promise.resolve(null) : getDocs(collection(db, 'places')).then((s) => s.docs.map((d) => ({ ...d.data(), id: d.id }))).catch(() => [] as any[]),
       getDoc(doc(db, 'users', user.uid)).catch(() => null),
     ]);
     mine = bs.sort((a: any, b: any) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
@@ -519,7 +519,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     const ids = mine.map((b) => b.id);
     for (let i = 0; i < ids.length; i += 30) {
       const snap = await getDocs(query(collection(db, 'coupons'), where('businessId', 'in', ids.slice(i, i + 30)))).catch(() => null);
-      snap?.docs.forEach((d) => { const c: any = { id: d.id, ...d.data() }; (coupons[c.businessId] ||= []).push(c); });
+      snap?.docs.forEach((d) => { const c: any = { ...d.data(), id: d.id }; (coupons[c.businessId] ||= []).push(c); });
     }
   }
 

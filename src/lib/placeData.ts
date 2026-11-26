@@ -115,7 +115,7 @@ export function distanceKm(a: [number, number], b: [number, number]) {
 }
 
 // ---------- Lectura en vivo desde el navegador ----------
-const fields = (d: any) => ({ id: d.name.split('/').pop(), ...Object.fromEntries(Object.entries(d.fields || {}).map(([k, x]) => [k, val(x)])) });
+const fields = (d: any) => ({ ...Object.fromEntries(Object.entries(d.fields || {}).map(([k, x]) => [k, val(x)])), id: d.name.split('/').pop() });
 async function byPlace(col: string, id: string) {
   const res = await fetch(`${BASE}:runQuery`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },

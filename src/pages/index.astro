@@ -1528,7 +1528,7 @@ const categories = [
   const loadedExtras = new Set<string>();
   const loadedBizBands = new Set<number>();
   let loadedAll = false;
-  const asPlace = (d: any) => ({ id: d.id, ...d.data(), lat: Number(d.data().lat), lng: Number(d.data().lng) } as Place);
+  const asPlace = (d: any) => ({ ...d.data(), id: d.id, lat: Number(d.data().lat), lng: Number(d.data().lng) } as Place);
   const chunks = <T,>(a: T[], n = 30) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
 
   function addPlaces(list: Place[]) {
@@ -1549,11 +1549,11 @@ const categories = [
     ]));
     res.forEach((snap, i) => snap?.docs.forEach((d) => {
       if (i % 2 === 0) {
-        const r = { id: d.id, ...d.data() } as Review;
+        const r = { ...d.data(), id: d.id } as Review;
         const list = (reviewsByPlace[r.placeId] ||= []);
         if (!list.some((x) => x.id === r.id)) list.push(r);
       } else {
-        const ph = { id: d.id, ...d.data() } as CPhoto;
+        const ph = { ...d.data(), id: d.id } as CPhoto;
         if (!ph.placeId || !ph.url) return;
         const list = (photosByPlace[ph.placeId] ||= []);
         if (!list.some((x) => x.id === ph.id)) list.push(ph);
@@ -1569,7 +1569,7 @@ const categories = [
     const snaps = await Promise.all(todo.map((k) => getDocs(query(collection(db, 'businesses'), where('lat', '>=', k * BAND), where('lat', '<', (k + 1) * BAND))).catch(() => null)));
     const fresh: Business[] = [];
     snaps.forEach((snap) => snap?.docs.forEach((d) => {
-      const b = { id: d.id, ...d.data() } as Business;
+      const b = { ...d.data(), id: d.id } as Business;
       if (b.status === 'pending' || b.status === 'rejected' || allBusinesses.some((x) => x.id === b.id)) return;
       fresh.push({ ...b, lat: Number(b.lat), lng: Number(b.lng) });
     }));
@@ -1577,7 +1577,7 @@ const categories = [
     allBusinesses = [...allBusinesses, ...fresh];
     renderBizMarkers(); updateBizLayer();
     const cs = await Promise.all(chunks(fresh.map((b) => b.id)).map((c) => getDocs(query(collection(db, 'coupons'), where('businessId', 'in', c))).catch(() => null)));
-    cs.forEach((snap) => snap?.docs.forEach((d) => { const c = { id: d.id, ...d.data() } as Coupon; (couponsByBiz[c.businessId] ||= []).push(c); }));
+    cs.forEach((snap) => snap?.docs.forEach((d) => { const c = { ...d.data(), id: d.id } as Coupon; (couponsByBiz[c.businessId] ||= []).push(c); }));
     if (selectedBizId) { const sb = allBusinesses.find((x) => x.id === selectedBizId); if (sb) renderBusinessDetail(sb); }
   }
   const bandsFor = (south: number, north: number) => {
@@ -1687,7 +1687,7 @@ const categories = [
         // Negocio por enlace: se pide directo y se abre.
         const d = await getDoc(doc(db, 'businesses', fromHash.slice(2))).catch(() => null);
         if (d?.exists()) {
-          const b = { id: d.id, ...d.data() } as Business;
+          const b = { ...d.data(), id: d.id } as Business;
           if (b.status !== 'pending' && b.status !== 'rejected') { allBusinesses.push({ ...b, lat: Number(b.lat), lng: Number(b.lng) }); renderBizMarkers(); selectBusiness(b.id); opened = true; }
         }
       } else if (fromHash && await ensurePlace(fromHash)) {

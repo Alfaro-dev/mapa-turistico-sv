@@ -17,19 +17,19 @@ export async function loadUserData(uid: string): Promise<UserData> {
     getDocs(query(collection(db, 'photos'), where('userId', '==', uid))),
     getDocs(collection(db, 'seasonalBadges')).catch(() => null),
   ]);
-  const reviews = rSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any))
+  const reviews = rSnap.docs.map((d) => ({ ...d.data(), id: d.id } as any))
     .sort((a: any, b: any) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-  const photos = fSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any))
+  const photos = fSnap.docs.map((d) => ({ ...d.data(), id: d.id } as any))
     .sort((a: any, b: any) => num(b.votes) - num(a.votes));
   // Solo los lugares donde esta persona tiene reseñas o fotos (de 30 en 30), no todo el mapa.
   const ids = [...new Set([...reviews, ...photos].map((x: any) => x.placeId).filter(Boolean))] as string[];
   const groups = Array.from({ length: Math.ceil(ids.length / 30) }, (_, i) => ids.slice(i * 30, i * 30 + 30));
   const pSnaps = await Promise.all(groups.map((g) => getDocs(query(collection(db, 'places'), where(documentId(), 'in', g))).catch(() => null)));
   return {
-    places: pSnaps.flatMap((sn) => sn?.docs || []).map((d) => ({ id: d.id, ...d.data(), lat: Number(d.data().lat), lng: Number(d.data().lng) })),
+    places: pSnaps.flatMap((sn) => sn?.docs || []).map((d) => ({ ...d.data(), id: d.id, lat: Number(d.data().lat), lng: Number(d.data().lng) })),
     reviews,
     photos,
-    seasonal: (sSnap?.docs || []).map((d) => ({ id: d.id, ...d.data() } as SeasonalBadge)),
+    seasonal: (sSnap?.docs || []).map((d) => ({ ...d.data(), id: d.id } as SeasonalBadge)),
   };
 }
 
