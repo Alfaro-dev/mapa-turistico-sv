@@ -126,17 +126,18 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
         <!-- 5. Precios y menú -->
         <fieldset class="ng-card wz-step" data-step="5" data-title="Precios y menú" hidden>
           <legend class="ng-h2">Precios y menú</legend>
-          <div class="ng-field">
-            <span class="ng-label" id="lblLevel">¿Qué tan caro es?</span>
-            <div class="wz-levels" id="fLevels" role="radiogroup" aria-labelledby="lblLevel"></div>
+          <div class="ng-field" id="fRange">
+            <span class="ng-label">¿Entre cuánto van sus precios?</span>
+            <span class="ng-help" id="fFromLabel">Del más barato al más caro, en dólares.</span>
           </div>
           <div class="ng-row">
-            <label class="ng-field"><span class="ng-label" id="fFromLabel">Desde</span>
-              <span class="wz-tel"><span aria-hidden="true">$</span><input id="fFrom" class="ng-input" type="number" inputmode="decimal" min="0" max="10000" step="0.25" placeholder="0.00" /></span>
-              <span class="ng-help">El precio más bajo. Así los turistas pueden ordenar por precio.</span></label>
+            <label class="ng-field"><span class="ng-label">Desde</span>
+              <span class="wz-tel"><span aria-hidden="true">$</span><input id="fFrom" class="ng-input" type="number" inputmode="decimal" min="0" max="10000" step="0.25" placeholder="0.00" /></span></label>
+            <label class="ng-field"><span class="ng-label">Hasta (opcional)</span>
+              <span class="wz-tel"><span aria-hidden="true">$</span><input id="fTo" class="ng-input" type="number" inputmode="decimal" min="0" max="10000" step="0.25" placeholder="0.00" /></span></label>
           </div>
           <div class="ng-field">
-            <span class="ng-label" id="lblPay">Formas de pago</span>
+            <span class="ng-label" id="lblPay">¿Qué formas de pago aceptan?</span>
             <div class="ng-chips" id="fPay" role="group" aria-labelledby="lblPay"></div>
           </div>
           <div class="ng-field">
@@ -456,7 +457,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   import { uploadImage, isPdf } from '../lib/cloudinary';
   import { datePicker, dayText } from '../lib/datePicker';
   import { LEGAL } from '../lib/legal';
-  import { GROUPS, typeOf, groupOf, bizKind, amenitiesFor, amenityLabel, PAYMENTS, paymentLabel, PRICE_LEVELS, priceSummary, DAYS, emptyHours, scheduleText, openNow, phoneDigits, phoneFormat, phoneValid, mobileValid, waUrl, igHandle, igUrl, fbUrl, type Hours } from '../lib/bizData';
+  import { GROUPS, typeOf, groupOf, bizKind, amenitiesFor, amenityLabel, PAYMENTS, paymentLabel, priceSummary, priceLevelFor, DAYS, emptyHours, scheduleText, openNow, phoneDigits, phoneFormat, phoneValid, mobileValid, waUrl, igHandle, igUrl, fbUrl, type Hours } from '../lib/bizData';
 
   declare const L: any;
   const $ = (id: string) => document.getElementById(id) as any;
@@ -676,7 +677,6 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   let menuPhotos: string[] = [];
   let menuSections: { name: string; items: { name: string; price: string; desc: string }[] }[] = [];
   let hours: Hours = emptyHours();
-  let priceLevel = 0;
   let payments: string[] = [];
   let amenities: string[] = [];
   let uploading = 0;
@@ -857,11 +857,9 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
   // ----- 5. Precios y menú -----
   function renderLevels() {
     const g = groupOf(group);
-    $('fFromLabel').textContent = `Desde (${({ plato: 'el plato más barato', noche: 'por noche', persona: 'por persona', viaje: 'por viaje', producto: 'el producto más barato', servicio: 'el servicio más barato' } as Record<string, string>)[g.unit] || 'el más barato'})`;
-    $('fLevels').innerHTML = PRICE_LEVELS.map((p) => `<label class="wz-level"><input type="radio" name="plevel" value="${p.n}" ${p.n === priceLevel ? 'checked' : ''}><span><b>${p.sign}</b>${p.label}</span></label>`).join('');
+    $('fFromLabel').textContent = `Del más barato al más caro, ${({ noche: 'por noche', persona: 'por persona', viaje: 'por viaje' } as Record<string, string>)[g.unit] || 'en dólares'}.`;
     $('fPay').innerHTML = PAYMENTS.map((p) => `<label class="ng-chip"><input type="checkbox" value="${p.id}" ${payments.includes(p.id) ? 'checked' : ''}><span>${p.label}</span></label>`).join('');
   }
-  $('fLevels').addEventListener('change', (e: Event) => { priceLevel = Number((e.target as HTMLInputElement).value); saveDraft(); });
   $('fPay').addEventListener('change', () => { payments = [...$('fPay').querySelectorAll('input:checked')].map((x: any) => x.value); saveDraft(); });
   const menuMode = () => (document.querySelector('input[name="mmode"]:checked') as HTMLInputElement)?.value || '';
   function menuPanels() {
@@ -968,6 +966,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     const sections = menuSections.map((s) => ({ name: s.name.trim(), items: s.items.filter((i) => i.name.trim()).map((i) => ({ name: i.name.trim(), price: Number(i.price) > 0 ? Number(Number(i.price).toFixed(2)) : 0, desc: i.desc.trim() })) })).filter((s) => s.items.length);
     const mm = menuMode();
     const menuUrl = String($('fMenuUrl').value || '').trim();
+    const from = Number($('fFrom').value) || 0, to = Number($('fTo').value) || 0;
     return {
       name: String($('fName').value || '').trim(), group: g.id, type: t?.id || '', category: t?.base || 'otro',
       description: String($('fDesc').value || '').trim(),
@@ -977,7 +976,7 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
       email: String($('fEmail').value || '').trim(), website: String($('fWeb').value || '').trim(),
       instagram: igHandle($('fIg').value), facebook: String($('fFb').value || '').trim(),
       hours: h, schedule: scheduleText(h),
-      priceLevel, priceFrom: Number($('fFrom').value) > 0 ? Number(Number($('fFrom').value).toFixed(2)) : 0, priceUnit: g.unit, payments: [...payments],
+      priceLevel: priceLevelFor(from, to, g.unit), priceFrom: from > 0 ? Number(from.toFixed(2)) : 0, priceTo: to > from ? Number(to.toFixed(2)) : 0, priceUnit: g.unit, payments: [...payments],
       menuMode: mm, menuUrl: mm === 'link' ? menuUrl : '', menuPhotos: mm === 'fotos' ? [...menuPhotos] : [], menuSections: mm === 'aqui' ? sections : [],
       // Texto de siempre para la app y el admin.
       menu: mm === 'link' ? menuUrl : mm === 'aqui' ? sections.map((s) => `${s.name ? `${s.name}: ` : ''}${s.items.map((i) => `${i.name}${i.price ? ` $${i.price.toFixed(2)}` : ''}`).join(', ')}`).join(' · ') : '',
@@ -1016,7 +1015,9 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
       if (bad) return fail(`Revisá el horario del ${bad.label.toLowerCase()}: la hora de abrir y la de cerrar no pueden ser iguales.`, `fDays`);
     }
     if (n === 5) {
-      if (!priceLevel) return fail('Elegí qué tan caro es, de $ a $$$$. Sirve para que los turistas comparen.', 'fLevels');
+      if (!(f.priceFrom > 0)) return fail('Poné desde cuánto cobran: el precio más bajo. Sirve para que los turistas comparen.', 'fFrom');
+      if (Number($('fTo').value) > 0 && Number($('fTo').value) < f.priceFrom) return fail('El precio "hasta" tiene que ser mayor que el "desde".', 'fTo');
+      if (!payments.length) return fail('Marcá al menos una forma de pago.', 'fPay');
       if (menuMode() === 'link' && !/^https?:\/\/\S+\.\S+/.test(f.menuUrl)) return fail('Pegá el enlace completo del menú, que empiece con https://', 'fMenuUrl');
       if (menuMode() === 'fotos' && !menuPhotos.length) return fail('Subí el menú en PDF o en fotos, o elegí "Sin menú".', 'fMenuFiles');
       if (menuMode() === 'aqui' && !f.menuSections.length) return fail('Agregá al menos una cosa al menú con su nombre, o elegí "Sin menú".');
@@ -1063,8 +1064,8 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     clearTimeout(draftTimer);
     draftTimer = setTimeout(() => {
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({ uid: user.uid, step, maxStep, group, btype, photos, menuPhotos, menuSections, hours, priceLevel, payments, amenities, point, placeId,
-          f: Object.fromEntries(['fName', 'fDesc', 'fAddress', 'fWa', 'fPhone', 'fEmail', 'fWeb', 'fIg', 'fFb', 'fHoursNote', 'fFrom', 'fMenuUrl'].map((id) => [id, $(id).value])),
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ uid: user.uid, step, maxStep, group, btype, photos, menuPhotos, menuSections, hours, payments, amenities, point, placeId,
+          f: Object.fromEntries(['fName', 'fDesc', 'fAddress', 'fWa', 'fPhone', 'fEmail', 'fWeb', 'fIg', 'fFb', 'fHoursNote', 'fFrom', 'fTo', 'fMenuUrl'].map((id) => [id, $(id).value])),
           same: ($('fSame') as HTMLInputElement).checked, mm: menuMode() }));
         $('fSaved').textContent = 'Borrador guardado en este navegador';
       } catch { /* sin almacenamiento: no pasa nada */ }
@@ -1088,16 +1089,15 @@ const types = [['restaurante', 'Restaurante'], ['cafeteria', 'Cafetería'], ['ho
     const src: Record<string, string> = b ? {
       fName: b.name || '', fDesc: b.description || '', fAddress: b.address || '', fWa: phoneFormat(b.whatsapp || ''), fPhone: phoneFormat(b.phone || ''),
       fEmail: b.email || '', fWeb: b.website || '', fIg: b.instagram || '', fFb: b.facebook || '', fHoursNote: b.hours?.note || '',
-      fFrom: b.priceFrom ? String(b.priceFrom) : '', fMenuUrl: b.menuUrl || (/^https?:\/\//.test(b.menu || '') ? b.menu : ''),
+      fFrom: b.priceFrom ? String(b.priceFrom) : '', fTo: b.priceTo ? String(b.priceTo) : '', fMenuUrl: b.menuUrl || (/^https?:\/\//.test(b.menu || '') ? b.menu : ''),
     } : (d?.f || {});
-    ['fName', 'fDesc', 'fAddress', 'fWa', 'fPhone', 'fEmail', 'fWeb', 'fIg', 'fFb', 'fHoursNote', 'fFrom', 'fMenuUrl'].forEach((id) => { $(id).value = src[id] || ''; });
+    ['fName', 'fDesc', 'fAddress', 'fWa', 'fPhone', 'fEmail', 'fWeb', 'fIg', 'fFb', 'fHoursNote', 'fFrom', 'fTo', 'fMenuUrl'].forEach((id) => { $(id).value = src[id] || ''; });
     ($('fSame') as HTMLInputElement).checked = !!(b ? (b.phone && phoneDigits(b.phone) === phoneDigits(b.whatsapp || '')) : d?.same);
     ($('fPhone') as HTMLInputElement).disabled = ($('fSame') as HTMLInputElement).checked;
     photos = b ? photosOf(b) : [...(d?.photos || [])];
     menuPhotos = [...(b?.menuPhotos || d?.menuPhotos || [])];
     menuSections = JSON.parse(JSON.stringify(b?.menuSections || d?.menuSections || [])).map((s: any) => ({ name: s.name || '', items: (s.items || []).map((i: any) => ({ name: i.name || '', price: i.price ? String(i.price) : '', desc: i.desc || '' })) }));
     hours = b?.hours?.days ? JSON.parse(JSON.stringify(b.hours)) : d?.hours || emptyHours();
-    priceLevel = Number(b?.priceLevel || d?.priceLevel || 0);
     payments = [...(b?.payments || d?.payments || [])];
     amenities = [...(b?.amenities || d?.amenities || [])];
     point = b && Number.isFinite(Number(b.lat)) && Number(b.lat) ? { lat: Number(b.lat), lng: Number(b.lng) } : d?.point || null;

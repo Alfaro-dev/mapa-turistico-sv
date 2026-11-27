@@ -78,10 +78,21 @@ export const PRICE_LEVELS = [
   { n: 3, sign: '$$$', label: 'Alto' }, { n: 4, sign: '$$$$', label: 'Muy alto' },
 ];
 const UNIT_TEXT: Record<string, string> = { plato: 'por plato', noche: 'por noche', persona: 'por persona', viaje: 'por viaje', producto: '', servicio: '' };
+const money = (v: number) => `$${v.toFixed(v % 1 ? 2 : 0)}`;
 export function priceSummary(b: any) {
   const lv = PRICE_LEVELS.find((p) => p.n === Number(b?.priceLevel));
-  const from = Number(b?.priceFrom) > 0 ? `desde $${Number(b.priceFrom).toFixed(Number(b.priceFrom) % 1 ? 2 : 0)}${UNIT_TEXT[b.priceUnit] ? ` ${UNIT_TEXT[b.priceUnit]}` : ''}` : '';
-  return [lv?.sign, from].filter(Boolean).join(' · ');
+  const f = Number(b?.priceFrom) || 0, t = Number(b?.priceTo) || 0;
+  const unit = UNIT_TEXT[b?.priceUnit] || '';
+  const range = f > 0 ? (t > f ? `${money(f)} a ${money(t)}` : `desde ${money(f)}`) : '';
+  return [lv?.sign, range && `${range}${unit ? ` ${unit}` : ''}`].filter(Boolean).join(' · ');
+}
+
+// Nivel de 1 a 4 signos de dólar según el rango (el precio más alto, o el más bajo si no hay tope). Igual que en la app.
+export function priceLevelFor(from: number, to: number, unit: string) {
+  const v = to > from ? to : from;
+  if (!(v > 0)) return 0;
+  const [a, b, c] = unit === 'noche' ? [30, 70, 150] : unit === 'plato' ? [6, 15, 30] : [10, 30, 80];
+  return v <= a ? 1 : v <= b ? 2 : v <= c ? 3 : 4;
 }
 
 // ---------- Horario por día ----------
